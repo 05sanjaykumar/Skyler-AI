@@ -53,10 +53,21 @@ skyler-ai/
 │   │   │   │   ├── api-client.ts
 │   │   │   │   ├── utils.ts
 │   │   │   │   └── validations.ts
-│   │   │   └── hooks/
-│   │   │       ├── use-prompts.ts
-│   │   │       ├── use-messages.ts
-│   │   │       └── use-auth.ts
+│   │   │   ├── hooks/
+│   │   │   ├── use-prompts.ts
+│   │   │   ├── use-messages.ts
+│   │   │   └── use-auth.ts
+│   │   ├── __tests__/                # Unit tests
+│   │   │   ├── components/
+│   │   │   │   ├── prompts/
+│   │   │   │   ├── messages/
+│   │   │   │   └── ui/
+│   │   │   ├── lib/
+│   │   │   │   ├── api-client.test.ts
+│   │   │   │   └── utils.test.ts
+│   │   │   └── __mocks__/
+│   │   │       ├── next-auth.ts
+│   │   │       └── api-responses.ts
 │   │   ├── public/
 │   │   ├── tailwind.config.js
 │   │   ├── next.config.js
@@ -104,8 +115,21 @@ skyler-ai/
 │       │   └── seed.ts               # Seed data
 │       ├── tests/
 │       │   ├── controllers/
+│       │   │   ├── auth.test.ts
+│       │   │   ├── prompts.test.ts
+│       │   │   └── messages.test.ts
 │       │   ├── services/
-│       │   └── utils/
+│       │   │   ├── ai.test.ts
+│       │   │   ├── email-processor.test.ts
+│       │   │   └── prompt-engine.test.ts
+│       │   ├── utils/
+│       │   │   ├── encryption.test.ts
+│       │   │   └── validation.test.ts
+│       │   └── __mocks__/
+│       │       ├── prisma.ts
+│       │       ├── openai.ts
+│       │       └── redis.ts
+│       ├── jest.config.js
 │       └── package.json
 │
 ├── packages/                         # Shared libraries
@@ -195,17 +219,127 @@ skyler-ai/
 │   ├── deployment.md
 │   └── contributing.md
 │
+├── .github/                          # CI/CD and automation
+│   ├── workflows/
+│   │   ├── ci.yml                    # Main CI pipeline
+│   │   ├── deploy-staging.yml        # Staging deployment
+│   │   ├── deploy-production.yml     # Production deployment
+│   │   ├── security-scan.yml         # Security scanning
+│   │   └── dependabot.yml           # Dependency updates
+│   ├── ISSUE_TEMPLATE/
+│   │   ├── bug_report.md
+│   │   └── feature_request.md
+│   └── pull_request_template.md
+│
+├── tests/                            # E2E and integration tests
+│   ├── e2e/
+│   │   ├── auth.spec.ts
+│   │   ├── prompts.spec.ts
+│   │   ├── email-processing.spec.ts
+│   │   └── playwright.config.ts
+│   ├── integration/
+│   │   ├── api/
+│   │   │   ├── auth.test.ts
+│   │   │   ├── prompts.test.ts
+│   │   │   └── webhooks.test.ts
+│   │   └── workers/
+│   │       ├── email-ingestion.test.ts
+│   │       └── ai-processing.test.ts
+│   ├── fixtures/
+│   │   ├── sample-emails.json
+│   │   ├── test-users.json
+│   │   └── mock-responses.json
+│   └── setup/
+│       ├── test-db.ts
+│       └── global-setup.ts
+│
+├── monitoring/                       # Observability and monitoring
+│   ├── grafana/
+│   │   ├── dashboards/
+│   │   │   ├── api-performance.json
+│   │   │   ├── worker-metrics.json
+│   │   │   └── business-metrics.json
+│   │   └── provisioning/
+│   ├── prometheus/
+│   │   └── prometheus.yml
+│   ├── alerts/
+│   │   ├── api-alerts.yml
+│   │   ├── database-alerts.yml
+│   │   └── worker-alerts.yml
+│   └── logs/
+│       ├── fluentd.conf
+│       └── log-parsing.yml
+│
+├── security/                         # Security configurations
+│   ├── policies/
+│   │   ├── network-policy.yml
+│   │   ├── pod-security.yml
+│   │   └── rbac.yml
+│   ├── secrets/
+│   │   ├── sealed-secrets.yml
+│   │   └── secret-templates/
+│   ├── scans/
+│   │   ├── trivy.yml
+│   │   ├── snyk.yml
+│   │   └── sonarqube.yml
+│   └── compliance/
+│       ├── gdpr-checklist.md
+│       ├── soc2-requirements.md
+│       └── security-audit.md
+│
 ├── scripts/
-│   ├── setup.sh
-│   ├── migrate.sh
-│   ├── deploy.sh
-│   └── backup.sh
+│   ├── development/
+│   │   ├── setup.sh
+│   │   ├── reset-db.sh
+│   │   ├── seed-test-data.sh
+│   │   └── start-services.sh
+│   ├── deployment/
+│   │   ├── build.sh
+│   │   ├── deploy.sh
+│   │   ├── rollback.sh
+│   │   └── health-check.sh
+│   ├── maintenance/
+│   │   ├── backup.sh
+│   │   ├── migrate.sh
+│   │   ├── cleanup.sh
+│   │   └── scale.sh
+│   └── monitoring/
+│       ├── metrics-collector.sh
+│       ├── log-analyzer.sh
+│       └── alert-manager.sh
+│
+├── config/                           # Environment configurations
+│   ├── environments/
+│   │   ├── development.yml
+│   │   ├── staging.yml
+│   │   ├── production.yml
+│   │   └── test.yml
+│   ├── feature-flags/
+│   │   ├── development.json
+│   │   ├── staging.json
+│   │   └── production.json
+│   └── secrets/
+│       ├── .env.development
+│       ├── .env.staging
+│       └── .env.production.example
 │
 ├── .env.example
+├── .env.local.example
 ├── .gitignore
+├── .dockerignore
+├── .eslintrc.js                      # Linting configuration
+├── .prettierrc                       # Code formatting
+├── jest.config.js                    # Testing configuration
+├── playwright.config.ts              # E2E testing
+├── sonar-project.properties          # Code quality
 ├── package.json                      # Root package.json for monorepo
 ├── turbo.json                        # Turborepo configuration
 ├── tsconfig.json                     # Root TypeScript config
+├── docker-compose.yml                # Local development
+├── docker-compose.prod.yml           # Production docker setup
+├── CHANGELOG.md                      # Version history
+├── CONTRIBUTING.md                   # Development guidelines
+├── LICENSE                           # Software license
 └── README.md
 ````
 # Skyler AI - Complete Setup Guide 🚀
