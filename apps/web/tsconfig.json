@@ -1,6 +1,7 @@
 {
   "extends": "@repo/typescript-config/nextjs.json",
   "compilerOptions": {
+    "typeRoots": ["./types", "./node_modules/@types"],
     "plugins": [
       {
         "name": "next"
