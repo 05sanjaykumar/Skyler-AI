@@ -1,3 +1,11 @@
+import type { Metadata } from "next";
+
+export const metadata:Metadata = {
+  title: "Skyler – AI Inbox Organizer",
+  description: "Smart, prompt-based inbox & task manager for teams.",
+};
+
+
 export default function LandingPage() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-4">
