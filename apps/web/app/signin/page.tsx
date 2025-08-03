@@ -6,9 +6,28 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Mail, Eye, EyeOff } from "lucide-react"
 import { useState } from "react"
+import { signIn } from "next-auth/react"
+import { useRouter } from "next/navigation"
 
 export default function SigninPage() {
   const [showPassword, setShowPassword] = useState(false)
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const router = useRouter()
+
+  const handleSignin = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    const res = await signIn("credentials", {
+      redirect: true,
+      callbackUrl: "/dashboard",
+      email,
+      password,
+    })
+
+    // Optional: handle error/success if needed
+    console.log(res)
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
@@ -19,10 +38,12 @@ export default function SigninPage() {
             Enter your email and password to access your account
           </CardDescription>
         </CardHeader>
+
         <CardContent className="space-y-4">
           <Button
             variant="outline"
             className="w-full flex justify-center border-gray-300 hover:bg-gray-50 transition-colors bg-transparent"
+            onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
           >
             <Mail className="mr-2 h-4 w-4" />
             Continue with Google
@@ -37,30 +58,30 @@ export default function SigninPage() {
             </div>
           </div>
 
-          <div className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSignin}>
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-gray-700">
-                Email
-              </Label>
+              <Label htmlFor="email" className="text-gray-700">Email</Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="m@example.com"
-                className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
+
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-gray-700">
-                Password
-              </Label>
+              <Label htmlFor="password" className="text-gray-700">Password</Label>
               <div className="relative">
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
-                  className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 pr-10"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   required
+                  className="pr-10"
                 />
                 <button
                   type="button"
@@ -83,18 +104,28 @@ export default function SigninPage() {
                   Remember me
                 </Label>
               </div>
-              <Button variant="link" className="px-0 text-sm text-blue-600 hover:text-blue-700">
+              <Button type="button" variant="link" className="px-0 text-sm text-blue-600 hover:text-blue-700">
                 Forgot password?
               </Button>
             </div>
-          </div>
+
+            <Button
+              type="submit"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              Sign in
+            </Button>
+          </form>
         </CardContent>
 
         <CardFooter className="flex flex-col space-y-4">
-          <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">Sign in</Button>
           <p className="text-center text-sm text-gray-600">
             {"Don't have an account? "}
-            <Button variant="link" className="px-0 text-sm text-blue-600 hover:text-blue-700">
+            <Button
+              variant="link"
+              className="px-0 text-sm text-blue-600 hover:text-blue-700"
+              onClick={() => router.push("/signup")}
+            >
               Sign up
             </Button>
           </p>
