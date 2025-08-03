@@ -12,7 +12,7 @@ export default function SigninPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <Card className="w-full max-w-md shadow-sm border border-gray-200 p-2 rounded-sm">
+      <Card className="w-full max-w-md shadow-sm border border-gray-200 p-4 rounded-sm">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-2xl font-semibold text-gray-900">Sign in</CardTitle>
           <CardDescription className="text-gray-600">
@@ -22,7 +22,7 @@ export default function SigninPage() {
         <CardContent className="space-y-4">
           <Button
             variant="outline"
-            className="w-full border-gray-300 hover:bg-gray-50 transition-colors bg-transparent"
+            className="w-full flex justify-center border-gray-300 hover:bg-gray-50 transition-colors bg-transparent"
           >
             <Mail className="mr-2 h-4 w-4" />
             Continue with Google
