@@ -120,13 +120,13 @@ export default function SigninPage() {
 
         <CardFooter className="flex flex-col space-y-4">
           <p className="text-center text-sm text-gray-600">
-            {"Don't have an account? "}
+            {"Having an account? "}
             <Button
               variant="link"
               className="px-0 text-sm text-blue-600 hover:text-blue-700"
-              onClick={() => router.push("/signup")}
+              onClick={() => router.push("/login")}
             >
-              Sign up
+              Log in
             </Button>
           </p>
         </CardFooter>

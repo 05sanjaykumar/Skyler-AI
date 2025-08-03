@@ -17,8 +17,8 @@ export default function LandingPage() {
         <a href="/login" className="px-4 py-2 bg-black text-white rounded-lg">
           Login
         </a>
-        <a href="/signup" className="px-4 py-2 border border-black text-black rounded-lg">
-          Sign Up
+        <a href="/signin" className="px-4 py-2 border border-black text-black rounded-lg">
+          Sign In
         </a>
       </div>
     </main>

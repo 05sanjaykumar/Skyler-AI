@@ -1,32 +1,41 @@
 'use client'
+
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle
+} from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Mail, Eye, EyeOff } from "lucide-react"
 import { useState } from "react"
-import { signIn } from "next-auth/react";
-
+import { signIn } from "next-auth/react"
+import { useRouter } from "next/navigation"
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
+  const router = useRouter()
 
-  const handleLogin = async (e: any) => {
-    e.preventDefault();
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+
     const res = await signIn("credentials", {
       redirect: true,
       callbackUrl: "/dashboard",
       email,
-      password,
-    });
+      password
+    })
 
-    // handle errors, show messages, etc.
-  };
+    console.log(res) // Optional: handle errors etc.
+  }
 
-  
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <Card className="w-full max-w-md shadow-sm border border-gray-200 p-4 rounded-sm">
@@ -36,6 +45,7 @@ export default function Login() {
             Enter your email and password to access your account
           </CardDescription>
         </CardHeader>
+
         <CardContent className="space-y-4">
           <Button
             variant="outline"
@@ -55,20 +65,7 @@ export default function Login() {
             </div>
           </div>
 
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name" className="text-gray-700">
-                Name
-              </Label>
-              <Input
-                id="name"
-                type="text"
-                placeholder="John Doe"
-                className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                required
-              />
-            </div>
-
+          <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email" className="text-gray-700">
                 Email
@@ -77,12 +74,12 @@ export default function Login() {
                 id="email"
                 type="email"
                 placeholder="m@example.com"
-                className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="password" className="text-gray-700">
                 Password
@@ -92,8 +89,8 @@ export default function Login() {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
-                  className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 pr-10"
-                  value={password} 
+                  className="pr-10"
+                  value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
@@ -118,20 +115,30 @@ export default function Login() {
                   Remember me
                 </Label>
               </div>
-              <Button variant="link" className="px-0 text-sm text-blue-600 hover:text-blue-700">
+              <Button
+                type="button"
+                variant="link"
+                className="px-0 text-sm text-blue-600 hover:text-blue-700"
+              >
                 Forgot password?
               </Button>
             </div>
-          </div>
+
+            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+              Log in
+            </Button>
+          </form>
         </CardContent>
 
         <CardFooter className="flex flex-col space-y-4">
-          <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">Log in</Button>
           <p className="text-center text-sm text-gray-600">
             {"Don't have an account? "}
-            <Button variant="link" className="px-0 text-sm text-blue-600 hover:text-blue-700"
-             onClick={handleLogin}>
-              Log in
+            <Button
+              variant="link"
+              className="px-0 text-sm text-blue-600 hover:text-blue-700"
+              onClick={() => router.push("/signin")}
+            >
+              Sign in
             </Button>
           </p>
         </CardFooter>
