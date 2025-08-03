@@ -6,15 +6,32 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Mail, Eye, EyeOff } from "lucide-react"
 import { useState } from "react"
+import { signIn } from "next-auth/react";
+
 
 export default function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false)
 
+  const handleLogin = async (e: any) => {
+    e.preventDefault();
+    const res = await signIn("credentials", {
+      redirect: true,
+      callbackUrl: "/dashboard",
+      email,
+      password,
+    });
+
+    // handle errors, show messages, etc.
+  };
+
+  
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <Card className="w-full max-w-md shadow-sm border border-gray-200 p-4 rounded-sm">
         <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl font-semibold text-gray-900">Sign in</CardTitle>
+          <CardTitle className="text-2xl font-semibold text-gray-900">Log in</CardTitle>
           <CardDescription className="text-gray-600">
             Enter your email and password to access your account
           </CardDescription>
@@ -23,6 +40,7 @@ export default function Login() {
           <Button
             variant="outline"
             className="w-full flex justify-center border-gray-300 hover:bg-gray-50 transition-colors bg-transparent"
+            onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
           >
             <Mail className="mr-2 h-4 w-4" />
             Continue with Google
@@ -60,6 +78,8 @@ export default function Login() {
                 type="email"
                 placeholder="m@example.com"
                 className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
@@ -73,6 +93,8 @@ export default function Login() {
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
                   className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 pr-10"
+                  value={password} 
+                  onChange={(e) => setPassword(e.target.value)}
                   required
                 />
                 <button
@@ -104,11 +126,12 @@ export default function Login() {
         </CardContent>
 
         <CardFooter className="flex flex-col space-y-4">
-          <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">Sign in</Button>
+          <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">Log in</Button>
           <p className="text-center text-sm text-gray-600">
             {"Don't have an account? "}
-            <Button variant="link" className="px-0 text-sm text-blue-600 hover:text-blue-700">
-              Sign up
+            <Button variant="link" className="px-0 text-sm text-blue-600 hover:text-blue-700"
+             onClick={handleLogin}>
+              Log in
             </Button>
           </p>
         </CardFooter>
