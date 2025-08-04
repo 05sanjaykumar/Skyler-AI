@@ -1,12 +1,12 @@
 // apps/web/app/api/auth/[...nextauth]/route.ts
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import { SupabaseAdapter } from "@auth/supabase-adapter";
+import { PrismaAdapter } from "@auth/prisma-adapter";
+import { prisma } from "@skyler-ai/prisma";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-// Extend the Session type to include accessToken
-
 const handler = NextAuth({
+  adapter: PrismaAdapter(prisma), 
   providers: [
     GoogleProvider({
       clientId: process.env.CLIENT_ID!,
@@ -18,28 +18,24 @@ const handler = NextAuth({
       },
     }),
     CredentialsProvider({
-    name: "Credentials",
-    credentials: {
-      email: { label: "Email", type: "text" },
-      password: { label: "Password", type: "password" },
-    },
-    async authorize(credentials) {
-      const res = await fetch(`${process.env.BACKEND_URL}/api/verify-user`, {
-        method: "POST",
-        body: JSON.stringify(credentials),
-        headers: { "Content-Type": "application/json" },
-      });
+      name: "Credentials",
+      credentials: {
+        email: { label: "Email", type: "text" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        const res = await fetch(`${process.env.BACKEND_URL}/api/verify-user`, {
+          method: "POST",
+          body: JSON.stringify(credentials),
+          headers: { "Content-Type": "application/json" },
+        });
 
-      const user = await res.json();
-      if (res.ok && user) return user;
-      return null;
-    },
-  }),
+        const user = await res.json();
+        if (res.ok && user) return user;
+        return null;
+      },
+    }),
   ],
-  adapter: SupabaseAdapter({
-    url: process.env.SUPABASE_URL!,
-    secret: process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  }),
   session: {
     strategy: "jwt",
   },

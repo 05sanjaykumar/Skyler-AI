@@ -9,7 +9,9 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+       "@skyler-ai/*": ["../../*"],
+      "@skyler-ai/prisma": ["../../packages/prisma/src/client"]
     }
   },
   "include": [
