@@ -29,7 +29,9 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "tailwind-merge": "^3.3.1",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "@skyler-ai/prisma": "workspace:*"
+
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

@@ -105,6 +105,9 @@ importers:
       '@repo/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@skyler-ai/prisma':
+        specifier: workspace:*
+        version: link:../../packages/prisma
       '@supabase/supabase-js':
         specifier: ^2.53.0
         version: 2.53.0
@@ -176,21 +179,6 @@ importers:
         specifier: 5.8.2
         version: 5.8.2
 
-  packages:
-
-    dependencies:
-      '@prisma/client':
-        specifier: ^6.13.0
-        version: 6.13.0(prisma@6.13.0(typescript@5.8.3))(typescript@5.8.3)
-
-    devDependencies:
-      '@types/node':
-        specifier: ^22.15.3
-        version: 22.15.3
-      prisma:
-        specifier: ^6.13.0
-        version: 6.13.0(typescript@5.8.3)
-
   packages/eslint-config:
     devDependencies:
       '@eslint/js':
@@ -226,6 +214,8 @@ importers:
       typescript-eslint:
         specifier: ^8.37.0
         version: 8.37.0(eslint@9.31.0(jiti@2.5.1))(typescript@5.8.2)
+
+  packages/prisma: {}
 
   packages/typescript-config: {}
 
