@@ -9,11 +9,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "@prisma/client": "^6.13.0"
-  },
   "devDependencies": {
-    "@types/node": "^22.15.3",
-    "prisma": "^6.13.0"
+    "@types/node": "^22.15.3"
   }
 }
