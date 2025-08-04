@@ -1,0 +1,5 @@
+{
+  "name": "@skyler-ai/prisma",
+  "version": "0.1.0",
+  "main": "src/client.ts"
+}
