@@ -21,6 +21,7 @@ model User {
   email         String?   @unique
   emailVerified DateTime? // needed for NextAuth adapter
   image         String?   // from OAuth profile
+  hashedPassword String?  // for email/password authentication
   accounts      Account[]
   sessions      Session[]
   createdAt     DateTime  @default(now())
