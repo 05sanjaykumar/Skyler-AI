@@ -32,7 +32,10 @@
     "baseUrl": "./",                                  /* Specify the base directory to resolve non-relative module names. */
     "paths": {
        "@lib/*": ["src/lib/*"],  // optional alias for lib
-      "@routes/*": ["src/routes/*"]
+      "@routes/*": ["src/routes/*"],
+      "@/*": ["./src/*"],
+      "@skyler-ai/*": ["../../*"],
+      "@skyler-ai/prisma": ["../../packages/prisma/src/client"]
     },                                      /* Specify a set of entries that re-map imports to additional lookup locations. */
     // "rootDirs": [],                                   /* Allow multiple folders to be treated as one when resolving modules. */
     // "typeRoots": [],                                  /* Specify multiple folders that act like './node_modules/@types'. */
