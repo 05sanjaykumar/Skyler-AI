@@ -1,5 +1,5 @@
+// apps/web/app/login/page.tsx
 'use client'
-
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -15,6 +15,8 @@ import { Separator } from "@/components/ui/separator"
 import { Mail, Eye, EyeOff } from "lucide-react"
 import { useState } from "react"
 import { signIn } from "next-auth/react"
+import { useEffect } from "react"
+import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 
 export default function Login() {
@@ -22,6 +24,17 @@ export default function Login() {
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
+  const { data: session, status } = useSession()
+
+  useEffect(() => {
+    if (status === "loading") return // Wait for session to load
+    if (status === "authenticated") {
+      router.replace("/dashboard")
+    }
+  }, [status, router])
+
+  if (status === "loading") return <div>Loading...</div>
+
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()

@@ -1,3 +1,4 @@
+// apps/web/app/sigin/page.tsx
 'use client'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -8,6 +9,8 @@ import { Mail, Eye, EyeOff } from "lucide-react"
 import { useState } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import { useEffect } from "react"
+import { useSession } from "next-auth/react"
 
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -15,6 +18,16 @@ export default function SignupPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const router = useRouter()
+  const { data: session, status } = useSession()
+
+  useEffect(() => {
+    if (status === "loading") return // Wait for session to load
+    if (status === "authenticated") {
+      router.replace("/dashboard")
+    }
+  }, [status, router])
+
+  if (status === "loading") return <div>Loading...</div>
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
