@@ -18,6 +18,7 @@ export default function SignupPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const router = useRouter()
+  const [error, setError] = useState("");
   const { data: session, status } = useSession()
 
   useEffect(() => {
@@ -48,6 +49,7 @@ export default function SignupPage() {
       })
     } else {
       const error = await res.json()
+      setError(error.message || "Signup failed");
       console.error("Signup failed:", error)
       // TODO: show error to user
     }
@@ -146,6 +148,7 @@ export default function SignupPage() {
               Log in
             </Button>
           </p>
+          {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
         </CardFooter>
       </Card>
     </div>

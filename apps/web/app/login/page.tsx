@@ -23,6 +23,7 @@ export default function Login() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
+  const [error, setError] = useState("");
   const router = useRouter()
   const { data: session, status } = useSession()
 
@@ -45,7 +46,11 @@ export default function Login() {
       email,
       password
     })
-
+    if (res?.error) {
+      setError(res.error)
+      console.error("Login failed:", res.error)
+      return
+    }
     console.log(res) // Optional: handle errors etc.
   }
 
@@ -154,6 +159,7 @@ export default function Login() {
               Sign in
             </Button>
           </p>
+          {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
         </CardFooter>
       </Card>
     </div>
