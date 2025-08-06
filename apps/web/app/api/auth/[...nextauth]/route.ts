@@ -24,7 +24,7 @@ const handler = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        const res = await fetch(`${process.env.BACKEND_URL}/api/verify-user`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/verify-user`, {
           method: "POST",
           body: JSON.stringify(credentials),
           headers: { "Content-Type": "application/json" },
