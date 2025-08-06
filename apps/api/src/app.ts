@@ -7,6 +7,10 @@ const app = express();
 
 app.use(bodyParser.json());
 
+app.get('/', (_req, res) => {
+  res.send('Hello from TypeScript Express!')
+})
+
 app.post("/api/register", registerUser);
 app.post("/api/verify-user", verifyUser);
 

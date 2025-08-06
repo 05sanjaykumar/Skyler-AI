@@ -9,33 +9,44 @@ import { useState } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
 
-export default function SigninPage() {
+export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false)
+  const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const router = useRouter()
 
-  const handleSignin = async (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    const res = await signIn("credentials", {
-      redirect: true,
-      callbackUrl: "/dashboard",
-      email,
-      password,
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password }),
     })
 
-    // Optional: handle error/success if needed
-    console.log(res)
+    if (res.ok) {
+      // Optionally auto-login
+      await signIn("credentials", {
+        redirect: true,
+        callbackUrl: "/dashboard",
+        email,
+        password,
+      })
+    } else {
+      const error = await res.json()
+      console.error("Signup failed:", error)
+      // TODO: show error to user
+    }
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <Card className="w-full max-w-md shadow-sm border border-gray-200 p-4 rounded-sm">
         <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl font-semibold text-gray-900">Sign in</CardTitle>
+          <CardTitle className="text-2xl font-semibold text-gray-900">Create an account</CardTitle>
           <CardDescription className="text-gray-600">
-            Enter your email and password to access your account
+            Fill in your details to create an account
           </CardDescription>
         </CardHeader>
 
@@ -54,11 +65,23 @@ export default function SigninPage() {
               <Separator className="w-full" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-3 text-gray-500">Or continue with email</span>
+              <span className="bg-white px-3 text-gray-500">Or sign up with email</span>
             </div>
           </div>
 
-          <form className="space-y-4" onSubmit={handleSignin}>
+          <form className="space-y-4" onSubmit={handleSignup}>
+            <div className="space-y-2">
+              <Label htmlFor="name" className="text-gray-700">Name</Label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="Your name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="email" className="text-gray-700">Email</Label>
               <Input
@@ -93,34 +116,15 @@ export default function SigninPage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="remember"
-                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-                <Label htmlFor="remember" className="text-sm text-gray-600">
-                  Remember me
-                </Label>
-              </div>
-              <Button type="button" variant="link" className="px-0 text-sm text-blue-600 hover:text-blue-700">
-                Forgot password?
-              </Button>
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              Sign in
+            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+              Sign up
             </Button>
           </form>
         </CardContent>
 
         <CardFooter className="flex flex-col space-y-4">
           <p className="text-center text-sm text-gray-600">
-            {"Having an account? "}
+            Already have an account?{" "}
             <Button
               variant="link"
               className="px-0 text-sm text-blue-600 hover:text-blue-700"
