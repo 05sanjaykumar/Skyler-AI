@@ -1,95 +1,94 @@
 // apps/web/src/components/top-bar.tsx
-'use client';
+"use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
+import { useSession, signOut } from "next-auth/react";
+import { useTheme } from "next-themes";
+import { 
+  Settings, 
+  Crown, 
+  LogOut, 
+  Sun,
+  Moon,
+  ChevronDown
+} from "lucide-react";
+
+import { Button } from "./ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { motion } from 'framer-motion';
-import { useSession, signOut } from 'next-auth/react';
-import Link from 'next/link';
-import { ModeToggle } from './ui/mode-toggle';
-import { LayoutDashboard, LogOut, Settings } from 'lucide-react';
+} from "./ui/dropdown-menu";
 
-export default function TopBar() {
+const TopBar = () => {
   const { data: session } = useSession();
+  const { theme, setTheme } = useTheme();
 
-  // Extract user's initials for the Avatar fallback
-  const userInitials =
-    session?.user?.name
-      ?.split(' ')
-      .map((n) => n[0])
-      .join('') ?? '';
+  const userName = session?.user?.name || "Guest";
+  const userImage = session?.user?.image;
+
+  const getInitials = (name: string) => {
+    return name.split(" ").map(n => n[0]).join("").toUpperCase();
+  };
 
   return (
-    <motion.header
-      initial={{ y: -100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.5, ease: 'easeInOut' }}
-      className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
-    >
-      <div className="container flex h-16 items-center justify-between">
-        {/* Website Name/Logo */}
-        <Link href="/dashboard" className="text-2xl font-bold">
-          Skyler AI
-        </Link>
+    <header className="border-b bg-background">
+      <div className="flex h-14 items-center justify-between px-6">
+        {/* Logo */}
+        <div className="flex items-center gap-2">
+          <span className="font-semibold">Skyler AI</span>
+        </div>
 
-        {/* Right side controls */}
-        <div className="flex items-center space-x-4">
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button variant="premium" size="sm">
-              Upgrade Plan
-            </Button>
-          </motion.div>
+        {/* Actions */}
+        <div className="flex items-center gap-3">
+          {/* Theme Toggle */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className="h-8 w-8 p-0"
+          >
+            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </Button>
 
-          <ModeToggle />
+          {/* Upgrade */}
+          <Button size="sm" variant="outline">
+            <Crown className="h-4 w-4 mr-1" />
+            Upgrade
+          </Button>
 
-          {session?.user && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                  <Avatar className="cursor-pointer">
-                    <AvatarImage src={session.user.image ?? ''} alt={session.user.name ?? ''} />
-                    <AvatarFallback>{userInitials}</AvatarFallback>
-                  </Avatar>
-                </motion.div>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{session.user.name}</p>
-                    <p className="text-xs leading-none text-muted-foreground">{session.user.email}</p>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard">
-                    <LayoutDashboard className="mr-2 h-4 w-4" />
-                    <span>Dashboard</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/settings">
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Settings</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => signOut()}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
+          {/* User Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="flex items-center gap-2 h-8 px-2">
+                <Avatar className="h-6 w-6">
+                  <AvatarImage src={userImage || ""} />
+                  <AvatarFallback className="text-xs">
+                    {getInitials(userName)}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-sm hidden sm:block">{userName}</span>
+                <ChevronDown className="h-3 w-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem>
+                <Settings className="h-4 w-4 mr-2" />
+                Settings
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => signOut()} className="text-red-600">
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
-    </motion.header>
+    </header>
   );
-}
+};
+
+export default TopBar;
