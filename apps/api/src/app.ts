@@ -1,3 +1,4 @@
+// apps/api/src/app.ts
 import express from "express";
 import bodyParser from "body-parser";
 import { registerUser } from "./routes/auth/register";

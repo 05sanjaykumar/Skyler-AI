@@ -1,3 +1,4 @@
+// apps/api/src/routes/auth/register.ts
 import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import { prisma } from "@skyler-ai/prisma"; // adjust if alias differs
