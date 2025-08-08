@@ -1,7 +1,7 @@
 // apps/web/app/dashboard/page.tsx
 'use client'
 
-import AuthGuard from "@/lib/auth-wrapper"
+
 import { useRouter } from "next/navigation"
 import { Mail, Slack, Trello, FileText } from "lucide-react"
 
@@ -20,7 +20,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <AuthGuard>
+
       <main className="min-h-screen flex flex-col items-center justify-start bg-background px-6 py-10">
         <div className="max-w-4xl w-full">
           <h1 className="text-3xl font-bold mb-2 text-foreground">
@@ -64,6 +64,6 @@ export default function DashboardPage() {
           </section>
         </div>
       </main>
-    </AuthGuard>
+
   )
 }
