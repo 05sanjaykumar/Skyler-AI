@@ -15,6 +15,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum SubscriptionStatus {
+  ACTIVE
+  PAUSED
+  CANCELED
+  EXPIRED
+}
 model User {
   id            String    @id @default(cuid()) // or Int @default(autoincrement())
   name          String?
@@ -27,6 +33,11 @@ model User {
   gmailInstances GmailInstance[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+
+  subscriptionStatus SubscriptionStatus @default(ACTIVE)
+  subscriptionTier String? // like 'free', 'pro', etc.
+  subscriptionStart DateTime? // when the subscription started
+  subscriptionEnd DateTime? // when the subscription ends, if applicable
 }
 
 
@@ -70,6 +81,12 @@ model VerificationToken {
   updatedAt  DateTime @updatedAt
 
   @@unique([identifier, token])
+}
+
+enum InstanceStatus {
+  ACTIVE
+  PAUSED
+  UNPAID
 }
 
 model GmailInstance {
