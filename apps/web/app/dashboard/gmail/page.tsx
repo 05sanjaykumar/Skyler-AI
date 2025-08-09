@@ -2,6 +2,7 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import { Server, PencilLine } from 'lucide-react'
+import { useSession } from "next-auth/react";
 
 type Instance = {
   id: string
@@ -9,8 +10,9 @@ type Instance = {
 }
 
 export default function DashboardPage() {
+  const { data: session, status } = useSession();
   const [instances, setInstances] = useState<Instance[]>([])
-  const [editsLeft, setEditsLeft] = useState(3) // example, fetch from API later
+  const [promptsLeft, setPromptsLeft] = useState(3) // example, fetch from API later
   const [instancesLeft, setInstancesLeft] = useState(1) // example, fetch from API later
   const [newInstanceName, setNewInstanceName] = useState('')
   const [creating, setCreating] = useState(false)
@@ -18,11 +20,12 @@ export default function DashboardPage() {
   const [editName, setEditName] = useState('')
 
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
+  const token = session?.accessToken;
 
   // Helper to get the auth token if using something like JWT
   const getAuthHeaders = () => ({
     'Content-Type': 'application/json',
-    Authorization: `Bearer ${localStorage.getItem('token')}`, // or wherever your token is
+    Authorization: `Bearer ${token}`, // or wherever your token is
   })
 
   useEffect(() => {
@@ -37,7 +40,7 @@ export default function DashboardPage() {
 
         // Optionally fetch quota info, if you have an endpoint
         // For demo, hardcoded values (you can implement your own quota API)
-        setEditsLeft(3)
+        setPromptsLeft(3)
         setInstancesLeft(2)
       } catch (err) {
         console.error(err)
@@ -126,7 +129,7 @@ export default function DashboardPage() {
       <h1 className="text-3xl font-bold mb-6">Your Email Instances</h1>
 
       <div className="flex justify-between mb-4">
-        <div><PencilLine /> Edits left this week: <strong>{editsLeft}</strong></div>
+        <div><PencilLine /> Prompts per month left: <strong>{promptsLeft}</strong></div>
         <div><Server /> Instances left: <strong>{instancesLeft - instances.length}</strong></div>
       </div>
 
