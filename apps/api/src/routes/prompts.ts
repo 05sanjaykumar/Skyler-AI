@@ -5,30 +5,17 @@ import { verifyJWT } from "../middleware/auth";
 
 const router = Router();
 
-const FREE_PROMPT_EDIT_LIMIT = 10;
-
 interface AuthRequest extends Request {
   userId?: string;
 }
 
-// Get prompts for a specific GmailInstance (ownership checked)
-router.get("/instance/:instanceId", verifyJWT, async (req: AuthRequest, res: Response) => {
+// Get all prompts for the user 
+router.get("/", verifyJWT, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!;
-    const { instanceId } = req.params;
-
-    const instance = await prisma.gmailInstance.findUnique({
-      where: { id: instanceId },
-    });
-
-    if (!instance || instance.userId !== userId) {
-      return res.status(404).json({ error: "Instance not found or access denied" });
-    }
-
     const prompts = await prisma.prompt.findMany({
-      where: { gmailInstanceId: instanceId },
+      where: { userId },
     });
-
     res.json(prompts);
   } catch (error) {
     console.error("Get Prompts Error:", error);
@@ -36,28 +23,39 @@ router.get("/instance/:instanceId", verifyJWT, async (req: AuthRequest, res: Res
   }
 });
 
-// Create prompt inside GmailInstance (ownership + limit check)
-router.post("/instance/:instanceId", verifyJWT, async (req: AuthRequest, res: Response) => {
+// Create new prompt (check monthly quota globally)
+router.post("/", verifyJWT, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!;
-    const { instanceId } = req.params;
-    const { content } = req.body;
+    const { content, gmailInstanceId } = req.body;
 
     if (!content || typeof content !== "string") {
       return res.status(400).json({ error: "Prompt content required" });
     }
+    if (!gmailInstanceId || typeof gmailInstanceId !== "string") {
+      return res.status(400).json({ error: "gmailInstanceId is required" });
+    }
 
-    const instance = await prisma.gmailInstance.findUnique({ where: { id: instanceId } });
-    if (!instance || instance.userId !== userId) {
-      return res.status(404).json({ error: "Instance not found or access denied" });
+    // Check user prompt quota
+    const userQuota = await prisma.userPromptQuota.findUnique({ where: { userId } });
+    if (userQuota && userQuota.usedQuota >= userQuota.monthlyQuota) {
+      return res.status(403).json({ error: "Prompt quota exceeded for this month" });
     }
 
     const prompt = await prisma.prompt.create({
       data: {
         content,
-        gmailInstanceId: instanceId,
+        userId,
       },
     });
+
+    // Increment usedQuota after prompt creation
+    if (userQuota) {
+      await prisma.userPromptQuota.update({
+        where: { userId },
+        data: { usedQuota: { increment: 1 } },
+      });
+    }
 
     res.status(201).json(prompt);
   } catch (error) {
@@ -66,7 +64,7 @@ router.post("/instance/:instanceId", verifyJWT, async (req: AuthRequest, res: Re
   }
 });
 
-// Update prompt content & increment editCount (with edit limit)
+// Update prompt content & increment editCount (with global edit limit)
 router.patch("/:id", verifyJWT, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!;
@@ -77,17 +75,13 @@ router.patch("/:id", verifyJWT, async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: "New prompt content required" });
     }
 
-    // Fetch prompt with instance relation to check ownership
-    const prompt = await prisma.prompt.findUnique({
-      where: { id },
-      include: { gmailInstance: true },
-    });
-
-    if (!prompt || prompt.gmailInstance.userId !== userId) {
+    const prompt = await prisma.prompt.findUnique({ where: { id } });
+    if (!prompt || prompt.userId !== userId) {
       return res.status(404).json({ error: "Prompt not found or access denied" });
     }
 
-    if (prompt.editCount >= FREE_PROMPT_EDIT_LIMIT) {
+    const userQuota = await prisma.userPromptQuota.findUnique({ where: { userId } });
+    if (prompt.editCount >= (userQuota?.monthlyQuota ?? 10)) {
       return res.status(403).json({ error: "Prompt edit limit reached" });
     }
 
@@ -99,6 +93,14 @@ router.patch("/:id", verifyJWT, async (req: AuthRequest, res: Response) => {
       },
     });
 
+    // Increment usedQuota for edits
+    if (userQuota) {
+      await prisma.userPromptQuota.update({
+        where: { userId },
+        data: { usedQuota: { increment: 1 } },
+      });
+    }
+
     res.json(updated);
   } catch (error) {
     console.error("Update Prompt Error:", error);
@@ -106,22 +108,19 @@ router.patch("/:id", verifyJWT, async (req: AuthRequest, res: Response) => {
   }
 });
 
-// Delete prompt (ownership check)
+// Delete prompt (ownership check, no quota adjustment here)
 router.delete("/:id", verifyJWT, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!;
     const { id } = req.params;
 
-    const prompt = await prisma.prompt.findUnique({
-      where: { id },
-      include: { gmailInstance: true },
-    });
-
-    if (!prompt || prompt.gmailInstance.userId !== userId) {
+    const prompt = await prisma.prompt.findUnique({ where: { id } });
+    if (!prompt || prompt.userId !== userId) {
       return res.status(404).json({ error: "Prompt not found or access denied" });
     }
 
     await prisma.prompt.delete({ where: { id } });
+
     res.json({ success: true });
   } catch (error) {
     console.error("Delete Prompt Error:", error);

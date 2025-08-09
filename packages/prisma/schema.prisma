@@ -94,6 +94,7 @@ model GmailInstance {
   id        String   @id @default(cuid())
   userId    String
   name      String
+  status    InstanceStatus @default(ACTIVE)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -103,11 +104,23 @@ model GmailInstance {
 model Prompt {
   id            String   @id @default(cuid())
   userId    String 
-  gmailInstanceId String
   content       String
   editCount     Int      @default(0)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id])
+}
+
+model UserInstanceQuota {
+  userId       String   @id
+  maxInstances Int      // total instances allowed for plan
+  currentCount Int      // how many currently created
+}
+
+model UserPromptQuota {
+  userId         String   @id
+  monthlyQuota   Int      // total allowed edits/creates per month
+  usedQuota      Int      // how many used so far this month
+  lastReset      DateTime // when quota was last reset
 }
