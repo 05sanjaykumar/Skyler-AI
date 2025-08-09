@@ -1,42 +1,76 @@
 // apps/web/app/dashboard/gmail/page.tsx
 'use client'
 import React, { useState, useEffect } from 'react'
-import { Server, PencilLine } from 'lucide-react';
+import { Server, PencilLine } from 'lucide-react'
 
 type Instance = {
   id: string
   name: string
 }
 
-const MOCK_INSTANCES: Instance[] = [
-  { id: '1', name: 'Bug Reports' },
-  { id: '2', name: 'Feature Requests' },
-]
-
 export default function DashboardPage() {
   const [instances, setInstances] = useState<Instance[]>([])
-  const [editsLeft, setEditsLeft] = useState(3) // example free quota
-  const [instancesLeft, setInstancesLeft] = useState(1) // free tier
+  const [editsLeft, setEditsLeft] = useState(3) // example, fetch from API later
+  const [instancesLeft, setInstancesLeft] = useState(1) // example, fetch from API later
   const [newInstanceName, setNewInstanceName] = useState('')
   const [creating, setCreating] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editName, setEditName] = useState('')
 
-  useEffect(() => {
-    // TODO: fetch instances & quota from API
-    setInstances(MOCK_INSTANCES)
-  }, [])
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
 
-  const handleCreate = () => {
+  // Helper to get the auth token if using something like JWT
+  const getAuthHeaders = () => ({
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${localStorage.getItem('token')}`, // or wherever your token is
+  })
+
+  useEffect(() => {
+    async function fetchInstancesAndQuota() {
+      try {
+        const res = await fetch(`${backendUrl}/api/instances`, {
+          headers: getAuthHeaders(),
+        })
+        if (!res.ok) throw new Error('Failed to fetch instances')
+        const data: Instance[] = await res.json()
+        setInstances(data)
+
+        // Optionally fetch quota info, if you have an endpoint
+        // For demo, hardcoded values (you can implement your own quota API)
+        setEditsLeft(3)
+        setInstancesLeft(2)
+      } catch (err) {
+        console.error(err)
+      }
+    }
+    fetchInstancesAndQuota()
+  }, [backendUrl])
+
+  const handleCreate = async () => {
     if (!newInstanceName.trim()) return
     if (instances.length >= instancesLeft) {
       alert('Instance limit reached for your plan')
       return
     }
-    // TODO: Call API to create instance
-    setInstances((prev) => [...prev, { id: Date.now().toString(), name: newInstanceName }])
-    setNewInstanceName('')
-    setCreating(false)
+    try {
+      const res = await fetch(`${backendUrl}/api/instances`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ name: newInstanceName }),
+      })
+      if (!res.ok) {
+        const error = await res.json()
+        alert(error.error || 'Failed to create instance')
+        return
+      }
+      const newInstance = await res.json()
+      setInstances((prev) => [...prev, newInstance])
+      setNewInstanceName('')
+      setCreating(false)
+    } catch (err) {
+      console.error(err)
+      alert('Server error while creating instance')
+    }
   }
 
   const startEditing = (id: string, name: string) => {
@@ -44,19 +78,47 @@ export default function DashboardPage() {
     setEditName(name)
   }
 
-  const saveEdit = (id: string) => {
+  const saveEdit = async (id: string) => {
     if (!editName.trim()) return
-    // TODO: Call API to update instance name and deduct edits quota
-    setInstances((prev) =>
-      prev.map((inst) => (inst.id === id ? { ...inst, name: editName } : inst))
-    )
-    setEditingId(null)
+    try {
+      const res = await fetch(`${backendUrl}/api/instances/${id}`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ name: editName }),
+      })
+      if (!res.ok) {
+        const error = await res.json()
+        alert(error.error || 'Failed to update instance')
+        return
+      }
+      const updated = await res.json()
+      setInstances((prev) =>
+        prev.map((inst) => (inst.id === id ? updated : inst))
+      )
+      setEditingId(null)
+    } catch (err) {
+      console.error(err)
+      alert('Server error while updating instance')
+    }
   }
 
-  const deleteInstance = (id: string) => {
+  const deleteInstance = async (id: string) => {
     if (!confirm('Delete this instance?')) return
-    // TODO: Call API to delete instance
-    setInstances((prev) => prev.filter((inst) => inst.id !== id))
+    try {
+      const res = await fetch(`${backendUrl}/api/instances/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      })
+      if (!res.ok) {
+        const error = await res.json()
+        alert(error.error || 'Failed to delete instance')
+        return
+      }
+      setInstances((prev) => prev.filter((inst) => inst.id !== id))
+    } catch (err) {
+      console.error(err)
+      alert('Server error while deleting instance')
+    }
   }
 
   return (
@@ -65,7 +127,7 @@ export default function DashboardPage() {
 
       <div className="flex justify-between mb-4">
         <div><PencilLine /> Edits left this week: <strong>{editsLeft}</strong></div>
-        <div> <Server /> Instances left: <strong>{instancesLeft - instances.length}</strong></div>
+        <div><Server /> Instances left: <strong>{instancesLeft - instances.length}</strong></div>
       </div>
 
       <div className="mb-6">
