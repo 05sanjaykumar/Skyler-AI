@@ -20,15 +20,17 @@ export default function DashboardPage() {
   const [editName, setEditName] = useState('')
 
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
-  const token = session?.accessToken;
+  const token = session?.appToken;
 
   // Helper to get the auth token if using something like JWT
+  console.log("Session token:", token);
   const getAuthHeaders = () => ({
     'Content-Type': 'application/json',
     Authorization: `Bearer ${token}`, // or wherever your token is
   })
 
   useEffect(() => {
+    console.log("Backend URL", backendUrl);
     async function fetchInstancesAndQuota() {
       try {
         const res = await fetch(`${backendUrl}/api/instances`, {
@@ -59,6 +61,7 @@ export default function DashboardPage() {
       const res = await fetch(`${backendUrl}/api/instances`, {
         method: 'POST',
         headers: getAuthHeaders(),
+        credentials: "include",
         body: JSON.stringify({ name: newInstanceName }),
       })
       if (!res.ok) {
@@ -86,6 +89,7 @@ export default function DashboardPage() {
     try {
       const res = await fetch(`${backendUrl}/api/instances/${id}`, {
         method: 'PATCH',
+        credentials: "include",
         headers: getAuthHeaders(),
         body: JSON.stringify({ name: editName }),
       })
@@ -110,6 +114,7 @@ export default function DashboardPage() {
     try {
       const res = await fetch(`${backendUrl}/api/instances/${id}`, {
         method: 'DELETE',
+        credentials: "include",
         headers: getAuthHeaders(),
       })
       if (!res.ok) {
