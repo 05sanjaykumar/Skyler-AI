@@ -31,6 +31,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   gmailInstances GmailInstance[]
+  prompts       Prompt[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -97,16 +98,16 @@ model GmailInstance {
   updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id])
-  prompts Prompt[]
 }
 
 model Prompt {
   id            String   @id @default(cuid())
+  userId    String 
   gmailInstanceId String
   content       String
   editCount     Int      @default(0)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  gmailInstance GmailInstance @relation(fields: [gmailInstanceId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 }
