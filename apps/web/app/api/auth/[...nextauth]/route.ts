@@ -82,6 +82,47 @@ const handler = NextAuth({
       session.googleAccessToken = token.googleAccessToken as string;
       return session;
     },
+    async signIn({ user, account }) {
+      // skip linking if email is missing
+      if (!user.email) return true;
+
+      const existingUser = await prisma.user.findUnique({
+        where: { email: user.email },
+      });
+
+      if (existingUser && account) {
+        await prisma.account.upsert({
+          where: {
+            provider_providerAccountId: {
+              provider: account.provider,
+              providerAccountId: account.providerAccountId,
+            },
+          },
+          update: {
+            userId: existingUser.id,
+            access_token: account.access_token ?? undefined,
+            refresh_token: account.refresh_token ?? undefined,
+            expires_at: account.expires_at ?? undefined,
+          },
+          create: {
+            userId: existingUser.id,
+            provider: account.provider,
+            providerAccountId: account.providerAccountId,
+            type: account.type,
+            access_token: account.access_token ?? undefined,
+            refresh_token: account.refresh_token ?? undefined,
+            expires_at: account.expires_at ?? undefined,
+            id_token: account.id_token ?? undefined,
+            token_type: account.token_type ?? undefined,
+            scope: account.scope ?? undefined,
+            session_state: account.session_state ?? undefined,
+          },
+        });
+      }
+
+      return true;
+    }
+
   },
   pages: {
     signIn: "/login",
