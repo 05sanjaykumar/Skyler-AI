@@ -1,7 +1,7 @@
 // apps/api/src/config/subscriptions.ts
 export const subscriptionConfig = {
   free: {
-    maxInstances: 1,
+    maxInstances: 2,
     monthlyPrompts: 15,
   },
   pro: {
