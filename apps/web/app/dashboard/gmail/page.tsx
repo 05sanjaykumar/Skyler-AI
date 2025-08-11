@@ -87,7 +87,7 @@ export default function DashboardPage() {
   const saveEdit = async (id: string) => {
     if (!editName.trim()) return
     try {
-      const res = await fetch(`${backendUrl}/api/instances/${id}`, {
+      const res = await fetch(`${backendUrl}/api/instances/${id}/name`, {
         method: 'PATCH',
         credentials: "include",
         headers: getAuthHeaders(),
@@ -172,7 +172,7 @@ export default function DashboardPage() {
         {instances.map(({ id, name }) => (
           <li
             key={id}
-            className="flex items-center justify-between border p-3 rounded mb-2 hover:bg-gray-50"
+            className="flex items-center justify-between border p-3 rounded mb-2 hover:bg-gray-50  dark:hover:bg-gray-700"
           >
             {editingId === id ? (
               <>
