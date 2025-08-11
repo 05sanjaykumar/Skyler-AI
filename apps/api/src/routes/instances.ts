@@ -28,7 +28,7 @@ router.get("/", verifyJWT, async (req: AuthRequest, res: Response) => {
 router.post("/", verifyJWT, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!;
-    const { name, promptName } = req.body;
+    const { name } = req.body;
 
     if (!name || typeof name !== "string") {
       return res.status(400).json({ error: "Instance name required" });
@@ -45,11 +45,11 @@ router.post("/", verifyJWT, async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ error: "Instance limit reached" });
     }
 
-    // Create instance
+    // Create instance (no prompt assigned yet)
     const newInstance = await prisma.aIInstance.create({
       data: {
         name,
-        promptName: promptName || null,
+        promptName: null,
         userId,
       },
     });
@@ -61,12 +61,16 @@ router.post("/", verifyJWT, async (req: AuthRequest, res: Response) => {
   }
 });
 
-// Update AIInstance (rename, set prompt, etc.)
-router.patch("/:id", verifyJWT, async (req: AuthRequest, res: Response) => {
+// Rename AIInstance
+router.patch("/:id/name", verifyJWT, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!;
     const { id } = req.params;
-    const { name, promptName } = req.body;
+    const { name } = req.body;
+
+    if (!name || typeof name !== "string") {
+      return res.status(400).json({ error: "New instance name required" });
+    }
 
     const instance = await prisma.aIInstance.findUnique({ where: { id } });
     if (!instance || instance.userId !== userId) {
@@ -75,18 +79,44 @@ router.patch("/:id", verifyJWT, async (req: AuthRequest, res: Response) => {
 
     const updated = await prisma.aIInstance.update({
       where: { id },
-      data: {
-        ...(name && { name }),
-        ...(promptName !== undefined && { promptName }),
-      },
+      data: { name },
     });
 
     res.json(updated);
   } catch (error) {
-    console.error("Update Instance Error:", error);
+    console.error("Rename Instance Error:", error);
     res.status(500).json({ error: "Server error" });
   }
 });
+
+// Assign or change prompt
+router.patch("/:id/prompt", verifyJWT, async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId!;
+    const { id } = req.params;
+    const { promptName } = req.body;
+
+    if (!promptName || typeof promptName !== "string") {
+      return res.status(400).json({ error: "Prompt name required" });
+    }
+
+    const instance = await prisma.aIInstance.findUnique({ where: { id } });
+    if (!instance || instance.userId !== userId) {
+      return res.status(404).json({ error: "Instance not found" });
+    }
+
+    const updated = await prisma.aIInstance.update({
+      where: { id },
+      data: { promptName },
+    });
+
+    res.json(updated);
+  } catch (error) {
+    console.error("Update Prompt Error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 
 // Update AIInstance status
 router.patch("/:id/status", verifyJWT, async (req: AuthRequest, res: Response) => {
