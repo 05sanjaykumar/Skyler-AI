@@ -2,6 +2,7 @@
 import { Router, Request, Response } from "express";
 import { prisma } from "@skyler-ai/prisma";
 import { verifyJWT } from "../middleware/auth";
+import { subscriptionConfig } from "../config/subscriptions";
 
 const router = Router();
 
@@ -9,11 +10,11 @@ interface AuthRequest extends Request {
   userId?: string;
 }
 
-// Get all GmailInstances for user
+// Get all AIInstances for user
 router.get("/", verifyJWT, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!;
-    const instances = await prisma.gmailInstance.findMany({
+    const instances = await prisma.aIInstance.findMany({
       where: { userId },
     });
     res.json(instances);
@@ -23,32 +24,35 @@ router.get("/", verifyJWT, async (req: AuthRequest, res: Response) => {
   }
 });
 
-// Create new GmailInstance with quota check
+// Create new AIInstance with quota check
 router.post("/", verifyJWT, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!;
-    const { name } = req.body;
+    const { name, promptName } = req.body;
+
     if (!name || typeof name !== "string") {
       return res.status(400).json({ error: "Instance name required" });
     }
 
-    // Check instance quota
-    const quota = await prisma.userInstanceQuota.findUnique({ where: { userId } });
-    if (quota && quota.currentCount >= quota.maxInstances) {
+    // Get user + plan
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const plan = subscriptionConfig[user.subscriptionTier.toLowerCase() as keyof typeof subscriptionConfig];
+    const instanceCount = await prisma.aIInstance.count({ where: { userId } });
+
+    if (instanceCount >= plan.maxInstances) {
       return res.status(403).json({ error: "Instance limit reached" });
     }
 
-    const newInstance = await prisma.gmailInstance.create({
-      data: { name, userId },
+    // Create instance
+    const newInstance = await prisma.aIInstance.create({
+      data: {
+        name,
+        promptName: promptName || null,
+        userId,
+      },
     });
-
-    // Update current count after creation
-    if (quota) {
-      await prisma.userInstanceQuota.update({
-        where: { userId },
-        data: { currentCount: { increment: 1 } },
-      });
-    }
 
     res.status(201).json(newInstance);
   } catch (error) {
@@ -57,25 +61,24 @@ router.post("/", verifyJWT, async (req: AuthRequest, res: Response) => {
   }
 });
 
-// Rename GmailInstance (ownership check)
+// Update AIInstance (rename, set prompt, etc.)
 router.patch("/:id", verifyJWT, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!;
     const { id } = req.params;
-    const { name } = req.body;
+    const { name, promptName } = req.body;
 
-    if (!name || typeof name !== "string") {
-      return res.status(400).json({ error: "New instance name required" });
-    }
-
-    const instance = await prisma.gmailInstance.findUnique({ where: { id } });
+    const instance = await prisma.aIInstance.findUnique({ where: { id } });
     if (!instance || instance.userId !== userId) {
       return res.status(404).json({ error: "Instance not found" });
     }
 
-    const updated = await prisma.gmailInstance.update({
+    const updated = await prisma.aIInstance.update({
       where: { id },
-      data: { name },
+      data: {
+        ...(name && { name }),
+        ...(promptName !== undefined && { promptName }),
+      },
     });
 
     res.json(updated);
@@ -85,7 +88,7 @@ router.patch("/:id", verifyJWT, async (req: AuthRequest, res: Response) => {
   }
 });
 
-// Update GmailInstance status
+// Update AIInstance status
 router.patch("/:id/status", verifyJWT, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!;
@@ -96,12 +99,12 @@ router.patch("/:id/status", verifyJWT, async (req: AuthRequest, res: Response) =
       return res.status(400).json({ error: "Invalid status" });
     }
 
-    const instance = await prisma.gmailInstance.findUnique({ where: { id } });
+    const instance = await prisma.aIInstance.findUnique({ where: { id } });
     if (!instance || instance.userId !== userId) {
       return res.status(404).json({ error: "Instance not found" });
     }
 
-    const updated = await prisma.gmailInstance.update({
+    const updated = await prisma.aIInstance.update({
       where: { id },
       data: { status },
     });
@@ -113,27 +116,18 @@ router.patch("/:id/status", verifyJWT, async (req: AuthRequest, res: Response) =
   }
 });
 
-// Delete GmailInstance (ownership check + decrement quota)
+// Delete AIInstance
 router.delete("/:id", verifyJWT, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!;
     const { id } = req.params;
 
-    const instance = await prisma.gmailInstance.findUnique({ where: { id } });
+    const instance = await prisma.aIInstance.findUnique({ where: { id } });
     if (!instance || instance.userId !== userId) {
       return res.status(404).json({ error: "Instance not found" });
     }
 
-    await prisma.gmailInstance.delete({ where: { id } });
-
-    // Decrement currentCount in quota if exists
-    const quota = await prisma.userInstanceQuota.findUnique({ where: { userId } });
-    if (quota && quota.currentCount > 0) {
-      await prisma.userInstanceQuota.update({
-        where: { userId },
-        data: { currentCount: { decrement: 1 } },
-      });
-    }
+    await prisma.aIInstance.delete({ where: { id } });
 
     res.json({ success: true });
   } catch (error) {
