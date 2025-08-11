@@ -15,7 +15,7 @@ export default function InstanceDetailPage({ params }: { params: Promise<{ insta
 
     const fetchInstance = async () => {
       setLoading(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/instances/${instanceId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/instances/${instanceId}`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session?.appToken || ""}`,
