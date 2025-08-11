@@ -89,7 +89,7 @@ export default function DashboardPage() {
   const saveEdit = async (id: string) => {
     if (!editName.trim()) return
     try {
-      const res = await fetch(`${backendUrl}/api/instances/${id}/name`, {
+      const res = await fetch(`${backendUrl}/api/instances/${id}`, {
         method: 'PATCH',
         credentials: "include",
         headers: getAuthHeaders(),

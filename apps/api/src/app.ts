@@ -4,6 +4,7 @@ import bodyParser from "body-parser";
 import { registerUser } from "./routes/auth/register";
 import { verifyUser } from "./routes/auth/verify-user";
 import instancesRouter from "./routes/instances";
+import promptRouter from "./routes/prompt";
 import cors from "cors";
 import dotenv from "dotenv";
 dotenv.config();
@@ -25,6 +26,7 @@ app.get('/', (_req, res) => {
 app.post("/api/register", registerUser);
 app.post("/api/verify-user", verifyUser);
 app.use("/api/instances", instancesRouter);
+app.use("/api/prompt", promptRouter);
 
 
 export default app;
