@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react'
 import { Server, PencilLine } from 'lucide-react'
 import { useSession } from "next-auth/react";
+import Link from "next/link";
+
 
 type Instance = {
   id: string
@@ -174,23 +176,24 @@ export default function DashboardPage() {
             key={id}
             className="flex items-center justify-between border p-3 rounded mb-2 hover:bg-gray-50  dark:hover:bg-gray-700"
           >
+           <Link href={`/dashboard/gmail/${id}`}>
             {editingId === id ? (
               <>
                 <input
                   className="border p-1 rounded flex-grow"
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                />
+                  />
                 <button
                   onClick={() => saveEdit(id)}
                   className="ml-2 bg-blue-500 text-white px-3 py-1 rounded"
-                >
+                  >
                   Save
                 </button>
                 <button
                   onClick={() => setEditingId(null)}
                   className="ml-2 text-gray-600 hover:text-black"
-                >
+                  >
                   Cancel
                 </button>
               </>
@@ -201,18 +204,19 @@ export default function DashboardPage() {
                   <button
                     onClick={() => startEditing(id, name)}
                     className="mr-3 text-blue-600 hover:underline"
-                  >
+                    >
                     Rename
                   </button>
                   <button
                     onClick={() => deleteInstance(id)}
                     className="text-red-600 hover:underline"
-                  >
+                    >
                     Delete
                   </button>
                 </div>
               </>
             )}
+            </Link>
           </li>
         ))}
       </ul>
