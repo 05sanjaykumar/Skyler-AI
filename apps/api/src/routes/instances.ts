@@ -24,6 +24,27 @@ router.get("/", verifyJWT, async (req: AuthRequest, res: Response) => {
   }
 });
 
+// GET instance by ID
+router.get("/:id", verifyJWT, async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId!;
+    const { id } = req.params;
+
+    const instance = await prisma.aIInstance.findUnique({
+      where: { id },
+    });
+
+    if (!instance || instance.userId !== userId) {
+      return res.status(404).json({ error: "Instance not found" });
+    }
+    console.log("Fetched instance from backend :", instance);
+    res.json(instance);
+  } catch (error) {
+    console.error("Get Instance Error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 // Create new AIInstance with quota check
 router.post("/", verifyJWT, async (req: AuthRequest, res: Response) => {
   try {

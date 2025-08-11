@@ -1,25 +1,39 @@
 // apps/web/app/dashboard/gmail/[instanceId]/page.tsx
+"use client";
 
-type InstancePageProps = {
-  params: {
-    instanceId: string;
-  };
-};
+import { use, useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 
-export default async function InstanceDetailPage({ params }: InstancePageProps) {
-  const { instanceId } =await params;
+export default function InstanceDetailPage({ params }: { params: Promise<{ instanceId: string }> }) {
+  const { instanceId } = use(params);
+  const [instance, setInstance] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const { data: session, status } = useSession();
 
-  // Fetch that specific instance
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}/instances/${instanceId}`,
-    { cache: "no-store" }
-  );
+  useEffect(() => {
+    if (status !== "authenticated") return; // wait for auth
 
-  if (!res.ok) {
-    return <div>Instance not found</div>;
-  }
+    const fetchInstance = async () => {
+      setLoading(true);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/instances/${instanceId}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.appToken || ""}`,
+        },
+        credentials: "include", // uncomment if backend uses cookies
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setInstance(data);
+      }
+      setLoading(false);
+    };
 
-  const instance = await res.json();
+    fetchInstance();
+  }, [instanceId, session?.appToken, status]);
+
+  if (loading) return <div>Loading...</div>;
+  if (!instance) return <div>Instance not found</div>;
 
   return (
     <div>

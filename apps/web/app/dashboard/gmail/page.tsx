@@ -25,7 +25,6 @@ export default function DashboardPage() {
   const token = session?.appToken;
 
   // Helper to get the auth token if using something like JWT
-  console.log("Session token:", token);
   const getAuthHeaders = () => ({
     'Content-Type': 'application/json',
     Authorization: `Bearer ${token}`, // or wherever your token is
@@ -40,6 +39,7 @@ export default function DashboardPage() {
         })
         if (!res.ok) throw new Error('Failed to fetch instances')
         const data: Instance[] = await res.json()
+        console.log("Fetched instances:", data)
         setInstances(data)
 
         // Optionally fetch quota info, if you have an endpoint
@@ -89,7 +89,7 @@ export default function DashboardPage() {
   const saveEdit = async (id: string) => {
     if (!editName.trim()) return
     try {
-      const res = await fetch(`${backendUrl}/api/instances/${id}`, {
+      const res = await fetch(`${backendUrl}/api/instances/${id}/name`, {
         method: 'PATCH',
         credentials: "include",
         headers: getAuthHeaders(),
@@ -146,7 +146,7 @@ export default function DashboardPage() {
             <input
               type="text"
               placeholder="New instance name"
-              className="border p-2 rounded flex-grow"
+              className="border p-2 rounded flex-grow dark:text-black"
               value={newInstanceName}
               onChange={(e) => setNewInstanceName(e.target.value)}
             />
@@ -176,11 +176,10 @@ export default function DashboardPage() {
             key={id}
             className="flex items-center justify-between border p-3 rounded mb-2 hover:bg-gray-50  dark:hover:bg-gray-700"
           >
-           <Link href={`/dashboard/gmail/${id}`}>
             {editingId === id ? (
               <>
                 <input
-                  className="border p-1 rounded flex-grow"
+                  className="border p-1 rounded flex-grow dark:text-black"
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
                   />
@@ -199,7 +198,9 @@ export default function DashboardPage() {
               </>
             ) : (
               <>
-                <span>{name}</span>
+                <Link href={`/dashboard/gmail/${id}`}>
+                  <span>{name}</span>
+                </Link>
                 <div>
                   <button
                     onClick={() => startEditing(id, name)}
@@ -216,7 +217,6 @@ export default function DashboardPage() {
                 </div>
               </>
             )}
-            </Link>
           </li>
         ))}
       </ul>
