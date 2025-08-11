@@ -26,11 +26,10 @@ export default function PromptSection({ instance }: { instance: any }) {
   return (
     <div>
       <h2 className="text-xl font-semibold mb-2">Prompt</h2>
-      <input
-        type="text"
+      <textarea
         value={promptName}
         onChange={(e) => setPromptName(e.target.value)}
-        className="border p-2 rounded w-full mb-2"
+        className="border p-2 rounded w-full mb-2 dark:text-white dark:bg-black"
         placeholder="Set prompt name"
       />
       <button
