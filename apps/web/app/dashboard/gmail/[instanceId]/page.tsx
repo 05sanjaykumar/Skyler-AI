@@ -77,14 +77,14 @@ export default function InstanceDetailPage({ params }: { params: Promise<{ insta
   if (!instance) return <div>Instance not found</div>;
 
   return (
-    <div className="flex gap-6 h-[80vh] p-4">
+    <div className="flex flex-col md:flex-row h-screen">
       {/* Left side: Prompt + Emails */}
-      <div className="flex-1 overflow-y-auto border p-4 rounded shadow">
+      <div className="w-full md:w-3/5 p-4 border-r border-gray-300 overflow-auto">
         <h1 className="text-2xl font-bold mb-4">{instance.name}</h1>
 
         <PromptSection instance={instance} />
 
-        <div className="mt-8">
+        <div className="mt-8 border-2 border-black p-2 rounded-sm dark:border-white">
           <h2 className="text-xl font-semibold mb-2">Emails</h2>
           {emailsLoading ? (
             <p>Loading emails...</p>
@@ -99,14 +99,14 @@ export default function InstanceDetailPage({ params }: { params: Promise<{ insta
       </div>
 
       {/* Right side: Email Detail + Reply */}
-      <div className="w-[400px] flex flex-col border p-4 rounded shadow overflow-y-auto">
+      <div className="w-full md:w-3/5 p-4 overflow-auto flex flex-col">
         {selectedEmail ? (
           <>
             <EmailDetail email={selectedEmail} />
             <ReplySection instanceId={instanceId} email={selectedEmail} />
           </>
         ) : (
-          <p>Select an email to view details and reply</p>
+          <div className="text-center text-gray-500 mt-10">Select an email to view details</div>
         )}
       </div>
     </div>
