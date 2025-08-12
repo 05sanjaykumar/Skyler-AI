@@ -4,10 +4,23 @@
 import { useSession } from "next-auth/react";
 
 type Email = {
+  payload: {
+    headers: {
+      name: string;
+      value: string;
+    }[];
+  };
+  snippet: string;
   id: string;
   subject: string;
   body: string;
 };
+
+function getHeader(headers: any[], name: string) {
+  const header = headers.find((h) => h.name.toLowerCase() === name.toLowerCase());
+  return header ? header.value : null;
+}
+
 
 export default function EmailsSection({
   emails,
@@ -36,21 +49,32 @@ export default function EmailsSection({
   if (emails.length === 0) return <p>No emails found.</p>;
 
   return (
-    <ul className="space-y-2 max-h-[300px] overflow-y-auto">
-      {emails.map((email) => (
-        <li
-          key={email.id}
-          className="flex justify-between items-center cursor-pointer border p-3 rounded hover:bg-gray-100"
-        >
-          <span onClick={() => onSelect(email)}>{email.subject}</span>
-          <button
-            onClick={() => deleteEmail(email.id)}
-            className="text-red-600 hover:underline"
-          >
-            Delete
-          </button>
-        </li>
-      ))}
-    </ul>
+    <ul className="divide-y max-h-[410px] divide-gray-200 dark:divide-gray-700 rounded-lg overflow-y-auto border border-gray-200 dark:border-gray-700">
+  {emails.map((email) => (
+    <li
+      key={email.id}
+      className="p-4 flex justify-between items-start cursor-pointer bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+    >
+      <div className="flex-1" onClick={() => onSelect(email)}>
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
+          {getHeader(email.payload.headers, "Subject") || "(No Subject)"}
+        </h3>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
+          {email.snippet || email.body}
+        </p>
+      </div>
+
+      <button
+        onClick={(e) => {
+          e.stopPropagation(); // prevent triggering onSelect
+          deleteEmail(email.id);
+        }}
+        className="ml-4 text-xs text-red-500 hover:text-red-600 transition-colors"
+      >
+        Delete
+      </button>
+    </li>
+  ))}
+</ul>
   );
 }

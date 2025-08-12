@@ -55,7 +55,7 @@ export default function InstanceDetailPage({ params }: { params: Promise<{ insta
 
     const fetchEmails = async () => {
       setEmailsLoading(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/instances/${instanceId}/emails`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/gmail/pull/${instanceId}`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session?.appToken || ""}`,
@@ -65,7 +65,8 @@ export default function InstanceDetailPage({ params }: { params: Promise<{ insta
 
       if (res.ok) {
         const data = await res.json();
-        setEmails(data);
+        setEmails(data.messages);
+        console.log(data.messages)
       }
       setEmailsLoading(false);
     };

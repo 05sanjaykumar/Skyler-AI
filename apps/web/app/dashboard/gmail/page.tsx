@@ -34,7 +34,6 @@ export default function DashboardPage() {
     console.log("Backend URL", backendUrl);
     async function fetchInstancesAndQuota() {
       try {
-        console.log('session token: ',token)
         const res = await fetch(`${backendUrl}/api/instances`, {
           headers: getAuthHeaders(),
         })
