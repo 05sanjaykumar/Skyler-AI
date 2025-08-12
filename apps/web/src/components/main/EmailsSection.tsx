@@ -21,6 +21,11 @@ function getHeader(headers: any[], name: string) {
   return header ? header.value : null;
 }
 
+function trimText(text: string, maxLength: number) {
+  if (!text) return "";
+  return text.length > maxLength ? text.slice(0, maxLength) + "…" : text;
+}
+
 
 export default function EmailsSection({
   emails,
@@ -57,7 +62,7 @@ export default function EmailsSection({
     >
       <div className="flex-1" onClick={() => onSelect(email)}>
         <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
-          {getHeader(email.payload.headers, "Subject") || "(No Subject)"}
+          {trimText(getHeader(email.payload.headers, "Subject") || "(No Subject)", 77)}
         </h3>
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
           {email.snippet || email.body}

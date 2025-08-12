@@ -14,6 +14,8 @@ type Email = {
   id: string;
   subject: string;
   body: string;
+  payload: any;
+  snippet: string;
 };
 
 export default function InstanceDetailPage({ params }: { params: Promise<{ instanceId: string }> }) {
@@ -81,7 +83,7 @@ export default function InstanceDetailPage({ params }: { params: Promise<{ insta
     <div className="flex flex-col md:flex-row h-screen">
       {/* Left side: Prompt + Emails */}
       <div className="w-full md:w-3/5 p-4 border-r border-gray-300 overflow-auto">
-        <h1 className="text-2xl font-bold mb-4">{instance.name}</h1>
+        <h1 className="text-2xl font-bold mb-4 uppercase">{instance.name} INSTANCE</h1>
 
         <PromptSection instance={instance} />
 
