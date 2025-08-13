@@ -31,6 +31,17 @@ function extractPlainText(payload: any): string {
   return ""; // fallback
 }
 
+function generateAIContent(payload: any, fallbackSnippet: string) {
+  let text = extractPlainText(payload);
+
+  // If empty, fallback to snippet
+  if (!text) return fallbackSnippet || "";
+
+  // Take only first 500–1000 characters for AI to save space
+  return text.length > 1000 ? text.slice(0, 1000) + "..." : text;
+}
+
+
 
 // GET /api/gmail/pull/:instanceId
 router.get("/:instanceId", verifyJWT, async (req: AuthRequest, res: Response) => {
@@ -99,7 +110,9 @@ router.get("/:instanceId", verifyJWT, async (req: AuthRequest, res: Response) =>
           date: headers.find((h: any) => h.name === "Date")?.value,
           from: headers.find((h: any) => h.name === "From")?.value,
           subject: headers.find((h: any) => h.name === "Subject")?.value,
-          body: extractPlainText(payload), // full text content
+          snippet: msgData.data.snippet || "",
+          aiContent: generateAIContent(payload, msgData.data.snippet ?? ""),
+          body: null,   
         });
       }
     }
@@ -114,5 +127,69 @@ router.get("/:instanceId", verifyJWT, async (req: AuthRequest, res: Response) =>
     res.status(500).json({ error: "Failed to fetch emails" });
   }
 });
+
+// GET /api/gmail/full/:messageId
+router.get("/full/:messageId", verifyJWT, async (req: AuthRequest, res: Response) => {
+  try {
+    const { messageId } = req.params;
+    const userId = req.userId!;
+
+    // Find a user with a linked Google account
+    const googleAccount = await prisma.account.findFirst({
+      where: { userId, provider: "google" },
+    });
+
+    if (!googleAccount || !googleAccount.access_token || !googleAccount.refresh_token) {
+      return res.status(400).json({ error: "No Gmail account linked" });
+    }
+
+    // OAuth2 client
+    const oauth2Client = new google.auth.OAuth2(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+      process.env.GOOGLE_REDIRECT_URI
+    );
+
+    oauth2Client.setCredentials({
+      access_token: googleAccount.access_token,
+      refresh_token: googleAccount.refresh_token,
+    });
+
+    const gmail = google.gmail({ version: "v1", auth: oauth2Client });
+
+    // Fetch the specific message
+    const msgData = await gmail.users.messages.get({
+      userId: "me",
+      id: messageId,
+      format: "full",
+    });
+
+    const payload = msgData.data.payload;
+
+    // Extract full HTML body if exists
+    let fullBody = "";
+    if (payload?.mimeType === "text/html" && payload.body?.data) {
+      fullBody = Buffer.from(payload.body.data, "base64").toString("utf-8");
+    } else if (payload?.parts && payload.parts.length) {
+      const htmlPart = payload.parts.find((p: any) => p.mimeType === "text/html");
+      if (htmlPart?.body?.data) {
+        fullBody = Buffer.from(htmlPart.body.data, "base64").toString("utf-8");
+      }
+    }
+
+    res.json({
+      id: msgData.data.id,
+      threadId: msgData.data.threadId,
+      subject: payload?.headers?.find((h: any) => h.name === "Subject")?.value,
+      from: payload?.headers?.find((h: any) => h.name === "From")?.value,
+      date: payload?.headers?.find((h: any) => h.name === "Date")?.value,
+      body: fullBody,
+    });
+  } catch (err) {
+    console.error("Gmail Full Email Error:", err);
+    res.status(500).json({ error: "Failed to fetch full email" });
+  }
+});
+
 
 export default router;
