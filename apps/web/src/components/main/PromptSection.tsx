@@ -18,6 +18,7 @@ export default function PromptSection({ instance }: { instance: any }) {
         "Content-Type": "application/json",
         Authorization: `Bearer ${session.appToken}`,
       },
+      credentials: "include",
       body: JSON.stringify({ promptName }),
     });
     setSaving(false);

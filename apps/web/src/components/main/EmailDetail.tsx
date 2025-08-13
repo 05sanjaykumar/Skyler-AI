@@ -30,6 +30,7 @@ export default function EmailDetail({ emailId }: EmailDetailProps) {
             headers: {
               Authorization: `Bearer ${session.appToken}`,
             },
+            credentials: "include",
           }
         );
 

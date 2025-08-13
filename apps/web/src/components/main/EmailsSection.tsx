@@ -35,6 +35,7 @@ export default function EmailsSection({
       headers: {
         Authorization: `Bearer ${session.appToken}`,
       },
+      credentials: "include",
     });
     if (res.ok) {
       onDelete(id);
