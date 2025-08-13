@@ -29,7 +29,7 @@ router.patch("/:id/", verifyJWT, async (req: AuthRequest, res: Response) => {
 
     const updated = await prisma.aIInstance.update({
       where: { id },
-      data: { promptName },
+      data: { promptName: promptName },
     });
 
     res.json(updated);

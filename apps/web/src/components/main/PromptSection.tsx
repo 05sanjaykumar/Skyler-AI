@@ -12,7 +12,7 @@ export default function PromptSection({ instance }: { instance: any }) {
   async function savePrompt() {
     if (!session?.appToken) return;
     setSaving(true);
-    await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/prompts/${instance.id}`, {
+    await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/prompt/${instance.id}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
