@@ -3,11 +3,58 @@ import { Router, Request, Response } from "express";
 import { prisma } from "@skyler-ai/prisma";
 import { google } from "googleapis";
 import { verifyJWT } from "../../middleware/auth";
+import { Buffer } from "buffer";
 
 const router = Router();
 
 interface AuthRequest extends Request {
   userId?: string;
+}
+
+// Helper: extract header value
+function getHeader(headers: any[], name: string) {
+  const header = headers.find(h => h.name.toLowerCase() === name.toLowerCase());
+  return header ? header.value : "";
+}
+
+// Helper: decode Gmail Base64
+function decodeBase64(data: string) {
+  return Buffer.from(data, "base64").toString("utf-8");
+}
+
+// Helper: extract body (text + html)
+function extractEmailBody(payload: any) {
+  const result: { text?: string; html?: string } = {};
+
+  if (payload.parts && payload.parts.length) {
+    payload.parts.forEach((part: any) => {
+      if (part.mimeType === "text/plain" && part.body?.data) {
+        result.text = decodeBase64(part.body.data);
+      } else if (part.mimeType === "text/html" && part.body?.data) {
+        result.html = decodeBase64(part.body.data);
+      }
+    });
+  } else if (payload.body?.data) {
+    result.text = decodeBase64(payload.body.data);
+  }
+
+  return result;
+}
+
+// Helper: filter single email
+function filterEmail(msg: any) {
+  const headers = msg.payload.headers;
+
+  return {
+    id: msg.id,
+    threadId: msg.threadId,
+    from: getHeader(headers, "From"),
+    subject: getHeader(headers, "Subject"),
+    date: getHeader(headers, "Date"),
+    snippet: msg.snippet,
+    body: extractEmailBody(msg.payload),
+    labelIds: msg.labelIds,
+  };
 }
 
 // GET /api/gmail/pull/:instanceId
@@ -55,14 +102,14 @@ router.get("/:instanceId", verifyJWT, async (req: AuthRequest, res: Response) =>
     // Gmail API
     const gmail = google.gmail({ version: "v1", auth: oauth2Client });
 
-    // Fetch messages
+    // Fetch message IDs
     const { data } = await gmail.users.messages.list({
       userId: "me",
-      maxResults: 10, // adjust as needed
-      q: "", // add search query if needed
+      maxResults: 10,
+      q: "", // optional search query
     });
 
-    const messages = [];
+    const messages: any[] = [];
 
     if (data.messages) {
       for (const msg of data.messages) {
@@ -70,7 +117,8 @@ router.get("/:instanceId", verifyJWT, async (req: AuthRequest, res: Response) =>
           userId: "me",
           id: msg.id!,
         });
-        messages.push(msgData.data);
+        // Filter the message
+        messages.push(filterEmail(msgData.data));
       }
     }
 
