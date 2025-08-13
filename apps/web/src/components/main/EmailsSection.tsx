@@ -62,7 +62,7 @@ export default function EmailsSection({
     >
       <div className="flex-1" onClick={() => onSelect(email)}>
         <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
-          {trimText(getHeader(email.payload.headers, "Subject") || "(No Subject)", 77)}
+          {email.subject || "(No Subject)"}
         </h3>
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
           {email.snippet || email.body}
