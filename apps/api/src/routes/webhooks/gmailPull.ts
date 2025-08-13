@@ -1,4 +1,4 @@
-// apps/api/src/routes/gmail/pull.ts
+// apps/api/src/routes/webhooks/gmailPull.ts
 import { Router, Request, Response } from "express";
 import { prisma } from "@skyler-ai/prisma";
 import { google } from "googleapis";
