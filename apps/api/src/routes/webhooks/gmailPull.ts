@@ -10,6 +10,28 @@ interface AuthRequest extends Request {
   userId?: string;
 }
 
+// Helper function to extract plain text content
+function extractPlainText(payload: any): string {
+  if (!payload) return "";
+
+  // If it's plain text at the top level
+  if (payload.mimeType === "text/plain" && payload.body?.data) {
+    return Buffer.from(payload.body.data, "base64").toString("utf-8");
+  }
+
+  // If it's multipart, search the parts
+  if (payload.parts && payload.parts.length) {
+    for (const part of payload.parts) {
+      if (part.mimeType === "text/plain" && part.body?.data) {
+        return Buffer.from(part.body.data, "base64").toString("utf-8");
+      }
+    }
+  }
+
+  return ""; // fallback
+}
+
+
 // GET /api/gmail/pull/:instanceId
 router.get("/:instanceId", verifyJWT, async (req: AuthRequest, res: Response) => {
   try {
@@ -21,9 +43,7 @@ router.get("/:instanceId", verifyJWT, async (req: AuthRequest, res: Response) =>
       where: { id: instanceId },
       include: {
         user: {
-          include: {
-            accounts: true, // next-auth accounts
-          },
+          include: { accounts: true }, // next-auth accounts
         },
       },
     });
@@ -52,25 +72,35 @@ router.get("/:instanceId", verifyJWT, async (req: AuthRequest, res: Response) =>
       refresh_token: googleAccount.refresh_token,
     });
 
-    // Gmail API
     const gmail = google.gmail({ version: "v1", auth: oauth2Client });
 
     // Fetch messages
     const { data } = await gmail.users.messages.list({
       userId: "me",
-      maxResults: 10, // adjust as needed
-      q: "", // add search query if needed
+      maxResults: 10,
     });
 
-    const messages = [];
+    const messages: any[] = [];
 
     if (data.messages) {
       for (const msg of data.messages) {
         const msgData = await gmail.users.messages.get({
           userId: "me",
           id: msg.id!,
+          format: "full", // get full email content
         });
-        messages.push(msgData.data);
+
+        const payload = msgData.data.payload;
+        const headers = payload?.headers || [];
+
+        messages.push({
+          id: msg.id!,
+          threadId: msgData.data.threadId,
+          date: headers.find((h: any) => h.name === "Date")?.value,
+          from: headers.find((h: any) => h.name === "From")?.value,
+          subject: headers.find((h: any) => h.name === "Subject")?.value,
+          body: extractPlainText(payload), // full text content
+        });
       }
     }
 
