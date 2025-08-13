@@ -128,7 +128,7 @@ router.get("/:instanceId", verifyJWT, async (req: AuthRequest, res: Response) =>
   }
 });
 
-// GET /api/gmail/full/:messageId
+// GET /api/gmail/pull/full/:messageId
 router.get("/full/:messageId", verifyJWT, async (req: AuthRequest, res: Response) => {
   try {
     const { messageId } = req.params;

@@ -105,7 +105,7 @@ export default function InstanceDetailPage({ params }: { params: Promise<{ insta
       <div className="w-full md:w-3/5 p-4 overflow-auto flex flex-col">
         {selectedEmail ? (
           <>
-            <EmailDetail email={selectedEmail} />
+            <EmailDetail emailId={selectedEmail.id} />
             <ReplySection instanceId={instanceId} email={selectedEmail} />
           </>
         ) : (

@@ -16,16 +16,6 @@ type Email = {
   body: string;
 };
 
-function getHeader(headers: any[], name: string) {
-  const header = headers.find((h) => h.name.toLowerCase() === name.toLowerCase());
-  return header ? header.value : null;
-}
-
-function trimText(text: string, maxLength: number) {
-  if (!text) return "";
-  return text.length > maxLength ? text.slice(0, maxLength) + "…" : text;
-}
-
 
 export default function EmailsSection({
   emails,
