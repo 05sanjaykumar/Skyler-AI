@@ -4,6 +4,8 @@ import { prisma } from "@skyler-ai/prisma";
 import { google } from "googleapis";
 import { verifyJWT } from "../../middleware/auth";
 import { Buffer } from "buffer";
+import { decode } from "html-entities";
+
 
 const router = Router();
 
@@ -17,29 +19,51 @@ function getHeader(headers: any[], name: string) {
   return header ? header.value : "";
 }
 
-// Helper: decode Gmail Base64
-function decodeBase64(data: string) {
-  return Buffer.from(data, "base64").toString("utf-8");
-}
 
-// Helper: extract body (text + html)
-function extractEmailBody(payload: any) {
-  const result: { text?: string; html?: string } = {};
 
+function extractEmailContent(payload: any): string {
+  if (!payload) return "";
+
+  // Function to decode base64 URL-safe
+  const decodeBase64 = (str: string) =>
+    Buffer.from(str.replace(/-/g, "+").replace(/_/g, "/"), "base64").toString("utf-8");
+
+  // Search for text/plain first
   if (payload.parts && payload.parts.length) {
-    payload.parts.forEach((part: any) => {
+    for (const part of payload.parts) {
       if (part.mimeType === "text/plain" && part.body?.data) {
-        result.text = decodeBase64(part.body.data);
-      } else if (part.mimeType === "text/html" && part.body?.data) {
-        result.html = decodeBase64(part.body.data);
+        return decodeBase64(part.body.data);
       }
-    });
-  } else if (payload.body?.data) {
-    result.text = decodeBase64(payload.body.data);
+      if (part.parts && part.parts.length) {
+        const nested = extractEmailContent(part);
+        if (nested) return nested;
+      }
+    }
   }
 
-  return result;
+  // Single-part email
+  if (payload.mimeType === "text/plain" && payload.body?.data) {
+    return decodeBase64(payload.body.data);
+  }
+
+  // fallback: use HTML
+  if (payload.parts && payload.parts.length) {
+    for (const part of payload.parts) {
+      if (part.mimeType === "text/html" && part.body?.data) {
+        const html = decodeBase64(part.body.data);
+        return decode(html.replace(/<[^>]+>/g, "")); // strip HTML tags and decode entities
+      }
+    }
+  }
+
+  if (payload.mimeType === "text/html" && payload.body?.data) {
+    const html = decodeBase64(payload.body.data);
+    return decode(html.replace(/<[^>]+>/g, ""));
+  }
+
+  return ""; // still empty if nothing found
 }
+
 
 // Helper: filter single email
 function filterEmail(msg: any) {
@@ -52,10 +76,11 @@ function filterEmail(msg: any) {
     subject: getHeader(headers, "Subject"),
     date: getHeader(headers, "Date"),
     snippet: msg.snippet,
-    body: extractEmailBody(msg.payload),
+    content: extractEmailContent(msg.payload),
     labelIds: msg.labelIds,
   };
 }
+
 
 // GET /api/gmail/pull/:instanceId
 router.get("/:instanceId", verifyJWT, async (req: AuthRequest, res: Response) => {
