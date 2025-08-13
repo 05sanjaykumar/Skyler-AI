@@ -3,6 +3,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import DOMPurify from "dompurify";
 
 interface Email {
   id: string;
@@ -51,12 +52,14 @@ export default function EmailDetail({ emailId }: EmailDetailProps) {
   if (loading) return <p>Loading email...</p>;
   if (!email) return <p>Email not found.</p>;
 
+  const cleanBody = DOMPurify.sanitize(email.body);
+
   return (
     <div className="mb-4 max-h-[80vh] overflow-auto">
       <h2 className="text-xl font-semibold">{email.subject}</h2>
       <div
         className="mt-2"
-        dangerouslySetInnerHTML={{ __html: email.body }}
+        dangerouslySetInnerHTML={{ __html: cleanBody }}
       />
     </div>
   );
