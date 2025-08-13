@@ -30,7 +30,7 @@ export default function PromptSection({ instance }: { instance: any }) {
       <textarea
         value={promptName}
         onChange={(e) => setPromptName(e.target.value)}
-        className="border p-2 rounded w-full mb-2 dark:text-white dark:bg-black"
+        className="border p-2 rounded w-full mb-2 bg-background"
         placeholder="Set prompt name"
       />
       <button

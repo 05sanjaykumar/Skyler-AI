@@ -37,7 +37,7 @@ export default function ReplySection({
         value={replyText}
         onChange={(e) => setReplyText(e.target.value)}
         rows={6}
-        className="w-full border p-2 rounded mb-2"
+        className="w-full border p-2 rounded mb-2 bg-background"
         placeholder="Type your reply..."
       />
       <button

@@ -98,7 +98,6 @@ router.get("/:instanceId", verifyJWT, async (req: AuthRequest, res: Response) =>
         const msgData = await gmail.users.messages.get({
           userId: "me",
           id: msg.id!,
-          format: "full", // get full email content
         });
 
         const payload = msgData.data.payload;
