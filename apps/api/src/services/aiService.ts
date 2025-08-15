@@ -4,6 +4,9 @@ import { prisma } from "@skyler-ai/prisma";
 import axios from "axios";
 import { verifyJWT } from "../middleware/auth";
 import { groqAIProcess } from "../lib/groqAI"; // custom AI processing helper
+import dotenv from "dotenv";
+dotenv.config();
+
 
 const router = Router();
 
@@ -28,7 +31,7 @@ router.get("/:instanceId", verifyJWT, async (req: AuthRequest, res: Response) =>
 
     // Call gmail/pull endpoint to get email data
     const gmailResponse = await axios.get(
-      `${process.env.API_BASE_URL}/api/gmail/pull/${instanceId}`,
+      `${process.env.BACKEND_URL}/api/gmail/pull/${instanceId}`,
       {
         headers: {
           Authorization: req.headers.authorization || "",
