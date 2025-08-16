@@ -14,6 +14,27 @@ interface AuthRequest extends Request {
   userId?: string;
 }
 
+export async function decodePrompt(promptName: string | null) {
+  if (!promptName) {
+    return {
+      sendingPrompt: { maxResults: 10 }, // default minimal fetch
+      filteringPrompt: null,             // no filtering needed
+    };
+  }
+
+  // TODO: Use AI or LangChain to parse the natural language prompt
+  // Example return from AI:
+  return {
+    sendingPrompt: {
+      maxResults: 50,
+      dateRange: "last_7_days",  // or actual date objects
+    },
+    filteringPrompt: {
+      keywords: ["billing", "complaint"],
+    },
+  };
+}
+
 // GET /api/ai_services/:instanceId
 router.get("/:instanceId", verifyJWT, async (req: AuthRequest, res: Response) => {
   try {
