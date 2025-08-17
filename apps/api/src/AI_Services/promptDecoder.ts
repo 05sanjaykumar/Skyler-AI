@@ -34,6 +34,7 @@ Request: "emails from john@company.com last week" → {"maxResults": 10, "dateQu
 Request: "urgent emails" → {"maxResults": 20, "dateQuery": "", "searchQuery": "urgent"}
 Request: "users unhappy with support" → {"maxResults": 50, "dateQuery": "", "searchQuery": "", "requiresSemanticAnalysis": true}
 Request: "emails expressing dissatisfaction without specific details" → {"maxResults": 50, "dateQuery": "", "searchQuery": "", "requiresSemanticAnalysis": true}
+Request: "complains about billing" → {"maxResults": 50, "dateQuery": "", "searchQuery": "", "requiresSemanticAnalysis": true}
 
 Rules:
 - Use Gmail operators only: from:, subject:, after:, before:
@@ -42,6 +43,7 @@ Rules:
 - If request contains emotions, feelings, complaints, praise, or is vague:
   - Keep "searchQuery" empty
   - Set "requiresSemanticAnalysis": true
+- Search queries could also include synonyms or related terms.
 - Always produce valid JSON
 
 User Request: "{userPrompt}"
@@ -71,6 +73,33 @@ User Request: "{userPrompt}"
 
 JSON:
 `;
+function isLikelyEmail(value: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function cleanSearchQuery(query: string): string {
+  if (!query) return "";
+  
+  // Strip dangling operators
+  if (/^(from:|to:|subject:)\s*$/i.test(query.trim())) {
+    return "";
+  }
+  
+  // Catch vague terms like "clients", "users", "customers"
+  if (/^from:(clients|users|customers|people)$/i.test(query.trim())) {
+    return "";
+  }
+  
+  // Validate any from: values
+  if (/^from:(.*)$/i.test(query.trim())) {
+    const emailCandidate = query.split(":")[1].trim();
+    if (!isLikelyEmail(emailCandidate)) {
+      return "";
+    }
+  }
+  
+  return query;
+}
 
 
 export class ImprovedPromptDecoder {
@@ -188,7 +217,7 @@ export class ImprovedPromptDecoder {
         gmailParams: {
           maxResults: gmailParams.maxResults || 10,
           dateQuery: gmailParams.dateQuery || "",
-          searchQuery: gmailParams.searchQuery || ""
+          searchQuery: cleanSearchQuery(gmailParams.searchQuery || "")
         },
         aiFilterRules: aiRules.requiresSemanticAnalysis ? aiRules : null
       };

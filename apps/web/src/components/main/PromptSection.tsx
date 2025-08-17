@@ -99,14 +99,14 @@ export default function PromptSection({ instance }: { instance: any }) {
             <motion.button
               whileHover={{ backgroundColor: "rgb(243 244 246)" }}
               onClick={() => setShowDecoded((prev) => !prev)}
-              className="w-full flex justify-between items-center px-3 py-2 bg-gray-100 rounded-t transition-colors duration-200"
+              className="w-full flex justify-between items-center px-3 py-2 bg-gray-100 rounded-t transition-colors duration-200 bg-background"
             >
-              <span className="font-semibold">Decoded Result</span>
+              <span className="font-semibold dark:text-white">Decoded Result</span>
               <motion.div
                 animate={{ rotate: showDecoded ? 180 : 0 }}
                 transition={{ duration: 0.3, ease: "easeInOut" }}
               >
-                <ChevronDown className="w-5 h-5" />
+                <ChevronDown className="w-5 h-5 bg-background"  />
               </motion.div>
             </motion.button>
 
