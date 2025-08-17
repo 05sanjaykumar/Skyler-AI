@@ -79,26 +79,58 @@ function isLikelyEmail(value: string): boolean {
 
 function cleanSearchQuery(query: string): string {
   if (!query) return "";
-  
-  // Strip dangling operators
-  if (/^(from:|to:|subject:)\s*$/i.test(query.trim())) {
+
+  const trimmed = query.trim();
+
+  // 1. Strip dangling operators like "from:" or "subject:"
+  if (/^(from:|to:|subject:)\s*$/i.test(trimmed)) {
     return "";
   }
-  
-  // Catch vague terms like "clients", "users", "customers"
-  if (/^from:(clients|users|customers|people)$/i.test(query.trim())) {
+
+  // 2. Catch vague sender terms like "clients", "users", "customers"
+  if (/^from:(clients|users|customers|people)$/i.test(trimmed)) {
     return "";
   }
-  
-  // Validate any from: values
-  if (/^from:(.*)$/i.test(query.trim())) {
-    const emailCandidate = query.split(":")[1].trim();
-    if (!isLikelyEmail(emailCandidate)) {
+
+  // 3. If query starts with from:, validate the *first token* only
+  if (/^from:/i.test(trimmed)) {
+    const [firstPart, ...rest] = trimmed.split(/\s+/); // split into tokens
+    const emailCandidate = firstPart.split(":")[1];
+
+    if (emailCandidate && !isLikelyEmail(emailCandidate)) {
       return "";
     }
+
+    // Rebuild full query safely
+    return [firstPart, ...rest].join(" ");
   }
+
+  return trimmed;
+}
+
+function sanityFix(query: string, decoded: { gmailParams: GmailParams }): { gmailParams: GmailParams } {
+  const hasEmail = query.includes("@");
   
-  return query;
+  if (hasEmail) {
+    // Extract the email
+    console.log('sanity function call')
+    const emailMatch = query.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+    const email = emailMatch ? emailMatch[0] : null;
+
+    // Look for keyword after email (like "refund", "invoices", "bugs")
+    const afterEmail = email ? (query.split(email)[1] || "") : "";
+    const keywordMatch = afterEmail.match(/\b\w+\b/gi); // crude, but works for MVP
+    const keywords = keywordMatch ? keywordMatch.filter(k => k.length > 3) : [];
+
+    if (email) {
+      console.log('sanity function call email and keywords', email, keywords)
+      decoded.gmailParams.searchQuery = `from:${email}${keywords.length ? " " + keywords.join(" ") : ""}`;
+    }
+
+    console.log('sanity function call decoded', decoded)
+  }
+
+  return decoded;
 }
 
 
@@ -206,11 +238,16 @@ export class ImprovedPromptDecoder {
         .replace("{userPrompt}", userPrompt)
         .replace(/\{today\}/g, this.today);
       
-      const gmailParams = await this.callLLM(gmailPrompt);
+      let gmailParams = await this.callLLM(gmailPrompt);
+
+       // ✅ Apply sanity fix here
+      gmailParams = sanityFix(userPrompt, { gmailParams }).gmailParams;
 
       // Step 2: Determine AI filtering needs
       const aiPrompt = AI_FILTER_TEMPLATE.replace("{userPrompt}", userPrompt);
       const aiRules = await this.callLLM(aiPrompt);
+
+      console.log('Decoded Gmail Params:', gmailParams);
 
       // Combine results
       return {
@@ -253,16 +290,6 @@ export class ImprovedPromptDecoder {
     
     // Default
     return 25;
-  }
-
-  // Helper method to validate Gmail search query
-  validateGmailQuery(searchQuery: string): boolean {
-    // Check for common Gmail search operators
-    const gmailOperators = /\b(from:|to:|subject:|has:|label:|is:|in:|after:|before:)/i;
-    const hasBasicKeywords = searchQuery.trim().length > 0;
-    const noInvalidChars = !/[<>{}[\]]/g.test(searchQuery);
-    
-    return hasBasicKeywords && noInvalidChars;
   }
 }
 
