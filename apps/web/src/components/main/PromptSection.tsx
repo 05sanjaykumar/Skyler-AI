@@ -3,15 +3,28 @@
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
-import { ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
+import { ChevronDown, ChevronUp, RefreshCw, Copy, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function PromptSection({ instance }: { instance: any }) {
   const [promptName, setPromptName] = useState(instance.promptName || "");
   const [saving, setSaving] = useState(false);
   const [decoded, setDecoded] = useState<any>(null);
+  const [copied, setCopied] = useState(false);
   const [showDecoded, setShowDecoded] = useState(false);
   const { data: session } = useSession();
+
+  async function copyToClipboard() {
+    if (!decoded) return;
+    
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(decoded, null, 2));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000); // Reset after 2 seconds
+    } catch (error) {
+      console.error("Failed to copy to clipboard:", error);
+    }
+  }
 
   async function saveAndDecodePrompt() {
     if (!session?.appToken) return;
@@ -99,15 +112,33 @@ export default function PromptSection({ instance }: { instance: any }) {
             <motion.button
               whileHover={{ backgroundColor: "rgb(243 244 246)" }}
               onClick={() => setShowDecoded((prev) => !prev)}
-              className="w-full flex justify-between items-center px-3 py-2 bg-gray-100 rounded-t transition-colors duration-200 bg-background"
+              className="w-full flex justify-between items-center px-3 py-2 bg-gray-100 rounded-t transition-colors duration-200"
             >
-              <span className="font-semibold dark:text-white">Decoded Result</span>
-              <motion.div
-                animate={{ rotate: showDecoded ? 180 : 0 }}
-                transition={{ duration: 0.3, ease: "easeInOut" }}
-              >
-                <ChevronDown className="w-5 h-5 bg-background"  />
-              </motion.div>
+              <span className="font-semibold">Decoded Result</span>
+              <div className="flex items-center gap-2">
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    copyToClipboard();
+                  }}
+                  className="p-1 hover:bg-gray-200 rounded transition-colors duration-200"
+                  title="Copy to clipboard"
+                >
+                  {copied ? (
+                    <Check className="w-4 h-4 text-green-600" />
+                  ) : (
+                    <Copy className="w-4 h-4 text-gray-600" />
+                  )}
+                </motion.button>
+                <motion.div
+                  animate={{ rotate: showDecoded ? 180 : 0 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                >
+                  <ChevronDown className="w-5 h-5" />
+                </motion.div>
+              </div>
             </motion.button>
 
             <AnimatePresence>
