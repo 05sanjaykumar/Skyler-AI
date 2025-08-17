@@ -15,7 +15,9 @@
   "dependencies": {
     "@auth/core": "0.34.2",
     "@auth/supabase-adapter": "^1.10.0",
+    "@langchain/groq": "^0.2.3",
     "@prisma/client": "^6.13.0",
+    "axios": "^1.11.0",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
