@@ -1,4 +1,4 @@
-// apps/api/src/services/aiServices.ts
+// apps/api/src/routes/airoutes.ts
 import  { Router, Request, Response } from "express";
 import { prisma } from "@skyler-ai/prisma";
 import axios from "axios";
