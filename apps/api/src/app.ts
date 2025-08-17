@@ -6,7 +6,7 @@ import { verifyUser } from "./routes/auth/verify-user";
 import instancesRouter from "./routes/instances";
 import promptRouter from "./routes/prompt";
 import googlePull from './routes/webhooks/gmailPull';
-import ai_services from './services/aiService';
+import ai_services from './AI_Services/EntryPoint';
 import cors from "cors";
 import dotenv from "dotenv";
 dotenv.config();
