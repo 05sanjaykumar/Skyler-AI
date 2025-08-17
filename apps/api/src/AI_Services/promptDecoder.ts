@@ -29,22 +29,27 @@ Current date: {today}
 Convert this user request to Gmail search parameters.
 
 Examples:
-Request: "emails from today" → {"maxResults": 20, "dateQuery": "after:{today} before:{today}", "searchQuery": ""}
-Request: "emails from john@company.com last week" → {"maxResults": 10, "dateQuery": "after:2025/08/09 before:{today}", "searchQuery": "from:john@company.com"}
-Request: "urgent emails" → {"maxResults": 20, "dateQuery": "", "searchQuery": "urgent"}
-Request: "users unhappy with support" → {"maxResults": 50, "dateQuery": "", "searchQuery": "", "requiresSemanticAnalysis": true}
-Request: "emails expressing dissatisfaction without specific details" → {"maxResults": 50, "dateQuery": "", "searchQuery": "", "requiresSemanticAnalysis": true}
-Request: "complains about billing" → {"maxResults": 50, "dateQuery": "", "searchQuery": "", "requiresSemanticAnalysis": true}
+Request: "emails from today" 
+→ {"maxResults": 20, "dateQuery": "after:{today} before:{today}", "searchQuery": ""}
+
+Request: "emails from john@company.com last week" 
+→ {"maxResults": 10, "dateQuery": "after:2025/08/09 before:{today}", "searchQuery": ""}
+
+Request: "urgent emails" 
+→ {"maxResults": 50, "dateQuery": "", "searchQuery": ""}
+
+Request: "complaints about billing" 
+→ {"maxResults": 50, "dateQuery": "", "searchQuery": ""}
 
 Rules:
-- Use Gmail operators only: from:, subject:, after:, before:
-- Dates in YYYY/MM/DD format
-- maxResults: 10-20 for specific queries, 50 for broad or vague queries
-- If request contains emotions, feelings, complaints, praise, or is vague:
-  - Keep "searchQuery" empty
-  - Set "requiresSemanticAnalysis": true
-- Search queries could also include synonyms or related terms.
+- Only include in JSON:
+  - **after:/before:** for time ranges
+  - **maxResults**: 
+    - 10–20 for narrow queries
+    - 50 for vague/broad queries
+- Synonyms, vague keywords, or semantic intent are handled in a second AI filtering step
 - Always produce valid JSON
+- searchQuery is always empty, so leave like "searchQuery": ""
 
 User Request: "{userPrompt}"
 
@@ -59,20 +64,35 @@ CRITICAL: Respond with ONLY valid JSON. No explanations, no text, no markdown.
 Analyze if this request needs AI content filtering after Gmail search.
 
 Examples:
-"unhappy customers" → {"sentiment": "negative", "keywords": ["unhappy"], "complexity": "negative sentiment analysis", "requiresSemanticAnalysis": true}
-"emails from john@company.com" → {"sentiment": null, "keywords": [], "complexity": null, "requiresSemanticAnalysis": false}
-"praising our feature" → {"sentiment": "positive", "keywords": ["praising"], "complexity": "positive sentiment analysis", "requiresSemanticAnalysis": true}
-"unknown or vague request" → {"sentiment": null, "keywords": [], "complexity": "Fallback: full AI analysis needed", "requiresSemanticAnalysis": true}
+"unhappy customers" 
+→ {"sentiment": "negative", "keywords": ["unhappy"], "complexity": "negative sentiment analysis", "requiresSemanticAnalysis": true}
+
+"emails from john@company.com" 
+→ {"sentiment": null, "keywords": [], "complexity": null, "requiresSemanticAnalysis": false}
+
+"praising our feature" 
+→ {"sentiment": "positive", "keywords": ["praising"], "complexity": "positive sentiment analysis", "requiresSemanticAnalysis": true}
+
+"unknown or vague request" 
+→ {"sentiment": null, "keywords": [], "complexity": "Fallback: full AI analysis needed", "requiresSemanticAnalysis": true}
+
+"emails about expense list" 
+→ {"sentiment": null, "keywords": ["expense", "list"], "complexity": "topic-based filtering", "requiresSemanticAnalysis": true}
 
 Rules:
 - Always produce valid JSON
-- If request is vague or semantic in nature, set "requiresSemanticAnalysis": true
-- Extract keywords only if they clearly relate to sentiment or user intent
+- If request is vague, emotional, or semantic in nature → set "requiresSemanticAnalysis": true
+- Extract topic keywords (like "billing", "refunds", "expense list") even if sentiment is null
+- Expand synonyms if possible (e.g., "refunds" → ["refunds","reimbursements"])
+- sentiment = positive/negative/neutral only if clearly implied
+- complexity = short description of what kind of AI filter step is required
+- If it's just a plain request with no semantic load → requiresSemanticAnalysis: false
 
 User Request: "{userPrompt}"
 
 JSON:
 `;
+
 function isLikelyEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
@@ -113,7 +133,6 @@ function sanityFix(query: string, decoded: { gmailParams: GmailParams }): { gmai
   
   if (hasEmail) {
     // Extract the email
-    console.log('sanity function call')
     const emailMatch = query.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
     const email = emailMatch ? emailMatch[0] : null;
 
@@ -123,11 +142,8 @@ function sanityFix(query: string, decoded: { gmailParams: GmailParams }): { gmai
     const keywords = keywordMatch ? keywordMatch.filter(k => k.length > 3) : [];
 
     if (email) {
-      console.log('sanity function call email and keywords', email, keywords)
-      decoded.gmailParams.searchQuery = `from:${email}${keywords.length ? " " + keywords.join(" ") : ""}`;
+      decoded.gmailParams.searchQuery = `from:${email}`;
     }
-
-    console.log('sanity function call decoded', decoded)
   }
 
   return decoded;
@@ -247,7 +263,6 @@ export class ImprovedPromptDecoder {
       const aiPrompt = AI_FILTER_TEMPLATE.replace("{userPrompt}", userPrompt);
       const aiRules = await this.callLLM(aiPrompt);
 
-      console.log('Decoded Gmail Params:', gmailParams);
 
       // Combine results
       return {

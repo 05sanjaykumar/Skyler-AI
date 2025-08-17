@@ -109,12 +109,12 @@ export default function PromptSection({ instance }: { instance: any }) {
             transition={{ duration: 0.4, ease: "easeInOut" }}
             className="mt-4 border rounded bg-background overflow-hidden"
           >
-            <motion.button
+            <motion.div
               whileHover={{ backgroundColor: "rgb(243 244 246)" }}
               onClick={() => setShowDecoded((prev) => !prev)}
               className="w-full flex justify-between items-center px-3 py-2 bg-gray-100 rounded-t transition-colors duration-200"
             >
-              <span className="font-semibold">Decoded Result</span>
+              <span className="font-semibold text-black">Decoded Result</span>
               <div className="flex items-center gap-2">
                 <motion.button
                   whileHover={{ scale: 1.1 }}
@@ -136,10 +136,10 @@ export default function PromptSection({ instance }: { instance: any }) {
                   animate={{ rotate: showDecoded ? 180 : 0 }}
                   transition={{ duration: 0.3, ease: "easeInOut" }}
                 >
-                  <ChevronDown className="w-5 h-5" />
+                  <ChevronDown className="w-5 h-5 text-black" />
                 </motion.div>
               </div>
-            </motion.button>
+            </motion.div>
 
             <AnimatePresence>
               {showDecoded && (
