@@ -4,6 +4,7 @@ import { Router, Request, Response } from "express";
 import { prisma } from "@skyler-ai/prisma";
 import { verifyJWT } from "../middleware/auth";
 import { subscriptionConfig } from "../config/subscriptions";
+import { ImprovedPromptDecoder } from "./../AI_Services/promptDecoder";
 
 const router = Router();
 
@@ -35,6 +36,27 @@ router.patch("/:id/", verifyJWT, async (req: AuthRequest, res: Response) => {
     res.json(updated);
   } catch (error) {
     console.error("Update Prompt Error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
+router.post("/:id/decode", verifyJWT, async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { prompt } = req.body;
+    
+    const instance = await prisma.aIInstance.findUnique({ where: { id } });
+    if (!instance || instance.userId !== req.userId) {
+      return res.status(404).json({ error: "Instance not found" });
+    }
+
+    const decoder = new ImprovedPromptDecoder();
+    const result = await decoder.decode(prompt);
+
+    res.json(result);
+  } catch (error) {
+    console.error("Decode Prompt Error:", error);
     res.status(500).json({ error: "Server error" });
   }
 });
