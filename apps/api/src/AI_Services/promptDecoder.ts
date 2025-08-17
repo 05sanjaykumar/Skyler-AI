@@ -28,21 +28,26 @@ Current date: {today}
 Convert this user request to Gmail search parameters.
 
 Examples:
-Request: "emails from today" → {"maxResults": 20, "dateQuery": "after:{today} before:2025/08/17", "searchQuery": ""}
+Request: "emails from today" → {"maxResults": 20, "dateQuery": "after:{today} before:{today}", "searchQuery": ""}
 Request: "emails from john@company.com last week" → {"maxResults": 10, "dateQuery": "after:2025/08/09 before:{today}", "searchQuery": "from:john@company.com"}
 Request: "urgent emails" → {"maxResults": 20, "dateQuery": "", "searchQuery": "urgent"}
+Request: "users unhappy with support" → {"maxResults": 50, "dateQuery": "", "searchQuery": "", "requiresSemanticAnalysis": true}
+Request: "emails expressing dissatisfaction without specific details" → {"maxResults": 50, "dateQuery": "", "searchQuery": "", "requiresSemanticAnalysis": true}
 
 Rules:
-- Use Gmail operators: from:, subject:, after:, before: ONLY
+- Use Gmail operators only: from:, subject:, after:, before:
 - Dates in YYYY/MM/DD format
-- maxResults: 10-20 for specific, 50-100 for broad queries
-- Keep searchQuery short and simple
-- In search query if contains emotions, feelings keep it empty, and 'from:' should be only in email format
-- If request is vague or complex, use empty searchQuery: ""
+- maxResults: 10-20 for specific queries, 50 for broad or vague queries
+- If request contains emotions, feelings, complaints, praise, or is vague:
+  - Keep "searchQuery" empty
+  - Set "requiresSemanticAnalysis": true
+- Always produce valid JSON
 
 User Request: "{userPrompt}"
 
-JSON:`;
+JSON:
+`;
+
 
 // Step 2: AI Filter Rules Template
 const AI_FILTER_TEMPLATE = `
@@ -54,10 +59,18 @@ Examples:
 "unhappy customers" → {"sentiment": "negative", "keywords": ["unhappy"], "complexity": "negative sentiment analysis", "requiresSemanticAnalysis": true}
 "emails from john@company.com" → {"sentiment": null, "keywords": [], "complexity": null, "requiresSemanticAnalysis": false}
 "praising our feature" → {"sentiment": "positive", "keywords": ["praising"], "complexity": "positive sentiment analysis", "requiresSemanticAnalysis": true}
+"unknown or vague request" → {"sentiment": null, "keywords": [], "complexity": "Fallback: full AI analysis needed", "requiresSemanticAnalysis": true}
+
+Rules:
+- Always produce valid JSON
+- If request is vague or semantic in nature, set "requiresSemanticAnalysis": true
+- Extract keywords only if they clearly relate to sentiment or user intent
 
 User Request: "{userPrompt}"
 
-JSON:`;
+JSON:
+`;
+
 
 export class ImprovedPromptDecoder {
   private llm: ChatGroq;
@@ -66,7 +79,7 @@ export class ImprovedPromptDecoder {
   constructor() {
     this.llm = new ChatGroq({
       apiKey: process.env.GROQ_API_KEY || "your-api-key-here",
-      model: "llama3-8b-8192", // Smaller model is less chatty, better for structured output
+      model: "llama-3.1-8b-instant", // Smaller model is less chatty, better for structured output
       temperature: 0,
       maxTokens: 200 // Force shorter responses
     });
