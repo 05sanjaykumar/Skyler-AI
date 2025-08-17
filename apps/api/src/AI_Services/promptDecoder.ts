@@ -50,6 +50,8 @@ Rules:
 - Synonyms, vague keywords, or semantic intent are handled in a second AI filtering step
 - Always produce valid JSON
 - searchQuery is always empty, so leave like "searchQuery": ""
+- searchQuery is ONLY for: from:<email>.
+
 
 User Request: "{userPrompt}"
 
