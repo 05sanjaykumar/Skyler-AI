@@ -1,17 +1,15 @@
 // apps/web/src/components/main/PromptSection.tsx
 "use client";
 
-"use client";
-
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
-
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function PromptSection({ instance }: { instance: any }) {
   const [promptName, setPromptName] = useState(instance.promptName || "");
   const [saving, setSaving] = useState(false);
-  const [decoded, setDecoded] = useState<any>(null); // store decoded result
+  const [decoded, setDecoded] = useState<any>(null);
   const [showDecoded, setShowDecoded] = useState(false);
   const { data: session } = useSession();
 
@@ -51,9 +49,8 @@ export default function PromptSection({ instance }: { instance: any }) {
       );
 
       const decodedResult = await decodeRes.json();
-      setShowDecoded(true); // auto-open after generating
-      setDecoded(decodedResult); // store the structured result for UI
-
+      setShowDecoded(true);
+      setDecoded(decodedResult);
     } catch (error) {
       console.error("Error saving or decoding prompt:", error);
     } finally {
@@ -62,7 +59,7 @@ export default function PromptSection({ instance }: { instance: any }) {
   }
 
   return (
-     <div className="space-y-3">
+    <div className="space-y-3">
       <h2 className="text-xl font-semibold">Prompt</h2>
       <textarea
         value={promptName}
@@ -90,28 +87,60 @@ export default function PromptSection({ instance }: { instance: any }) {
         )}
       </div>
 
-      {decoded && (
-        <div className="mt-4 border rounded bg-background">
-          <button
-            onClick={() => setShowDecoded((prev) => !prev)}
-            className="w-full flex justify-between items-center px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-t"
+      <AnimatePresence>
+        {decoded && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: "auto" }}
+            exit={{ opacity: 0, y: -20, height: 0 }}
+            transition={{ duration: 0.4, ease: "easeInOut" }}
+            className="mt-4 border rounded bg-background overflow-hidden"
           >
-            <span className="font-semibold">Decoded Result</span>
-            {showDecoded ? (
-              <ChevronUp className="w-5 h-5" />
-            ) : (
-              <ChevronDown className="w-5 h-5" />
-            )}
-          </button>
-          {showDecoded && (
-            <div className="p-3">
-              <pre className="text-sm whitespace-pre-wrap">
-                {JSON.stringify(decoded, null, 2)}
-              </pre>
-            </div>
-          )}
-        </div>
-      )}
+            <motion.button
+              whileHover={{ backgroundColor: "rgb(243 244 246)" }}
+              onClick={() => setShowDecoded((prev) => !prev)}
+              className="w-full flex justify-between items-center px-3 py-2 bg-gray-100 rounded-t transition-colors duration-200"
+            >
+              <span className="font-semibold">Decoded Result</span>
+              <motion.div
+                animate={{ rotate: showDecoded ? 180 : 0 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+              >
+                <ChevronDown className="w-5 h-5" />
+              </motion.div>
+            </motion.button>
+
+            <AnimatePresence>
+              {showDecoded && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  className="overflow-hidden"
+                >
+                  <motion.div
+                    initial={{ y: -10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: -10, opacity: 0 }}
+                    transition={{ duration: 0.2, delay: 0.1 }}
+                    className="p-3"
+                  >
+                    <motion.pre
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3, delay: 0.2 }}
+                      className="text-sm whitespace-pre-wrap"
+                    >
+                      {JSON.stringify(decoded, null, 2)}
+                    </motion.pre>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
