@@ -45,7 +45,7 @@ export default function DashboardPage() {
         // Optionally fetch quota info, if you have an endpoint
         // For demo, hardcoded values (you can implement your own quota API)
         setPromptsLeft(3)
-        setInstancesLeft(2)
+        setInstancesLeft(3)
       } catch (err) {
         console.error(err)
       }

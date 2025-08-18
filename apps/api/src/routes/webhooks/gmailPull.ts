@@ -63,6 +63,9 @@ router.get("/:instanceId", verifyJWT, async (req: AuthRequest, res: Response) =>
       return res.status(404).json({ error: "Instance not found" });
     }
 
+    if (typeof instance.promptDecode === "object" && instance.promptDecode !== null && "gmailParams" in instance.promptDecode) {
+      console.log('ai instance max results:', (instance.promptDecode as any).gmailParams);
+    }
     // Get Google account tokens
     const googleAccount = instance.user.accounts.find(
       (acc) => acc.provider === "google"
@@ -88,7 +91,13 @@ router.get("/:instanceId", verifyJWT, async (req: AuthRequest, res: Response) =>
     // Fetch messages
     const { data } = await gmail.users.messages.list({
       userId: "me",
-      maxResults: 10,
+      maxResults: (instance.promptDecode as any)?.gmailParams?.maxResults ?? 10,
+      q: [
+    (instance.promptDecode as any)?.gmailParams?.dateQuery ?? "",
+    (instance.promptDecode as any)?.gmailParams?.searchQuery ?? ""
+  ]
+    .filter(Boolean) // remove empty strings
+    .join(" ")
     });
 
     const messages: any[] = [];
