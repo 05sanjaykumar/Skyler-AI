@@ -15,17 +15,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum SubscriptionTier {
-  FREE
-  PRO
-  PREMIUM
-}
-
-enum InstanceStatus {
-  ACTIVE
-  PAUSED
-  UNPAID
-}
 model User {
   id            String    @id @default(cuid()) // or Int @default(autoincrement())
   name          String?
@@ -36,16 +25,15 @@ model User {
   accounts      Account[]
   sessions      Session[]
   aiInstances      AIInstance[]
+  transactions  Transaction[]
+  creditLogs    CreditLog[]
+
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  subscriptionTier SubscriptionTier @default(FREE)
-  subscriptionStart DateTime? // when the subscription started
-  subscriptionEnd DateTime? // when the subscription ends, if applicable
-
-  // Current usage tracking
-  usedInstances    Int      @default(0)
-  usedPrompts      Int      @default(0)
+  // Usage tracking for pay-per-request
+  creditsRemaining   Int      @default(0) 
+  planExpirationDate     DateTime?              
 }
 
 
@@ -96,9 +84,30 @@ model AIInstance {
   userId      String
   name        String
   promptName  String?
-  status      InstanceStatus @default(ACTIVE)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+   // New fields for expansion
+  webhook      String?   // optional webhook for pushing filtered data
+  promptDecode Json?     // JSON with structured filters (gmailFilters, aiFilterRules, etc.)
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Transaction {
+  id             String   @id @default(cuid())
+  userId         String
+  amount         Float    // $ spent
+  creditsBought  Int
+  paymentProvider String? // Stripe, PayPal, etc.
+  createdAt      DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model CreditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String   // e.g. "gmail_generate"
+  credits   Int      // -3
+  createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id])
 }

@@ -17,6 +17,7 @@ interface AIFilterRules {
 }
 
 interface DecodedPrompt {
+  platform: string;
   gmailParams: GmailParams;
   aiFilterRules: AIFilterRules | null;
 }
@@ -245,6 +246,7 @@ export class ImprovedPromptDecoder {
     // Handle empty prompts
     if (!userPrompt?.trim()) {
       return {
+        platform: 'gmail',
         gmailParams: { maxResults: 10 },
         aiFilterRules: null
       };
@@ -268,6 +270,7 @@ export class ImprovedPromptDecoder {
 
       // Combine results
       return {
+        platform: 'gmail',
         gmailParams: {
           maxResults: gmailParams.maxResults || 10,
           dateQuery: gmailParams.dateQuery || "",
@@ -283,6 +286,7 @@ export class ImprovedPromptDecoder {
       const fallbackMaxResults = this.determineFallbackMaxResults(userPrompt);
       
       return {
+        platform: 'gmail',
         gmailParams: { maxResults: fallbackMaxResults },
         aiFilterRules: {
           sentiment: undefined,

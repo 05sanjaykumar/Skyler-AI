@@ -59,10 +59,9 @@ router.post("/", verifyJWT, async (req: AuthRequest, res: Response) => {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    const plan = subscriptionConfig[user.subscriptionTier.toLowerCase() as keyof typeof subscriptionConfig];
     const instanceCount = await prisma.aIInstance.count({ where: { userId } });
 
-    if (instanceCount >= plan.maxInstances) {
+    if (instanceCount >= 10) {
       return res.status(403).json({ error: "Instance limit reached" });
     }
 
@@ -110,34 +109,6 @@ router.patch("/:id/name", verifyJWT, async (req: AuthRequest, res: Response) => 
   }
 });
 
-
-// Update AIInstance status
-router.patch("/:id/status", verifyJWT, async (req: AuthRequest, res: Response) => {
-  try {
-    const userId = req.userId!;
-    const { id } = req.params;
-    const { status } = req.body;
-
-    if (!["ACTIVE", "PAUSED", "UNPAID"].includes(status)) {
-      return res.status(400).json({ error: "Invalid status" });
-    }
-
-    const instance = await prisma.aIInstance.findUnique({ where: { id } });
-    if (!instance || instance.userId !== userId) {
-      return res.status(404).json({ error: "Instance not found" });
-    }
-
-    const updated = await prisma.aIInstance.update({
-      where: { id },
-      data: { status },
-    });
-
-    res.json(updated);
-  } catch (error) {
-    console.error("Update Status Error:", error);
-    res.status(500).json({ error: "Server error" });
-  }
-});
 
 // Delete AIInstance
 router.delete("/:id", verifyJWT, async (req: AuthRequest, res: Response) => {
