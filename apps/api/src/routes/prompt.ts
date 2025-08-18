@@ -3,8 +3,7 @@
 import { Router, Request, Response } from "express";
 import { prisma } from "@skyler-ai/prisma";
 import { verifyJWT } from "../middleware/auth";
-import { subscriptionConfig } from "../config/subscriptions";
-import { ImprovedPromptDecoder } from "./../AI_Services/promptDecoder";
+import { ImprovedPromptDecoder } from "../AI_Services/gmail_AI/promptDecoder";
 
 const router = Router();
 

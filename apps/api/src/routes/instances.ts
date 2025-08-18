@@ -2,7 +2,6 @@
 import { Router, Request, Response } from "express";
 import { prisma } from "@skyler-ai/prisma";
 import { verifyJWT } from "../middleware/auth";
-import { subscriptionConfig } from "../config/subscriptions";
 
 const router = Router();
 
