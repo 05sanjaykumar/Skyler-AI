@@ -4,7 +4,7 @@ import bodyParser from "body-parser";
 import { registerUser } from "./routes/auth/register";
 import { verifyUser } from "./routes/auth/verify-user";
 import instancesRouter from "./routes/instances";
-import promptRouter from "./routes/prompt";
+import gmailPromptRouter from "./routes/gmailPrompt";
 import googlePull from './routes/webhooks/gmailPull';
 import ai_services from './routes/airoutes';
 import cors from "cors";
@@ -28,7 +28,7 @@ app.get('/', (_req, res) => {
 app.post("/api/register", registerUser);
 app.post("/api/verify-user", verifyUser);
 app.use("/api/instances", instancesRouter);
-app.use("/api/prompt", promptRouter);
+app.use("/api/gmail/prompt", gmailPromptRouter);
 app.use("/api/gmail/pull", googlePull);
 app.use("/api/ai_services", ai_services);
 

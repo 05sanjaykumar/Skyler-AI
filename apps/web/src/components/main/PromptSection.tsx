@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
-import { ChevronDown, ChevronUp, RefreshCw, Copy, Check } from "lucide-react";
+import { ChevronDown, RefreshCw, Copy, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function PromptSection({ instance }: { instance: any }) {
@@ -34,7 +34,7 @@ export default function PromptSection({ instance }: { instance: any }) {
     try {
       // 1️⃣ Save the prompt
       const saveRes = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/prompt/${instance.id}`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/gmail/prompt/${instance.id}`,
         {
           method: "PATCH",
           headers: {
@@ -49,7 +49,7 @@ export default function PromptSection({ instance }: { instance: any }) {
 
       // 2️⃣ Decode the prompt
       const decodeRes = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/prompt/${instance.id}/decode`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/gmail/prompt/${instance.id}/decode`,
         {
           method: "POST",
           headers: {
