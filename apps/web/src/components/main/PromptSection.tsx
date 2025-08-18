@@ -35,7 +35,7 @@ export default function PromptSection({ instance }: { instance: any }) {
 
       // 2️⃣ Decode the prompt
       const decodeRes = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/gmail/prompt/${instance.id}/decode`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/gmail/prompt/${instance.id}`,
         {
           method: "POST",
           headers: {
