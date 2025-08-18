@@ -32,20 +32,6 @@ export default function PromptSection({ instance }: { instance: any }) {
     setSaving(true);
 
     try {
-      // 1️⃣ Save the prompt
-      const saveRes = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/gmail/prompt/${instance.id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session.appToken}`,
-          },
-          credentials: "include",
-          body: JSON.stringify({ promptName }),
-        }
-      );
-      const updated = await saveRes.json();
 
       // 2️⃣ Decode the prompt
       const decodeRes = await fetch(

@@ -53,6 +53,14 @@ router.post("/:id/decode", verifyJWT, async (req: AuthRequest, res: Response) =>
     const decoder = new ImprovedPromptDecoder();
     const result = await decoder.decode(prompt);
 
+    await prisma.aIInstance.update({
+      where: { id },
+      data: { 
+        promptDecode: JSON.parse(JSON.stringify(result)), 
+        promptName: prompt // optional if you want to store raw prompt text too
+      }
+    });
+
     res.json(result);
   } catch (error) {
     console.error("Decode Prompt Error:", error);
