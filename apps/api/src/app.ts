@@ -6,7 +6,6 @@ import { verifyUser } from "./routes/auth/verify-user";
 import instancesRouter from "./routes/instances";
 import gmailPromptRouter from "./routes/gmailPrompt";
 import googlePull from './routes/webhooks/gmailPull';
-import ai_services from './routes/airoutes';
 import cors from "cors";
 import dotenv from "dotenv";
 dotenv.config();
@@ -30,6 +29,5 @@ app.post("/api/verify-user", verifyUser);
 app.use("/api/instances", instancesRouter);
 app.use("/api/gmail/prompt", gmailPromptRouter);
 app.use("/api/gmail/pull", googlePull);
-app.use("/api/ai_services", ai_services);
 
 export default app;
