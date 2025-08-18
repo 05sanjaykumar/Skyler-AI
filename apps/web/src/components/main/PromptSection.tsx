@@ -9,10 +9,12 @@ import { motion, AnimatePresence } from "framer-motion";
 export default function PromptSection({ instance }: { instance: any }) {
   const [promptName, setPromptName] = useState(instance.promptName || "");
   const [saving, setSaving] = useState(false);
-  const [decoded, setDecoded] = useState<any>(null);
+  const [decoded, setDecoded] = useState<any>(instance.promptDecode || null);
   const [copied, setCopied] = useState(false);
-  const [showDecoded, setShowDecoded] = useState(false);
+  const [showDecoded, setShowDecoded] = useState(!!instance.promptDecode);
   const { data: session } = useSession();
+
+  console.log("Instance in PromptSection:", instance);
 
   async function copyToClipboard() {
     if (!decoded) return;
