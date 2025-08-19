@@ -127,6 +127,21 @@ router.get("/:instanceId", verifyJWT, async (req: AuthRequest, res: Response) =>
     }
 
 
+    // Add here email classification for messages
+
+    const aiFilterRules =
+      typeof instance.promptDecode === "object" &&
+      instance.promptDecode !== null &&
+      "aiFilterRules" in instance.promptDecode
+        ? (instance.promptDecode as any).aiFilterRules
+        : {};
+
+    if(aiFilterRules.requiresSemanticAnalysis) {
+      const classifier = new EmailClassifier();
+      await classifier.init();
+      const filteredEmails = await classifier.filterEmails(messages, aiFilterRules);
+      res.json({ instanceId, count: filteredEmails.length, messages: filteredEmails });
+    }
     res.json({
       instanceId,
       count: messages.length,
