@@ -53,14 +53,22 @@ export default function PromptSection({ instance, onGenerate }: { instance: any,
       setShowDecoded(true);
       setDecoded(decodedResult);
 
-      console.log("Triggering email fetch...");
       await onGenerate();
-      console.log('Triggering done')
 
     } catch (error) {
       console.error("Error saving or decoding prompt:", error);
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function Refresh() {
+    if (!session?.appToken) return;
+
+    try {
+      
+    } catch (error) {
+      console.error("Error on Refersh or Fetching:", error);
     }
   }
 
@@ -84,7 +92,7 @@ export default function PromptSection({ instance, onGenerate }: { instance: any,
 
         {decoded && (
           <button
-            onClick={saveAndDecodePrompt}
+            onClick={Refresh}
             className="bg-blue-500 text-white px-4 py-2 rounded flex items-center gap-2"
           >
             <RefreshCw className="w-4 h-4" />
