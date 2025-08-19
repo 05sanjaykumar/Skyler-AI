@@ -34,13 +34,25 @@ Request: "emails from today"
 → {"maxResults": 20, "dateQuery": "after:{today} before:{today}", "searchQuery": ""}
 
 Request: "emails from john@company.com last week" 
-→ {"maxResults": 10, "dateQuery": "after:2025/08/09 before:{today}", "searchQuery": ""}
+→ {"maxResults": 10, "dateQuery": "after:2025/08/09 before:{today}", "searchQuery": "from:john@company.com"}
 
 Request: "urgent emails" 
 → {"maxResults": 50, "dateQuery": "", "searchQuery": ""}
 
-Request: "complaints about billing" 
-→ {"maxResults": 50, "dateQuery": "", "searchQuery": ""}
+Request: "complaints about billing from testing.com" 
+→ {"maxResults": 50, "dateQuery": "", "searchQuery": "from:testing.com"}
+
+Request: "get bill from sbi" 
+→ {"maxResults": 10, "dateQuery": "", "searchQuery": "from:sbi"}
+
+Request: "get my replies to sbi" 
+→ {"maxResults": 10, "dateQuery": "", "searchQuery": "to:sbi"}
+
+Request: "get my replies to user@testing.com" 
+→ {"maxResults": 10, "dateQuery": "", "searchQuery": "to:user@testing.com"}
+
+Request: "get people praising my features" 
+→ {"maxResults": 10, "dateQuery": "", "searchQuery": ""}
 
 Rules:
 - Only include in JSON:
@@ -50,8 +62,8 @@ Rules:
     - 50 for vague/broad queries
 - Synonyms, vague keywords, or semantic intent are handled in a second AI filtering step
 - Always produce valid JSON
-- searchQuery is always empty, so leave like "searchQuery": ""
-- searchQuery is ONLY for: from:<email>.
+- searchQuery is ONLY for: from:<email>, from:<domain>, from:<name>, to:<email>, to:<domain>, to:<name>
+- If search is complex and vague, keep searchQuery: ""
 
 
 User Request: "{userPrompt}"
@@ -95,62 +107,6 @@ User Request: "{userPrompt}"
 
 JSON:
 `;
-
-function isLikelyEmail(value: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-}
-
-function cleanSearchQuery(query: string): string {
-  if (!query) return "";
-
-  const trimmed = query.trim();
-
-  // 1. Strip dangling operators like "from:" or "subject:"
-  if (/^(from:|to:|subject:)\s*$/i.test(trimmed)) {
-    return "";
-  }
-
-  // 2. Catch vague sender terms like "clients", "users", "customers"
-  if (/^from:(clients|users|customers|people)$/i.test(trimmed)) {
-    return "";
-  }
-
-  // 3. If query starts with from:, validate the *first token* only
-  if (/^from:/i.test(trimmed)) {
-    const [firstPart, ...rest] = trimmed.split(/\s+/); // split into tokens
-    const emailCandidate = firstPart.split(":")[1];
-
-    if (emailCandidate && !isLikelyEmail(emailCandidate)) {
-      return "";
-    }
-
-    // Rebuild full query safely
-    return [firstPart, ...rest].join(" ");
-  }
-
-  return trimmed;
-}
-
-function sanityFix(query: string, decoded: { gmailParams: GmailParams }): { gmailParams: GmailParams } {
-  const hasEmail = query.includes("@");
-  
-  if (hasEmail) {
-    // Extract the email
-    const emailMatch = query.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
-    const email = emailMatch ? emailMatch[0] : null;
-
-    // Look for keyword after email (like "refund", "invoices", "bugs")
-    const afterEmail = email ? (query.split(email)[1] || "") : "";
-    const keywordMatch = afterEmail.match(/\b\w+\b/gi); // crude, but works for MVP
-    const keywords = keywordMatch ? keywordMatch.filter(k => k.length > 3) : [];
-
-    if (email) {
-      decoded.gmailParams.searchQuery = `from:${email}`;
-    }
-  }
-
-  return decoded;
-}
 
 
 export class ImprovedPromptDecoder {
@@ -261,7 +217,7 @@ export class ImprovedPromptDecoder {
       let gmailParams = await this.callLLM(gmailPrompt);
 
        // ✅ Apply sanity fix here
-      gmailParams = sanityFix(userPrompt, { gmailParams }).gmailParams;
+      // gmailParams = sanityFix(userPrompt, { gmailParams }).gmailParams;
 
       // Step 2: Determine AI filtering needs
       const aiPrompt = AI_FILTER_TEMPLATE.replace("{userPrompt}", userPrompt);
@@ -274,7 +230,7 @@ export class ImprovedPromptDecoder {
         gmailParams: {
           maxResults: gmailParams.maxResults || 10,
           dateQuery: gmailParams.dateQuery || "",
-          searchQuery: cleanSearchQuery(gmailParams.searchQuery || "")
+          searchQuery: gmailParams.searchQuery || ""
         },
         aiFilterRules: aiRules.requiresSemanticAnalysis ? aiRules : null
       };
