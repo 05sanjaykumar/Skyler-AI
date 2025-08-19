@@ -94,6 +94,9 @@ Examples:
 "emails about expense list" 
 → {"sentiment": null, "keywords": ["expense", "list"], "complexity": "topic-based filtering", "requiresSemanticAnalysis": true}
 
+"emails on past one month" 
+→ {"sentiment": null, "keywords": [], "complexity": "null", "requiresSemanticAnalysis": false}
+
 Rules:
 - Always produce valid JSON
 - If request is vague, emotional, or semantic in nature → set "requiresSemanticAnalysis": true
@@ -101,6 +104,7 @@ Rules:
 - Expand synonyms if possible (e.g., "refunds" → ["refunds","reimbursements"])
 - sentiment = positive/negative/neutral only if clearly implied
 - complexity = short description of what kind of AI filter step is required
+- If it's about date and time, don't include it
 - If it's just a plain request with no semantic load → requiresSemanticAnalysis: false
 
 User Request: "{userPrompt}"

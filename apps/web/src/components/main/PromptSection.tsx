@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 import { ChevronDown, RefreshCw, Copy, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function PromptSection({ instance }: { instance: any }) {
+export default function PromptSection({ instance, onGenerate }: { instance: any, onGenerate: () => void }) {
   const [promptName, setPromptName] = useState(instance.promptName || "");
   const [saving, setSaving] = useState(false);
   const [decoded, setDecoded] = useState<any>(instance.promptDecode || null);
@@ -52,6 +52,11 @@ export default function PromptSection({ instance }: { instance: any }) {
       const decodedResult = await decodeRes.json();
       setShowDecoded(true);
       setDecoded(decodedResult);
+
+      console.log("Triggering email fetch...");
+      await onGenerate();
+      console.log('Triggering done')
+
     } catch (error) {
       console.error("Error saving or decoding prompt:", error);
     } finally {
@@ -102,7 +107,7 @@ export default function PromptSection({ instance }: { instance: any }) {
               onClick={() => setShowDecoded((prev) => !prev)}
               className="w-full flex justify-between items-center px-3 py-2 bg-gray-100 rounded-t transition-colors duration-200"
             >
-              <span className="font-semibold text-black">Decoded Result</span>
+              <span className="font-semibold text-black">AI's Understanding</span>
               <div className="flex items-center gap-2">
                 <motion.button
                   whileHover={{ scale: 1.1 }}

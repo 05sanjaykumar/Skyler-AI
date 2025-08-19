@@ -52,27 +52,28 @@ export default function InstanceDetailPage({ params }: { params: Promise<{ insta
   }, [instanceId, session?.appToken, status]);
 
   // Fetch emails on load & when instance changes
-  useEffect(() => {
+  const fetchEmails = async () => {
     if (status !== "authenticated") return;
 
-    const fetchEmails = async () => {
-      setEmailsLoading(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/gmail/pull/${instanceId}`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session?.appToken || ""}`,
-        },
-        credentials: "include",
-      });
+    setEmailsLoading(true);
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/gmail/pull/${instanceId}`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session?.appToken || ""}`,
+      },
+      credentials: "include",
+    });
 
-      if (res.ok) {
-        const data = await res.json();
-        setEmails(data.messages);
-        console.log(data.messages)
-      }
-      setEmailsLoading(false);
-    };
+    if (res.ok) {
+      const data = await res.json();
+      setEmails(data.messages);
+      console.log("Fetched emails:", data.messages);
+    }
+    setEmailsLoading(false);
+  };
 
+  // Run once on mount
+  useEffect(() => {
     fetchEmails();
   }, [instanceId, session?.appToken, status]);
 
@@ -85,7 +86,7 @@ export default function InstanceDetailPage({ params }: { params: Promise<{ insta
       <div className="w-full md:w-3/5 p-4 border-r border-gray-300 overflow-auto">
         <h1 className="text-2xl font-bold mb-4 uppercase">{instance.name} INSTANCE</h1>
 
-        <PromptSection instance={instance} />
+        <PromptSection instance={instance} onGenerate={fetchEmails}/>
 
         <div className="mt-8 border-2 border-black p-2 rounded-sm dark:border-white">
           <h2 className="text-xl font-semibold mb-2">Emails</h2>
