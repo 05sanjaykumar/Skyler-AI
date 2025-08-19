@@ -50,7 +50,7 @@ export default function PromptSection({ instance, onGenerate }: { instance: any,
       const decodedResult = await decodeRes.json();
       setShowDecoded(true);
       setDecoded(decodedResult);
-
+      await onGenerate(); // Trigger the generation after saving
     } catch (error) {
       console.error("Error saving or decoding prompt:", error);
     } finally {

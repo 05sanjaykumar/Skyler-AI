@@ -137,7 +137,7 @@ router.get("/:instanceId", verifyJWT, async (req: AuthRequest, res: Response) =>
         ? (instance.promptDecode as any).aiFilterRules
         : {};
 
-    if(aiFilterRules.requiresSemanticAnalysis) {
+    if(aiFilterRules && aiFilterRules.requiresSemanticAnalysis) {
       const classifier = new EmailClassifier();
       await classifier.init();
       const filteredEmails = await classifier.filterEmails(messages, aiFilterRules);

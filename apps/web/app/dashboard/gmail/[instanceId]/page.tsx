@@ -34,12 +34,16 @@ export default function InstanceDetailPage({ params }: { params: Promise<{ insta
 
     // Helper functions for Dexie
   async function saveEmails(emails: Email[]) {
-    await db.emails.bulkPut(emails); // directly store as-is
-    console.log("Emails cached locally!");
+    const emailsWithInstance = emails.map(email => ({
+      ...email,
+      instanceId,
+    }));
+    await db.emails.bulkPut(emailsWithInstance); // directly store as-is
+    console.log("Emails cached locally!: ", emailsWithInstance);
   }
 
   async function loadEmails(): Promise<Email[]> {
-    const cachedEmails = await db.emails.toArray();
+    const cachedEmails = await db.emails.where("instanceId").equals(instanceId).toArray();
 
     const normalized: Email[] = cachedEmails.map((e) => ({
       id: e.id,
