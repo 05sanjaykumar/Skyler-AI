@@ -74,8 +74,16 @@ export default function PromptSection({ instance, onGenerate }: { instance: any,
       <textarea
         value={promptName}
         onChange={(e) => setPromptName(e.target.value)}
-        className="border p-2 rounded w-full bg-background"
         placeholder="Set prompt name"
+        className="
+          w-full rounded-xl px-4 py-3
+          border border-gray-300 dark:border-gray-700
+          bg-white dark:bg-zinc-900
+          text-gray-800 dark:text-gray-200
+          placeholder-gray-400 dark:placeholder-gray-500
+          focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
+          shadow-sm transition-all duration-200
+        "
       />
       <div className="flex gap-2">
         <button

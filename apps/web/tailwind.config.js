@@ -46,6 +46,11 @@ module.exports = {
   				DEFAULT: 'hsl(var(--destructive))',
   				foreground: 'hsl(var(--destructive-foreground))'
   			},
+			 dark: {
+				DEFAULT: "#18181B",   // background
+				surface: "#1E1E1E",   // cards
+				border: "#2C2C2C",    // dividers
+			},
   			border: 'hsl(var(--border))',
   			input: 'hsl(var(--input))',
   			ring: 'hsl(var(--ring))',

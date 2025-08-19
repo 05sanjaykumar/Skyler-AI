@@ -25,7 +25,7 @@ export default function Topbar() {
   if (!mounted) return null
 
   return (
-    <header className="w-full border-b bg-background">
+    <header className="w-full border-b bg-background dark:bg-surface">
       <div className="flex items-center justify-between px-4 md:px-6 py-3 max-w-7xl mx-auto">
         
         {/* Left - Logo */}

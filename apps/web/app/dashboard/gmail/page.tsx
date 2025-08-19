@@ -44,7 +44,7 @@ export default function DashboardPage() {
 
         // Optionally fetch quota info, if you have an endpoint
         // For demo, hardcoded values (you can implement your own quota API)
-        setCreditsLeft(3)
+        setCreditsLeft(20)
         const instanceCount = await fetch(`${backendUrl}/api/instances/count`, {
           headers: getAuthHeaders(),
           credentials:'include'
