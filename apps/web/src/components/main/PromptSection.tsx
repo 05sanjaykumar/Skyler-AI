@@ -6,15 +6,13 @@ import { useSession } from "next-auth/react";
 import { ChevronDown, RefreshCw, Copy, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function PromptSection({ instance, onGenerate }: { instance: any, onGenerate: () => void }) {
+export default function PromptSection({ instance, onGenerate }: { instance: any, onGenerate: () => void}) {
   const [promptName, setPromptName] = useState(instance.promptName || "");
   const [saving, setSaving] = useState(false);
   const [decoded, setDecoded] = useState<any>(instance.promptDecode || null);
   const [copied, setCopied] = useState(false);
   const [showDecoded, setShowDecoded] = useState(!!instance.promptDecode);
   const { data: session } = useSession();
-
-  console.log("Instance in PromptSection:", instance);
 
   async function copyToClipboard() {
     if (!decoded) return;
@@ -53,8 +51,6 @@ export default function PromptSection({ instance, onGenerate }: { instance: any,
       setShowDecoded(true);
       setDecoded(decodedResult);
 
-      await onGenerate();
-
     } catch (error) {
       console.error("Error saving or decoding prompt:", error);
     } finally {
@@ -66,9 +62,9 @@ export default function PromptSection({ instance, onGenerate }: { instance: any,
     if (!session?.appToken) return;
 
     try {
-      
+      await onGenerate();
     } catch (error) {
-      console.error("Error on Refersh or Fetching:", error);
+      console.error("Error on Refresh or Fetching:", error);
     }
   }
 

@@ -86,7 +86,10 @@ export default function InstanceDetailPage({ params }: { params: Promise<{ insta
       <div className="w-full md:w-3/5 p-4 border-r border-gray-300 overflow-auto">
         <h1 className="text-2xl font-bold mb-4 uppercase">{instance.name} INSTANCE</h1>
 
-        <PromptSection instance={instance} onGenerate={fetchEmails}/>
+        <PromptSection 
+        instance={instance} 
+        onGenerate={fetchEmails} 
+        />
 
         <div className="mt-8 border-2 border-black p-2 rounded-sm dark:border-white">
           <h2 className="text-xl font-semibold mb-2">Emails</h2>

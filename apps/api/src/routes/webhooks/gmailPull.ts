@@ -3,6 +3,7 @@ import { Router, Request, Response } from "express";
 import { prisma } from "@skyler-ai/prisma";
 import { google } from "googleapis";
 import { verifyJWT } from "../../middleware/auth";
+import { EmailClassifier } from '../../AI_Services/gmail_AI/emailClassifier';
 
 const router = Router();
 
@@ -124,6 +125,7 @@ router.get("/:instanceId", verifyJWT, async (req: AuthRequest, res: Response) =>
         });
       }
     }
+
 
     res.json({
       instanceId,

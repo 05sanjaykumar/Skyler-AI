@@ -1,4 +1,4 @@
-// apps/api/src/routes/prompt.ts
+// apps/api/src/routes/gmailPrompt.ts
 
 import { Router, Request, Response } from "express";
 import { prisma } from "@skyler-ai/prisma";
@@ -11,6 +11,7 @@ interface AuthRequest extends Request {
   userId?: string;
 }
 
+// api/gmail/prompt/:id
 router.post("/:id", verifyJWT, async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
@@ -39,22 +40,6 @@ router.post("/:id", verifyJWT, async (req: AuthRequest, res: Response) => {
   }
 });
 
-router.post("/:id/refresh",verifyJWT, async (req: AuthRequest, res: Response)=>{
-  try {
-    const { id } = req.params;
-    const { emailsArray } = req.body;
-    const { aiFilterRules } = req.body;
-
-    const instance = await prisma.aIInstance.findUnique({ where: { id } });
-    if (!instance || instance.userId !== req.userId) {
-      return res.status(404).json({ error: "Instance not found" });
-    }
-
-  } catch (error) {
-    console.error("Refresh Error:",error)
-    res.status(500).json({ error: "Server error" });
-  }
-})
 
 
 export default router;
