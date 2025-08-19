@@ -57,11 +57,11 @@ export default function DashboardPage() {
       }
     }
     fetchInstancesAndQuota()
-  }, [backendUrl])
+  }, [backendUrl,instances])
 
   const handleCreate = async () => {
     if (!newInstanceName.trim()) return
-    if (instances.length >= instancesLeft) {
+    if (instancesLeft <= 0) {
       alert('Instance limit reached for your plan')
       return
     }
