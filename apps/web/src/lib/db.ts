@@ -2,7 +2,6 @@ import Dexie from "dexie";
 
 export interface Email {
   id: string;
-  threadId: string;
   date: string;
   from: string;
   to: string;
@@ -10,6 +9,7 @@ export interface Email {
   snippet: string;
   aiContent?: string;
   body?: string;
+  payload?: any;
 }
 
 export class EmailDB extends Dexie {
@@ -18,7 +18,7 @@ export class EmailDB extends Dexie {
   constructor() {
     super("EmailDatabase");
     this.version(1).stores({
-      emails: "id, threadId, date, from, to, subject, snippet, aiContent, body",
+      emails: "id, date, from, to, subject, snippet, aiContent, body, payload",
     });
   }
 }

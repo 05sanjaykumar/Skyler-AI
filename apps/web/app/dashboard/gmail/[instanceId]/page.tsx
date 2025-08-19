@@ -32,6 +32,42 @@ export default function InstanceDetailPage({ params }: { params: Promise<{ insta
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
   const [emailsLoading, setEmailsLoading] = useState(false);
 
+    // Helper functions for Dexie
+  async function saveEmails(emails: Email[]) {
+    await db.emails.bulkPut(emails); // directly store as-is
+    console.log("Emails cached locally!");
+  }
+
+  async function loadEmails(): Promise<Email[]> {
+    const cachedEmails = await db.emails.toArray();
+
+    const normalized: Email[] = cachedEmails.map((e) => ({
+      id: e.id,
+      subject: e.subject,
+      body: e.body || "",        // default to empty string
+      from: e.from,
+      to: e.to,
+      date: e.date,
+      payload: e.payload || {},  // default to empty object
+      snippet: e.snippet,
+    }));
+
+    return normalized;
+  }
+
+  // Load cached emails first; fallback to fetch if empty
+  const loadCachedEmails = async () => {
+    setEmailsLoading(true);
+
+    const cachedEmails = await loadEmails();
+    if (cachedEmails.length > 0) {
+      setEmails(cachedEmails);
+      console.log("Loaded emails from cache:", cachedEmails);
+    }
+    setEmailsLoading(false);
+  };
+
+
   // Fetch instance data
   useEffect(() => {
     if (status !== "authenticated") return;
@@ -71,6 +107,7 @@ export default function InstanceDetailPage({ params }: { params: Promise<{ insta
     if (res.ok) {
       const data = await res.json();
       setEmails(data.messages);
+      await saveEmails(data.messages);
       console.log("Fetched emails:", data.messages);
     }
     setEmailsLoading(false);
@@ -78,7 +115,7 @@ export default function InstanceDetailPage({ params }: { params: Promise<{ insta
 
   // Run once on mount
   useEffect(() => {
-    fetchEmails();
+    loadCachedEmails();
   }, [instanceId, session?.appToken, status]);
 
   if (loading) return <div>Loading instance...</div>;
