@@ -5,6 +5,7 @@ import { verifyJWT } from "../middleware/auth";
 
 const router = Router();
 
+const MAX_INSTANCES = 10;
 interface AuthRequest extends Request {
   userId?: string;
 }
@@ -19,6 +20,21 @@ router.get("/", verifyJWT, async (req: AuthRequest, res: Response) => {
     res.json(instances);
   } catch (error) {
     console.error("Get Instances Error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// get instance count
+router.get("/count", verifyJWT, async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId!;
+    const instanceCount = await prisma.aIInstance.count({
+      where: { userId },
+    });
+    console.log("Instance count for user:", userId, instanceCount);
+    res.json({ count: MAX_INSTANCES-instanceCount });
+  } catch (error) {
+    console.error("Get Instance Count Error:", error);
     res.status(500).json({ error: "Server error" });
   }
 });
@@ -60,7 +76,7 @@ router.post("/", verifyJWT, async (req: AuthRequest, res: Response) => {
 
     const instanceCount = await prisma.aIInstance.count({ where: { userId } });
 
-    if (instanceCount >= 10) {
+    if (instanceCount >= MAX_INSTANCES) {
       return res.status(403).json({ error: "Instance limit reached" });
     }
 

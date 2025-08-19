@@ -1,7 +1,7 @@
 // apps/web/app/dashboard/gmail/page.tsx
 'use client'
 import React, { useState, useEffect } from 'react'
-import { Server, PencilLine } from 'lucide-react'
+import { Server, Copyright } from 'lucide-react'
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 
@@ -14,7 +14,7 @@ type Instance = {
 export default function DashboardPage() {
   const { data: session, status } = useSession();
   const [instances, setInstances] = useState<Instance[]>([])
-  const [promptsLeft, setPromptsLeft] = useState(3) // example, fetch from API later
+  const [creditsLeft, setCreditsLeft] = useState(3) // example, fetch from API later
   const [instancesLeft, setInstancesLeft] = useState(1) // example, fetch from API later
   const [newInstanceName, setNewInstanceName] = useState('')
   const [creating, setCreating] = useState(false)
@@ -44,8 +44,14 @@ export default function DashboardPage() {
 
         // Optionally fetch quota info, if you have an endpoint
         // For demo, hardcoded values (you can implement your own quota API)
-        setPromptsLeft(3)
-        setInstancesLeft(3)
+        setCreditsLeft(3)
+        const instanceCount = await fetch(`${backendUrl}/api/instances/count`, {
+          headers: getAuthHeaders(),
+          credentials:'include'
+        })
+        const { count } = await instanceCount.json()
+        console.log("Fetched instance count:", count)
+        setInstancesLeft(count)
       } catch (err) {
         console.error(err)
       }
@@ -136,8 +142,8 @@ export default function DashboardPage() {
       <h1 className="text-3xl font-bold mb-6">Your Email Instances</h1>
 
       <div className="flex justify-between mb-4">
-        <div><PencilLine /> Prompts per month left: <strong>{promptsLeft}</strong></div>
-        <div><Server /> Instances left: <strong>{instancesLeft - instances.length}</strong></div>
+        <div><Copyright /> Credits per month left: <strong>{creditsLeft}</strong></div>
+        <div><Server /> Instances left: <strong>{instancesLeft}</strong></div>
       </div>
 
       <div className="mb-6">
