@@ -34,6 +34,7 @@ export default function InstanceDetailPage({ params }: { params: Promise<{ insta
 
     // Helper functions for Dexie
   async function saveEmails(emails: Email[]) {
+    await db.emails.where("instanceId").equals(instanceId).delete();
     const emailsWithInstance = emails.map(email => ({
       ...email,
       instanceId,
