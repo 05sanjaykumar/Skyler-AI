@@ -3,6 +3,7 @@
 
 import { use, useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { db } from "@/lib/db";
 
 // import PromptSection from "@/components/PromptSection";
 import PromptSection from "@/components/main/PromptSection";
@@ -14,6 +15,9 @@ type Email = {
   id: string;
   subject: string;
   body: string;
+  from: string;
+  to: string;
+  date: string;
   payload: any;
   snippet: string;
 };

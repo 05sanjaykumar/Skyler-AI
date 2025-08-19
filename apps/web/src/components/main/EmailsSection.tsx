@@ -14,6 +14,9 @@ type Email = {
   id: string;
   subject: string;
   body: string;
+  from: string;
+  to: string;
+  date: string;
 };
 
 
