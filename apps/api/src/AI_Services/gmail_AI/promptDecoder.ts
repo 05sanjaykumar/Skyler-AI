@@ -54,16 +54,28 @@ Request: "get my replies to user@testing.com"
 Request: "get people praising my features" 
 → {"maxResults": 10, "dateQuery": "", "searchQuery": ""}
 
+Request: "Give me hot AI news"
+→ {"maxResults": 10, "dateQuery": "", "searchQuery": "subject:AI"}
+
 Rules:
 - Only include in JSON:
   - **after:/before:** for time ranges
   - **maxResults**: 
     - 10–20 for narrow queries
     - 50 for vague/broad queries
-- Synonyms, vague keywords, or semantic intent are handled in a second AI filtering step
+- **searchQuery is ONLY for hard filters:**
+  - from:<email>, from:<domain>, from:<name> (only if it's a proper name or known entity, not generic nouns like "customers", "people", "users")
+  - to:<email>, to:<domain>, to:<name>
+  - subject:<keyword> ONLY if it is a very concrete noun like "invoice", "receipt", "report"
+  - NEVER put generic nouns (customers, people, users, clients) into from:/to:
+- Do NOT include:
+  - Pronouns (my, your, our, etc.)
+  - Adjectives/adverbs (hot, urgent, latest, etc.)
+  - Verbs (get, show, fetch, etc.)
+  - Vague nouns (news, updates, complaints, praises, ideas)
+- If the request includes vague or semantic terms (e.g. "news", "deepseek", "complaints", "praises", "AI topics"):
+  - Keep 'searchQuery: ""'
 - Always produce valid JSON
-- searchQuery is ONLY for: from:<email>, from:<domain>, from:<name>, to:<email>, to:<domain>, to:<name>
-- If search is complex and vague, keep searchQuery: ""
 
 
 User Request: "{userPrompt}"
