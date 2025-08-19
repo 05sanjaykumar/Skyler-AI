@@ -118,6 +118,7 @@ router.get("/:instanceId", verifyJWT, async (req: AuthRequest, res: Response) =>
           threadId: msgData.data.threadId,
           date: headers.find((h: any) => h.name === "Date")?.value,
           from: headers.find((h: any) => h.name === "From")?.value,
+          to: headers.find((h: any) => h.name === "To")?.value,
           subject: headers.find((h: any) => h.name === "Subject")?.value,
           snippet: msgData.data.snippet || "",
           aiContent: generateAIContent(payload, msgData.data.snippet ?? ""),
@@ -207,6 +208,7 @@ router.get("/full/:messageId", verifyJWT, async (req: AuthRequest, res: Response
       threadId: msgData.data.threadId,
       subject: payload?.headers?.find((h: any) => h.name === "Subject")?.value,
       from: payload?.headers?.find((h: any) => h.name === "From")?.value,
+      to: payload?.headers?.find((h: any) => h.name === "To")?.value,
       date: payload?.headers?.find((h: any) => h.name === "Date")?.value,
       body: fullBody,
     });
