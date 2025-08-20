@@ -1,7 +1,7 @@
 // apps/web/app/dashboard/gmail/page.tsx
 'use client'
 import React, { useState, useEffect } from 'react'
-import { Server, Copyright } from 'lucide-react'
+import { Server } from 'lucide-react'
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 
@@ -139,7 +139,6 @@ export default function DashboardPage() {
       <h1 className="text-3xl font-bold mb-6">Your Email Instances</h1>
 
       <div className="flex justify-between mb-4">
-        <div><Copyright /> Credits per month left: <strong>{creditsLeft}</strong></div>
         <div><Server /> Instances left: <strong>{instancesLeft}</strong></div>
       </div>
 
