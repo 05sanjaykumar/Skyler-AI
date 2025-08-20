@@ -42,7 +42,7 @@ export default function Topbar() {
       </div>
       <span className="font-bold text-lg hidden sm:inline">Skyler AI</span>
       <div className="inline-flex items-center justify-center px-4 py-1 text-sm font-medium tracking-wide text-green-600 transition-colors duration-200 rounded-full bg-gray-100 dark:bg-slate-800">
-        Beta 
+        Beta ✨
       </div>
     </div>
 
