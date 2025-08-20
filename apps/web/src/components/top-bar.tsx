@@ -9,12 +9,14 @@ import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 
 export default function Topbar() {
   const { data: session } = useSession()
   const { theme, setTheme } = useTheme()
   const [credits, setCredits] = useState(20)
   const [mounted, setMounted] = useState(false)
+  const router = useRouter()
 
   // Prevent hydration mismatch with next-themes
   useEffect(() => {
@@ -74,7 +76,7 @@ export default function Topbar() {
 
           {/* These will only show on mobile */}
           <div className="block md:hidden">
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push("/payments")}>
               <Copyright className="w-4 h-4 mr-2" /> Buy Credits
             </DropdownMenuItem>
             <DropdownMenuItem>
@@ -103,7 +105,7 @@ export default function Topbar() {
 
       {/* These will only show on desktop */}
       <div className="hidden md:flex items-center space-x-2">
-        <Button className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 shadow-lg">
+        <Button className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 shadow-lg" onClick={() => router.push("/payments")}>
           <Copyright className="w-4 h-4 mr-2" />
           Buy Credits
         </Button>

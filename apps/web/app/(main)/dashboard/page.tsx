@@ -3,10 +3,10 @@
 
 import Image, { StaticImageData } from "next/image"
 import { useRouter } from "next/navigation"
-import discord from "../icons/discord.png"
-import whatsapp from "../icons/whatsapp.png"
-import slack from "../icons/slack.png"
-import gmail from "../icons/gmail.png"
+import discord from "../../icons/discord.png"
+import whatsapp from "../../icons/whatsapp.png"
+import slack from "../../icons/slack.png"
+import gmail from "../../icons/gmail.png"
 
 
 type Integration = {

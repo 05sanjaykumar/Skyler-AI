@@ -1,18 +1,14 @@
 // apps/web/app/dashboard/layout.tsx
 import "../globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import TopBar from "@/components/top-bar";
 import AuthGuard from "@/lib/auth-wrapper"
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default function MainLayout({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <div className="min-h-screen flex flex-col bg-background dark:bg-[#1E1E1E]">
         <AuthGuard>
-          <TopBar />
-          <main className="flex-1 p-4">{children}</main>
+          <main >{children}</main>
         </AuthGuard>
-      </div>
     </ThemeProvider>
   );
 }
