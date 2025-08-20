@@ -1,7 +1,7 @@
 // apps/web/src/components/top-bar.tsx
 'use client'
 
-import { Bell, Sun, Moon, Settings, User, Copyright, FlaskConical } from "lucide-react"
+import { Bell, Sun, Moon, Settings, User, Copyright, Headset } from "lucide-react"
 import { signOut, useSession } from "next-auth/react"
 import { useTheme } from "next-themes"
 import { useState } from "react"
@@ -95,6 +95,9 @@ export default function Topbar() {
           </DropdownMenuItem>
           <DropdownMenuItem>
             <Settings className="w-4 h-4 mr-2" /> Settings
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => router.push("/support")}>
+            <Headset className="w-4 h-4 mr-2" /> Support
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem className="text-red-600" onClick={() => signOut()}>

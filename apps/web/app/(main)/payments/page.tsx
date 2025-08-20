@@ -1,7 +1,9 @@
+'use client'
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, ArrowRight } from 'lucide-react';
+import { useRouter } from "next/navigation"
 
 // You would need to have these shadcn/ui components added to your project:
 // npx shadcn-ui@latest add button card
@@ -31,13 +33,16 @@ const plans = [
 ];
 
 export default function PricingPage() {
+
+  const router = useRouter();
+
   return (
     <div className="bg-[#0A0A0A] text-gray-200 min-h-screen antialiased">
         {/* --- Header --- */}
         <header className="border-b border-gray-800">
             <div className="container mx-auto px-6 py-4 flex justify-between items-center">
                 <h1 className="text-2xl font-bold tracking-tighter">Skyler</h1>
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" onClick={() => router.push("/dashboard")}>
                     Back to Home
                 </Button>
             </div>
@@ -60,7 +65,7 @@ export default function PricingPage() {
                         key={plan.name} 
                         className={`bg-black border-2 flex flex-col ${plan.isPopular ? 'border-violet-500 shadow-lg shadow-violet-500/10' : 'border-gray-800'} transition-transform hover:-translate-y-2`}
                     >
-                        <CardHeader className="relative">
+                        <CardHeader className="relative text-white">
                             {plan.isPopular && (
                                 <div className="absolute -top-4 right-4 bg-violet-600 text-white text-xs font-bold px-3 py-1 rounded-full">
                                     MOST POPULAR
@@ -75,7 +80,7 @@ export default function PricingPage() {
                             </div>
                             <CardDescription className="pt-2 !mt-0">{plan.description}</CardDescription>
                         </CardHeader>
-                        <CardContent className="flex-grow">
+                        <CardContent className="flex-grow text-white">
                             <ul className="space-y-4">
                                 {plan.features.map(feature => (
                                     <li key={feature} className="flex items-start">
@@ -87,7 +92,7 @@ export default function PricingPage() {
                         </CardContent>
                         <CardFooter>
                             <Button 
-                                className={`w-full ${plan.isPopular ? 'bg-violet-600 hover:bg-violet-700' : 'bg-gray-800 hover:bg-gray-700'}`}
+                                className={`w-full text-white ${plan.isPopular ? 'bg-violet-600 hover:bg-violet-700' : 'bg-gray-800 hover:bg-gray-700'}`}
                             >
                                 {plan.price === "FREE" ? "Get Started" : "Choose Plan"}
                                 <ArrowRight className="ml-2 h-4 w-4" />
