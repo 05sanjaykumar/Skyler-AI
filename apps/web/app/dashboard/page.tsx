@@ -21,9 +21,9 @@ export default function DashboardPage() {
 
   return (
 
-      <main className="min-h-screen flex flex-col items-center justify-start bg-background px-6 py-10">
-        <div className="max-w-4xl w-full">
-          <h1 className="text-3xl font-bold mb-2 text-foreground">
+      <main className="min-h-screen flex flex-col items-center justify-start bg-background px-6 py-10 dark:bg-[#1E1E1E]">
+        <div className="max-w-4xl w-full ">
+          <h1 className="text-3xl font-bold mb-2 text-foreground ">
             Your Skyler Dashboard
           </h1>
           <p className="text-muted-foreground mb-8">
@@ -32,13 +32,13 @@ export default function DashboardPage() {
 
           {/* Coming Now */}
           <section className="mb-10">
-            <h2 className="text-xl font-semibold mb-4 text-foreground">Active Now</h2>
+            <h2 className="text-xl font-semibold mb-4 text-foreground  bg-background dark:bg-[#1E1E1E]">Active Now</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
               {integrations.comingNow.map((item, idx) => (
                 <button
                   key={idx}
                   onClick={() => router.push(item.href!)}
-                  className="flex flex-col items-center justify-center p-6 rounded-xl bg-card shadow-sm hover:shadow-md hover:scale-[1.02] transition-all border"
+                  className="flex flex-col items-center justify-center p-6 rounded-xl bg-card shadow-sm hover:shadow-md hover:scale-[1.02] transition-all border dark:bg-zinc-900"
                 >
                   <item.icon className="w-8 h-8 text-primary mb-3" />
                   <span className="text-foreground font-medium">{item.name}</span>

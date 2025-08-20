@@ -55,7 +55,7 @@ const Navbar = () => (
       <nav className="hidden md:flex items-center space-x-6">
         <a href="#features" className="text-gray-400 hover:text-white transition-colors">How it Works</a>
         <a href="#pricing" className="text-gray-400 hover:text-white transition-colors">Pricing</a>
-        <a href="#about" className="text-gray-400 hover:text-white transition-colors">About Us</a>
+        <a href="#about" className="text-gray-400 hover:text-white transition-colors">Our Vision</a>
       </nav>
       <Button variant="secondary">Request a Demo</Button>
     </div>
@@ -84,11 +84,11 @@ const HeroSection = () => {
                     <div className="mb-4">
                         <AnimatedShinyText>
                             <div className="inline-flex items-center justify-center px-4 py-1 text-sm font-medium tracking-wide text-white transition-colors duration-200 rounded-full bg-slate-800">
-                                ✨ Introducing Skyler AI
+                                ✨ Beta Testing Now Open! ✨
                             </div>
                         </AnimatedShinyText>
                     </div>
-                    <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter bg-clip-text  bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500">
+                    <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter bg-clip-text text-transparent  bg-gradient-to-b from-white to-gray-400">
                       Tame the Social Media Chaos
                     </h1>
 
@@ -98,10 +98,15 @@ const HeroSection = () => {
                     <div className="mt-8 flex justify-center items-center gap-4">
                         <ShimmerButton>
                             <span className="whitespace-pre-wrap text-center text-sm font-medium leading-none tracking-tight text-white dark:from-white dark:to-slate-900/10 lg:text-lg">
+                            <a
+                              href="/login"
+                              className=""
+                            >
                                Get Started for Free
+                            </a>
                             </span>
                         </ShimmerButton>
-                        <Button variant="outline">Learn More <ArrowRight className="ml-2 h-4 w-4" /></Button>
+                        <Button variant="outline" className="text-black">Learn More <ArrowRight className="ml-2 h-4 w-4" /></Button>
                     </div>
                 </div>
             </Vortex>
@@ -224,23 +229,23 @@ const PricingSection = () => {
     const plans = [
         {
             name: "Starter",
-            price: "$29",
+            price: "FREE",
             description: "For individuals and small teams getting started.",
-            features: ["3 Social Accounts", "10 AI Inboxes", "500 AI Prompts/mo", "Basic Analytics"],
+            features: ["10 AI Instances", "20 Credits", "Approx 10 Completions", "Infinite Manual Edits"],
             isPopular: false,
         },
         {
-            name: "Pro",
-            price: "$79",
+            name: "Mini",
+            price: "$5",
             description: "For growing businesses and marketing professionals.",
-            features: ["10 Social Accounts", "Unlimited AI Inboxes", "2,000 AI Prompts/mo", "Advanced Analytics", "Team Collaboration (3 users)"],
+            features: ["10 AI Instances", "100 Credits", "Approx 60-70 Completions", "Infinite Manual Edits"],
             isPopular: true,
         },
         {
-            name: "Enterprise",
-            price: "Custom",
+            name: "Pro",
+            price: "$10",
             description: "For large organizations with custom needs.",
-            features: ["Unlimited Accounts", "Custom AI Models", "Dedicated Support", "API Access", "SSO & Security"],
+            features: ["10 AI Instances", "200 Credits", "Approx 120-140 Completions", "Infinite Manual Edits"],
             isPopular: false,
         }
     ];
@@ -253,17 +258,17 @@ const PricingSection = () => {
                 <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
                     {plans.map(plan => (
                         <Card key={plan.name} className={`bg-black border-2 ${plan.isPopular ? 'border-violet-500' : 'border-gray-800'} transition-all hover:border-violet-500`}>
-                            <CardHeader>
+                            <CardHeader className="text-white">
                                 {plan.isPopular && <div className="text-violet-400 font-bold mb-2">MOST POPULAR</div>}
                                 <CardTitle className="text-2xl">{plan.name}</CardTitle>
                                 <div className="text-4xl font-bold pt-2">
                                     {plan.price}
-                                    {plan.price !== "Custom" && <span className="text-lg font-normal text-gray-400">/ month</span>}
+                                    {plan.price !== "Custom" && plan.price !== "FREE" && <span className="text-lg font-normal text-gray-400">/ month</span>}
                                 </div>
                                 <CardDescription className="pt-2">{plan.description}</CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <ul className="space-y-4">
+                                <ul className="space-y-4 text-white">
                                     {plan.features.map(feature => (
                                         <li key={feature} className="flex items-center">
                                             <CheckCircle className="h-5 w-5 text-green-500 mr-3" />

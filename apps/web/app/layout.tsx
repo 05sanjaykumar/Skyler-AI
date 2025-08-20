@@ -24,7 +24,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} dark:bg-dark`}>
+      <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <SessionProvider>
           {children}
         </SessionProvider>

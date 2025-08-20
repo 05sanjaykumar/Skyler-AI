@@ -1,7 +1,7 @@
 // apps/web/src/components/top-bar.tsx
 'use client'
 
-import { Bell, Sun, Moon, Settings, Crown, User } from "lucide-react"
+import { Bell, Sun, Moon, Settings, Crown, User, Copyright } from "lucide-react"
 import { signOut, useSession } from "next-auth/react"
 import { useTheme } from "next-themes"
 import { useState } from "react"
@@ -25,7 +25,7 @@ export default function Topbar() {
   if (!mounted) return null
 
   return (
-    <header className="w-full border-b bg-background dark:bg-surface">
+    <header className="w-full border-b bg-background dark:bg-zinc-900">
       <div className="flex items-center justify-between px-4 md:px-6 py-3 max-w-7xl mx-auto">
         
         {/* Left - Logo */}
@@ -40,8 +40,8 @@ export default function Topbar() {
         <div className="flex items-center space-x-2">
           {/* Upgrade */}
           <Button className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 shadow-lg">
-            <Crown className="w-4 h-4 mr-2" />
-            Upgrade
+            <Copyright className="w-4 h-4 mr-2" />
+            Get Credits
           </Button>
 
           {/* Notifications */}

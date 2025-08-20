@@ -41,9 +41,6 @@ export default function DashboardPage() {
         const data: Instance[] = await res.json()
         console.log("Fetched instances:", data)
         setInstances(data)
-
-        // Optionally fetch quota info, if you have an endpoint
-        // For demo, hardcoded values (you can implement your own quota API)
         setCreditsLeft(20)
         const instanceCount = await fetch(`${backendUrl}/api/instances/count`, {
           headers: getAuthHeaders(),
@@ -57,7 +54,7 @@ export default function DashboardPage() {
       }
     }
     fetchInstancesAndQuota()
-  }, [backendUrl,instances])
+  }, [backendUrl])
 
   const handleCreate = async () => {
     if (!newInstanceName.trim()) return
