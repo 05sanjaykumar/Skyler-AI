@@ -32,7 +32,7 @@ router.post("/order", verifyJWT, async (req: AuthRequest, res: Response) => {
       data: {
         userId: req.userId!,
         amount,
-        creditsBought: 0, // will update after capture
+        creditsBought: 0,
         paymentProvider: "PayPal",
         providerTxnId: order.id,
         status: "pending",
@@ -49,6 +49,7 @@ router.post("/order", verifyJWT, async (req: AuthRequest, res: Response) => {
 });
 
 // POST /api/paypal/capture
+// POST /api/paypal/capture
 router.post("/capture", verifyJWT, async (req: AuthRequest, res: Response) => {
   try {
     const { orderId, plan } = req.body;
@@ -62,23 +63,33 @@ router.post("/capture", verifyJWT, async (req: AuthRequest, res: Response) => {
     }
 
     const capture = await capturePayment(orderId);
-
     const status = capture.status === "COMPLETED" ? "success" : "failed";
 
-    // Update transaction with capture result
+    // Assign credits only if payment succeeded
+    let userData = null;
+    let creditsBought = 0;
+
+    if (status === "success") {
+      // get plan credits
+      const PLANS: Record<string, { credits: number; days: number }> = {
+        mini: { credits: 100, days: 30 },
+        pro: { credits: 200, days: 30 },
+      };
+      creditsBought = PLANS[plan]?.credits || 0;
+
+      // update user with credits
+      userData = await purchasePlanForUser(req.userId!, plan);
+    }
+
+    // Update transaction with capture result (and creditsBought)
     await prisma.transaction.update({
       where: { providerTxnId: orderId },
       data: {
         status,
+        creditsBought,
         metadata: capture,
       },
     });
-
-    // Assign credits only if payment succeeded
-    let userData = null;
-    if (status === "success") {
-      userData = await purchasePlanForUser(req.userId!, plan);
-    }
 
     res.json({ capture, userData });
   } catch (error) {

@@ -18,20 +18,20 @@ const plans = [
   },
   {
     name: "Mini",
-    price: "$1",
+    price: "$5",
     description: "For growing businesses and marketing professionals.",
     features: ["10 AI Instances", "100 Credits", "Approx 60-70 Completions", "Infinite Manual Edits"],
     isPopular: true,
-    amount: 1,
+    amount: 5,
     planId: "mini",
   },
   {
     name: "Pro",
-    price: "$2",
+    price: "$10",
     description: "For large organizations with custom needs.",
     features: ["10 AI Instances", "200 Credits", "Approx 120-140 Completions", "Infinite Manual Edits"],
     isPopular: false,
-    amount: 2,
+    amount: 10,
     planId: "pro",
   }
 ];
