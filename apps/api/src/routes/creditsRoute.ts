@@ -1,4 +1,4 @@
-// apps/api/src/routes/Credits.ts
+// apps/api/src/routes/credits.ts
 
 import { Router, Request, Response } from "express";
 import { prisma } from "@skyler-ai/prisma";
@@ -10,11 +10,6 @@ interface AuthRequest extends Request {
   userId?: string;
 }
 
-// Define your plans in one place for easy scaling
-const PLANS: Record<string, { credits: number; days: number }> = {
-  mini: { credits: 100, days: 30 },
-  pro: { credits: 200, days: 30 },
-};
 
 router.get("/", verifyJWT, async (req: AuthRequest, res: Response) => {
   const userId = req.userId;
@@ -102,41 +97,6 @@ router.post("/checkCredits", verifyJWT, async (req: AuthRequest, res: Response) 
     if (error.message === "Insufficient credits") {
       return res.status(403).json({ error: error.message });
     }
-    return res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
-router.post("/buy", verifyJWT, async (req: AuthRequest, res: Response) => {
-  const userId = req.userId;
-  const { plan } = req.body;
-
-  if (!userId) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
-
-  if (!plan || !PLANS[plan]) {
-    return res.status(400).json({ error: "Invalid plan" });
-  }
-
-  const { credits, days } = PLANS[plan];
-  const expirationDate = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
-
-  try {
-    const updated = await prisma.user.update({
-      where: { id: userId },
-      data: {
-        creditsRemaining: credits, // reset credits when buying a new plan
-        planExpirationDate: expirationDate,
-      },
-      select: { creditsRemaining: true, planExpirationDate: true },
-    });
-
-    return res.json({
-      message: `Credits purchased successfully and added ${credits} credits.`,
-      user: updated,
-    });
-  } catch (error) {
-    console.error("Error updating user plan:", error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 });
