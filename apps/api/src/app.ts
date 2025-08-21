@@ -7,6 +7,7 @@ import instancesRouter from "./routes/instances";
 import gmailPromptRouter from "./routes/gmailPrompt";
 import googlePull from './routes/webhooks/gmailPull';
 import creditsRoute from './routes/Credits';
+import payPalRoute from './routes/payments/paypal/paypalRoute';
 import cors from "cors";
 import dotenv from "dotenv";
 dotenv.config();
@@ -31,5 +32,6 @@ app.use("/api/instances", instancesRouter);
 app.use("/api/gmail/prompt", gmailPromptRouter);
 app.use("/api/gmail/pull", googlePull);
 app.use("/api/credits", creditsRoute);
+app.use("/api/paypal", payPalRoute);
 
 export default app;
