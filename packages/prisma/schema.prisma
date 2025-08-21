@@ -96,13 +96,15 @@ model Transaction {
   userId           String
   amount           Float
   currency         String   @default("USD")
-  creditsBought    Int
+  creditsBought    Int      @default(0)
   paymentProvider  String?              // PayPal, Cashfree, Wise...
-  providerTxnId    String?              // external txn/order id
+  providerTxnId    String?  @unique            // external txn/order id
   status           String   @default("pending") // pending, success, failed, refunded
   metadata         Json?                // optional: store raw gateway response
+  type             String?              // e.g. "credits_purchase", "subscription"
 
   createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id])
 }

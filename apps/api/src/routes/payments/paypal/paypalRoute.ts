@@ -1,7 +1,9 @@
-// apps/api/src/routes/payments/paypalRoute.ts
+// apps/api/src/routes/payments/paypal/paypalRoute.ts
 import { Router, Request, Response } from "express";
 import { createOrder, capturePayment } from "./paypalServices";
 import { verifyJWT } from "../../../middleware/auth";
+import { prisma } from "@skyler-ai/prisma";
+
 
 const router = Router();
 
@@ -19,6 +21,19 @@ router.post("/order", verifyJWT, async (req: AuthRequest, res: Response) => {
     }
 
     const order = await createOrder(amount.toString());
+    // Save to DB
+    await prisma.transaction.create({
+      data: {
+        userId: req.userId!,
+        amount,
+        creditsBought: 0, // fill this later when order completes
+        paymentProvider: "PayPal",
+        providerTxnId: order.id,
+        status: "pending",
+        metadata: order,
+        type: "credits_purchase",
+      },
+    });
     res.json(order);
   } catch (error) {
     console.error("PayPal Create Order Error:", error);
@@ -36,6 +51,14 @@ router.post("/capture", verifyJWT, async (req: AuthRequest, res: Response) => {
     }
 
     const capture = await capturePayment(orderId);
+
+    await prisma.transaction.update({
+      where: { providerTxnId: orderId },
+      data: {
+        status: capture.status === "COMPLETED" ? "success" : "failed",
+        metadata: capture,
+      },
+    });
     res.json(capture);
   } catch (error) {
     console.error("PayPal Capture Payment Error:", error);

@@ -1,3 +1,4 @@
+// apps/api/routes/payments/paypal/client.ts
 import axios from "axios";
 
 export const getPayPalAccessToken = async () => {
