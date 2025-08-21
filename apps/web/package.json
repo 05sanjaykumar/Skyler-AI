@@ -25,6 +25,7 @@
     "@skyler-ai/prisma": "workspace:*",
     "@supabase/supabase-js": "^2.53.0",
     "@types/three": "^0.179.0",
+    "axios": "^1.11.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cobe": "^0.6.4",

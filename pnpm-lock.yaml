@@ -159,6 +159,9 @@ importers:
       '@types/three':
         specifier: ^0.179.0
         version: 0.179.0
+      axios:
+        specifier: ^1.11.0
+        version: 1.11.0
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
