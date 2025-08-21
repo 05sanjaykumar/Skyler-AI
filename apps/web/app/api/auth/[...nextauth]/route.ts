@@ -6,8 +6,8 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@skyler-ai/prisma";
 import CredentialsProvider from "next-auth/providers/credentials";
 import jwt from "jsonwebtoken";
-const JWT_SECRET = process.env.JWT_SECRET!;
 
+const JWT_SECRET = process.env.JWT_SECRET!;
 
 // Extend the Session type to include googleAccessToken and appToken
 declare module "next-auth" {
@@ -18,14 +18,15 @@ declare module "next-auth" {
 }
 
 const handler = NextAuth({
-  adapter: PrismaAdapter(prisma), 
+  adapter: PrismaAdapter(prisma),
   providers: [
     GoogleProvider({
       clientId: process.env.CLIENT_ID!,
       clientSecret: process.env.CLIENT_SECRET!,
       authorization: {
         params: {
-          scope: "openid email profile https://www.googleapis.com/auth/gmail.readonly",
+          scope:
+            "openid email profile https://www.googleapis.com/auth/gmail.readonly",
           prompt: "consent",
           access_type: "offline",
           response_type: "code",
@@ -39,11 +40,14 @@ const handler = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/verify-user`, {
-          method: "POST",
-          body: JSON.stringify(credentials),
-          headers: { "Content-Type": "application/json" },
-        });
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/verify-user`,
+          {
+            method: "POST",
+            body: JSON.stringify(credentials),
+            headers: { "Content-Type": "application/json" },
+          }
+        );
 
         const user = await res.json();
         if (res.ok && user) return user;
@@ -60,7 +64,7 @@ const handler = NextAuth({
       if (user) {
         const appJwt = jwt.sign(
           {
-            id: user.id, // use whatever unique id you have
+            id: user.id,
             email: user.email,
             name: user.name,
           },
@@ -70,7 +74,7 @@ const handler = NextAuth({
         token.appToken = appJwt;
       }
 
-      // Optionally store Google tokens separately if you want to call Google API later
+      // Store Google tokens if provider is Google
       if (account?.provider === "google") {
         token.googleAccessToken = account.access_token;
         token.googleRefreshToken = account.refresh_token;
@@ -79,21 +83,29 @@ const handler = NextAuth({
       return token;
     },
     async session({ session, token }) {
-      // Pass your own app JWT to the client session for API auth
       session.appToken = token.appToken as string;
-      // Optionally expose Google tokens to client if needed (careful with security)
       session.googleAccessToken = token.googleAccessToken as string;
       return session;
     },
     async signIn({ user, account }) {
-      // skip linking if email is missing
       if (!user.email) return true;
 
-      const existingUser = await prisma.user.findUnique({
+      // Ensure user exists and seed free trial if new
+      const dbUser = await prisma.user.upsert({
         where: { email: user.email },
+        update: {}, // if already exists, leave untouched
+        create: {
+          email: user.email,
+          name: user.name,
+          creditsRemaining: 20,
+          planExpirationDate: new Date(
+            Date.now() + 30 * 24 * 60 * 60 * 1000
+          ),
+        },
       });
 
-      if (existingUser && account) {
+      // Ensure OAuth account record is linked/updated
+      if (account) {
         await prisma.account.upsert({
           where: {
             provider_providerAccountId: {
@@ -102,13 +114,13 @@ const handler = NextAuth({
             },
           },
           update: {
-            userId: existingUser.id,
+            userId: dbUser.id,
             access_token: account.access_token ?? undefined,
             refresh_token: account.refresh_token ?? undefined,
             expires_at: account.expires_at ?? undefined,
           },
           create: {
-            userId: existingUser.id,
+            userId: dbUser.id,
             provider: account.provider,
             providerAccountId: account.providerAccountId,
             type: account.type,
@@ -124,8 +136,7 @@ const handler = NextAuth({
       }
 
       return true;
-    }
-
+    },
   },
   pages: {
     signIn: "/login",
