@@ -98,8 +98,12 @@ export default function PricingPage() {
             if (!captureRes.ok) throw new Error("Failed to capture PayPal order");
             const capture = await captureRes.json();
 
-            alert(`Payment successful! You now have ${capture.userData.creditsRemaining} credits.`);
-            router.push("/dashboard");
+            if(capture?.userData) {
+                const { creditsRemaining, planExpirationDate } = capture.userData;
+                router.push(`/payments/success?credits=${creditsRemaining}&expiry=${planExpirationDate}`);
+            } else {
+              router.push("/payments/failure");
+            }
           } catch (err) {
             console.error(err);
             alert("Payment capture failed. Please try again.");
