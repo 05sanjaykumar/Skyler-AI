@@ -92,15 +92,21 @@ model AIInstance {
 }
 
 model Transaction {
-  id             String   @id @default(cuid())
-  userId         String
-  amount         Float    // $ spent
-  creditsBought  Int
-  paymentProvider String? // Stripe, PayPal, etc.
-  createdAt      DateTime @default(now())
+  id               String   @id @default(cuid())
+  userId           String
+  amount           Float
+  currency         String   @default("USD")
+  creditsBought    Int
+  paymentProvider  String?              // PayPal, Cashfree, Wise...
+  providerTxnId    String?              // external txn/order id
+  status           String   @default("pending") // pending, success, failed, refunded
+  metadata         Json?                // optional: store raw gateway response
+
+  createdAt        DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id])
 }
+
 
 model CreditLog {
   id        String   @id @default(cuid())
