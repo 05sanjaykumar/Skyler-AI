@@ -75,7 +75,7 @@ export default function PromptSection({ instance, onGenerate }: { instance: any,
 
     setSaving(true);
     // 🔑 Deduct 2 credits first
-    const ok = await deductCredits(session.appToken, 10);
+    const ok = await deductCredits(session.appToken, 1);
     if (!ok) {
       alert("Not enough credits to generate."); // can replace with toast later
       setSaving(false);
