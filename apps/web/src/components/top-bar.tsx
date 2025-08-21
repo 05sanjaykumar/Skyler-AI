@@ -10,18 +10,22 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useCreditsStore } from "@/store/credits-store"
 
 export default function Topbar() {
   const { data: session } = useSession()
   const { theme, setTheme } = useTheme()
-  const [credits, setCredits] = useState(20)
   const [mounted, setMounted] = useState(false)
   const router = useRouter()
+  const { credits, fetchCredits, loading } = useCreditsStore()
+
 
   // Prevent hydration mismatch with next-themes
   useEffect(() => {
     setMounted(true);
-
+    if (session?.appToken) {
+      fetchCredits(session.appToken)
+    }
   }, [])
 
 
