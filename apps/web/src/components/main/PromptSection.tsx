@@ -5,6 +5,8 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { ChevronDown, RefreshCw, Copy, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useCreditsStore } from "@/store/credits-store";
+
 
 export default function PromptSection({ instance, onGenerate }: { instance: any, onGenerate: () => void}) {
   const [promptName, setPromptName] = useState(instance.promptName || "");
@@ -13,6 +15,8 @@ export default function PromptSection({ instance, onGenerate }: { instance: any,
   const [copied, setCopied] = useState(false);
   const [showDecoded, setShowDecoded] = useState(!!instance.promptDecode);
   const { data: session } = useSession();
+
+  const { deductCredits } = useCreditsStore();
 
   async function copyToClipboard() {
     if (!decoded) return;
@@ -28,6 +32,14 @@ export default function PromptSection({ instance, onGenerate }: { instance: any,
 
   async function saveAndDecodePrompt() {
     if (!session?.appToken) return;
+
+    // 🔑 Deduct 2 credits first
+    const ok = await deductCredits(session.appToken, 2);
+    if (!ok) {
+      alert("Not enough credits to generate."); // can replace with toast later
+      setSaving(false);
+      return;
+    }
 
     setSaving(true);
 
@@ -61,10 +73,21 @@ export default function PromptSection({ instance, onGenerate }: { instance: any,
   async function Refresh() {
     if (!session?.appToken) return;
 
+    setSaving(true);
+    // 🔑 Deduct 2 credits first
+    const ok = await deductCredits(session.appToken, 10);
+    if (!ok) {
+      alert("Not enough credits to generate."); // can replace with toast later
+      setSaving(false);
+      return;
+    }
+
     try {
       await onGenerate();
     } catch (error) {
       console.error("Error on Refresh or Fetching:", error);
+    }finally{
+      setSaving(false);
     }
   }
 
@@ -97,10 +120,11 @@ export default function PromptSection({ instance, onGenerate }: { instance: any,
         {decoded && (
           <button
             onClick={Refresh}
-            className="bg-blue-500 text-white px-4 py-2 rounded flex items-center gap-2"
+            disabled={saving}
+            className="bg-blue-500 text-white px-4 py-2 rounded flex items-center gap-2 disabled:opacity-50"
           >
             <RefreshCw className="w-4 h-4" />
-            Refresh
+            {saving ? "Refreshing..." : "Refresh"}
           </button>
         )}
       </div>
