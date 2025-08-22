@@ -8,6 +8,7 @@ import gmailPromptRouter from "./routes/gmailPrompt";
 import googlePull from './routes/webhooks/gmailPull';
 import creditsRoute from './routes/creditsRoute';
 import payPalRoute from './routes/payments/paypal/paypalRoute';
+import cashfreeRoute from './routes/payments/cashfree/cashfreeRoutes';
 import cors from "cors";
 import dotenv from "dotenv";
 dotenv.config();
@@ -33,5 +34,6 @@ app.use("/api/gmail/prompt", gmailPromptRouter);
 app.use("/api/gmail/pull", googlePull);
 app.use("/api/credits", creditsRoute);
 app.use("/api/paypal", payPalRoute);
+app.use("/api/cashfree", cashfreeRoute);
 
 export default app;

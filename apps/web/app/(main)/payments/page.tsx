@@ -5,124 +5,147 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { CheckCircle, ArrowRight } from 'lucide-react';
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-
-const plans = [
-  {
-    name: "Starter",
-    price: "FREE",
-    description: "For individuals and small teams getting started.",
-    features: ["10 AI Instances", "20 Credits", "Approx 10 Completions", "Infinite Manual Edits"],
-    isPopular: false,
-    amount: 0,
-    planId: "starter",
-  },
-  {
-    name: "Mini",
-    price: "$5",
-    description: "For growing businesses and marketing professionals.",
-    features: ["10 AI Instances", "100 Credits", "Approx 60-70 Completions", "Infinite Manual Edits"],
-    isPopular: true,
-    amount: 5,
-    planId: "mini",
-  },
-  {
-    name: "Pro",
-    price: "$10",
-    description: "For large organizations with custom needs.",
-    features: ["10 AI Instances", "200 Credits", "Approx 120-140 Completions", "Infinite Manual Edits"],
-    isPopular: false,
-    amount: 10,
-    planId: "pro",
-  }
-];
+import {plans} from '@/lib/plans'; // Assuming you have a plans.js file with plan details
 
 export default function PricingPage() {
   const router = useRouter();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
-  const { data: session, status } = useSession();
+  const [paymentMethod, setPaymentMethod] = useState<"paypal" | "cashfree">("paypal");
+  const { data: session } = useSession();
 
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
   const token = session?.appToken;
 
   const getAuthHeaders = () => ({
     'Content-Type': 'application/json',
     Authorization: `Bearer ${token}`, 
-  })
+  });
 
-  const handlePayment = async (plan: typeof plans[0]) => {
-  if (plan.amount === 0) {
-    alert("You have selected the free plan!");
-    router.push("/dashboard");
-    return;
-  }
+  // ======================
+  // 🔹 PAYPAL HANDLER
+  // ======================
+  const handlePaypalPayment = async (plan: typeof plans[0]) => {
+    setLoadingPlan(plan.planId);
+    try {
+      const orderRes = await fetch(`${backendUrl}/api/paypal/order`, {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ amount: plan.amount, plan: plan.planId }),
+      });
 
+      if (!orderRes.ok) throw new Error("Failed to create PayPal order");
+      const order = await orderRes.json();
+
+      // Load PayPal SDK dynamically
+      const script = document.createElement("script");
+      script.src = `https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}&currency=USD`;
+      script.async = true;
+      document.body.appendChild(script);
+
+      script.onload = () => {
+        // @ts-ignore
+        window.paypal.Buttons({
+          createOrder: () => order.id,
+          onApprove: async (data: any) => {
+            try {
+              const captureRes = await fetch(`${backendUrl}/api/paypal/capture`, {
+                method: "POST",
+                headers: getAuthHeaders(),
+                credentials: 'include',
+                body: JSON.stringify({ orderId: data.orderID, plan: plan.planId }),
+              });
+
+              if (!captureRes.ok) throw new Error("Failed to capture PayPal order");
+              const capture = await captureRes.json();
+
+              if(capture?.userData) {
+                const { creditsRemaining, planExpirationDate } = capture.userData;
+                router.push(`/payments/success?credits=${creditsRemaining}&expiry=${planExpirationDate}`);
+              } else {
+                router.push("/payments/failure");
+              }
+            } catch (err) {
+              console.error(err);
+              alert("Payment capture failed. Please try again.");
+            }
+          },
+          onError: (err: any) => {
+            console.error(err);
+            alert("PayPal error occurred. Please try again.");
+          }
+        }).render("#paypal-button-container");
+      };
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong while creating the PayPal order.");
+    } finally {
+      setLoadingPlan(null);
+    }
+  };
+// ======================
+// 🔹 CASHFREE HANDLER
+// ======================
+const handleCashfreePayment = async (plan: typeof plans[0]) => {
   setLoadingPlan(plan.planId);
-
   try {
-    // 1. Create PayPal order
-    const orderRes = await fetch(`${backendUrl}/api/paypal/order`, {
+    const orderRes = await fetch(`${backendUrl}/api/cashfree/order`, {
       method: "POST",
-      headers: {
-        ...getAuthHeaders(),
-        "Content-Type": "application/json",
-      },
+      headers: getAuthHeaders(),
       credentials: "include",
       body: JSON.stringify({ amount: plan.amount, plan: plan.planId }),
     });
 
-    if (!orderRes.ok) throw new Error("Failed to create PayPal order");
-    const order = await orderRes.json();
+    if (!orderRes.ok) throw new Error("Failed to create Cashfree order");
+    const { payment_session_id } = await orderRes.json();
 
-    // 2. Load PayPal SDK dynamically
+    // Load Cashfree SDK dynamically
     const script = document.createElement("script");
-    script.src = `https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}&currency=USD`;
+    script.src = "https://sdk.cashfree.com/js/ui/2.0.0/cashfree.sandbox.js"; // use .prod.js in live
     script.async = true;
     document.body.appendChild(script);
 
     script.onload = () => {
+      // ✅ Correct usage of Cashfree checkout
       // @ts-ignore
-      window.paypal.Buttons({
-        createOrder: () => order.id,
-        onApprove: async (data: any, actions: any) => {
-          try {
-            const captureRes = await fetch(`${backendUrl}/api/paypal/capture`, {
-              method: "POST",
-              headers: {
-                ...getAuthHeaders(),
-                "Content-Type": "application/json",
-              },
-              credentials: "include",
-              body: JSON.stringify({ orderId: data.orderID, plan: plan.planId }),
-            });
+      const cashfree = (window as any).Cashfree;
 
-            if (!captureRes.ok) throw new Error("Failed to capture PayPal order");
-            const capture = await captureRes.json();
+      if (!cashfree) {
+        alert("Cashfree SDK not loaded");
+        return;
+      }
 
-            if(capture?.userData) {
-                const { creditsRemaining, planExpirationDate } = capture.userData;
-                router.push(`/payments/success?credits=${creditsRemaining}&expiry=${planExpirationDate}`);
-            } else {
-              router.push("/payments/failure");
-            }
-          } catch (err) {
-            console.error(err);
-            alert("Payment capture failed. Please try again.");
-          }
-        },
-        onError: (err: any) => {
-          console.error(err);
-          alert("PayPal error occurred. Please try again.");
-        }
-      }).render("#paypal-button-container");
+      cashfree.initPopup({
+        paymentSessionId: payment_session_id,
+        redirectTarget: "_modal", // or "_self"
+      });
+
+      cashfree.open();
     };
   } catch (err) {
     console.error(err);
-    alert("Something went wrong while creating the order.");
+    alert("Something went wrong while creating the Cashfree order.");
   } finally {
     setLoadingPlan(null);
   }
 };
 
+
+  // ======================
+  // 🔹 WRAPPER HANDLER
+  // ======================
+  const handlePayment = (plan: typeof plans[0]) => {
+    if (plan.amount === 0) {
+      alert("You have selected the free plan!");
+      router.push("/dashboard");
+      return;
+    }
+
+    if (paymentMethod === "paypal") {
+      handlePaypalPayment(plan);
+    } else {
+      handleCashfreePayment(plan);
+    }
+  };
 
   return (
     <div className="bg-[#0A0A0A] text-gray-200 min-h-screen antialiased">
@@ -145,6 +168,26 @@ export default function PricingPage() {
           </p>
         </div>
 
+        {/* Payment Method Toggle */}
+        <div className="flex gap-4 justify-center mt-8">
+          <Button 
+            variant={paymentMethod === "paypal" ? "default" : "outline"} 
+            onClick={() => setPaymentMethod("paypal")}
+          >
+            PayPal
+          </Button>
+          <Button 
+            variant={paymentMethod === "cashfree" ? "default" : "outline"} 
+            onClick={() => setPaymentMethod("cashfree")}
+          >
+            Cashfree
+          </Button>
+        </div>
+
+          {/* PayPal Button Container */}
+          <div id="paypal-button-container" className="flex justify-center align-middle mt-8">
+            
+          </div>
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
           {plans.map(plan => (
             <Card 
@@ -180,7 +223,7 @@ export default function PricingPage() {
                   className={`w-full text-white ${plan.isPopular ? 'bg-violet-600 hover:bg-violet-700' : 'bg-gray-800 hover:bg-gray-700'}`}
                   disabled={loadingPlan === plan.planId}
                 >
-                  {plan.price === "FREE" ? "Get Started" : "Choose Plan"}
+                  {plan.price === "FREE" ? "Get Started" : `Choose Plan (${paymentMethod})`}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </CardFooter>
@@ -188,12 +231,6 @@ export default function PricingPage() {
           ))}
         </div>
 
-        <div className="text-center mt-16">
-          <p className="text-gray-400">Need more? <a href="#" className="text-violet-400 font-medium underline">Contact us for enterprise solutions.</a></p>
-        </div>
-
-        {/* PayPal Button Container */}
-        <div id="paypal-button-container" className="mt-8"></div>
       </main>
     </div>
   );
