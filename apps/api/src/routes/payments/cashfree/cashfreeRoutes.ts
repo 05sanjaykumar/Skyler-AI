@@ -34,7 +34,10 @@ router.post("/order", verifyJWT, async (req: AuthRequest, res: Response) => {
         customer_email: "test@example.com", // replace with actual user email
         customer_phone: "9999999999",
       },
-      // Optionally, include order_meta, notes, etc
+      order_meta: {
+      notify_url: "https://b7c017bd0d7e.ngrok-free.app/api/cashfree/webhook/",
+      return_url: `http://localhost:3000/payments/cashfree-return?order_id=${orderId}`
+  }
     };
 
     const orderResponse = await cashfree.PGCreateOrder(request);
@@ -66,7 +69,6 @@ router.post("/order", verifyJWT, async (req: AuthRequest, res: Response) => {
 router.post("/webhook", async (req: Request, res: Response) => {
   try {
     console.log("Raw Cashfree webhook body:", JSON.stringify(req.body, null, 2));
-
     const event = req.body;
 
     const orderId = event?.data?.order?.order_id;
@@ -119,6 +121,61 @@ router.post("/webhook", async (req: Request, res: Response) => {
     res.status(500).send("FAIL");
   }
 });
+
+
+router.post("/check-status", verifyJWT, async (req: AuthRequest, res: Response) => {
+  try {
+    const { order_id } = req.body;
+    
+    if (!order_id) {
+      return res.status(400).json({ error: "Order ID required" });
+    }
+    
+    // Get transaction from database
+    const transaction = await prisma.transaction.findUnique({
+      where: { 
+        providerTxnId: order_id,
+        userId: req.userId // Security: only user's own transactions
+      },
+      include: {
+        user: {
+          select: {
+            creditsRemaining: true,
+            planExpirationDate: true
+          }
+        }
+      }
+    });
+
+    if (!transaction) {
+      return res.status(404).json({ 
+        error: "Transaction not found",
+        status: "failed"
+      });
+    }
+
+    const response: any = {
+      status: transaction.status,
+      orderId: transaction.providerTxnId,
+      amount: transaction.amount,
+      creditsBought: transaction.creditsBought
+    };
+
+    // If successful, include user data for redirect
+    if (transaction.status === "success" && transaction.user) {
+      response.userData = {
+        creditsRemaining: transaction.user.creditsRemaining,
+        planExpirationDate: transaction.user.planExpirationDate
+      };
+    }
+
+    res.json(response);
+  } catch (error) {
+    console.error("Error checking payment status:", error);
+    res.status(500).json({ error: "Server error", status: "failed" });
+  }
+});
+
 
 
 export default router;
