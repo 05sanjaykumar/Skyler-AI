@@ -49,11 +49,12 @@ router.post("/order", verifyJWT, async (req: AuthRequest, res: Response) => {
         paymentProvider: "Cashfree",
         providerTxnId: orderId,
         status: "pending",
+        currency: "INR",
         metadata: JSON.parse(JSON.stringify(order)),
         type: "credits_purchase",
       },
     });
-
+    console.log("Created Cashfree order:", order);
     res.json(order);
   } catch (err) {
     console.error("Cashfree Order Error:", err);
@@ -64,10 +65,17 @@ router.post("/order", verifyJWT, async (req: AuthRequest, res: Response) => {
 // STEP 2: Webhook (Cashfree notifies payment result)
 router.post("/webhook", async (req: Request, res: Response) => {
   try {
+    console.log("Raw Cashfree webhook body:", JSON.stringify(req.body, null, 2));
+
     const event = req.body;
 
-    const orderId = event.data.order.order_id;
-    const paymentStatus = event.data.payment.payment_status;
+    const orderId = event?.data?.order?.order_id;
+    const paymentStatus = event?.data?.payment?.payment_status;
+
+    if (!orderId) {
+      console.log("Ignoring non-payment webhook");
+      return res.status(200).send("IGNORED");
+    }
     const status = paymentStatus === "SUCCESS" ? "success" : "failed";
 
     // Fetch transaction (to get plan back)
