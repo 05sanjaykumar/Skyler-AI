@@ -14,14 +14,16 @@ interface AuthRequest extends Request {
 // STEP 1: Create Order
 router.post("/order", verifyJWT, async (req: AuthRequest, res: Response) => {
   try {
-    const { amount, plan } = req.body;
-    
+    let { amount, plan } = req.body;
+
     if (!amount || typeof amount !== "number") {
       return res.status(400).json({ error: "Invalid amount" });
     }
     if (!plan) return res.status(400).json({ error: "Plan is required" });
 
     const orderId = `order_${Date.now()}_${req.userId}`;
+
+    amount = amount * 87;
 
     const request = {
       order_id: orderId,

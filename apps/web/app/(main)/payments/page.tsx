@@ -100,26 +100,29 @@ const handleCashfreePayment = async (plan: typeof plans[0]) => {
 
     // Load Cashfree SDK dynamically
     const script = document.createElement("script");
-    script.src = "https://sdk.cashfree.com/js/ui/2.0.0/cashfree.sandbox.js"; // use .prod.js in live
+    script.src = "https://sdk.cashfree.com/js/v3/cashfree.js";  // v3 SDK
     script.async = true;
     document.body.appendChild(script);
 
-    script.onload = () => {
-      // ✅ Correct usage of Cashfree checkout
-      // @ts-ignore
-      const cashfree = (window as any).Cashfree;
 
-      if (!cashfree) {
-        alert("Cashfree SDK not loaded");
+    script.onload = () => {
+      const cf = (window as any).Cashfree?.({ mode: "sandbox" });
+      if (!cf) {
+        alert("Cashfree SDK failed to load.");
         return;
       }
 
-      cashfree.initPopup({
-        paymentSessionId: payment_session_id,
-        redirectTarget: "_modal", // or "_self"
-      });
+      cf.checkout({
+    paymentSessionId: payment_session_id,
+      redirectTarget: "_modal", // or "_self", etc.
+    }).then((result: any) => {
+      if (result.error) {
+        alert(`Payment failed: ${result.error.message}`);
+      } else if (result.redirect) {
+        console.log("Redirecting to Cashfree-hosted checkout...");
+      }
+    });
 
-      cashfree.open();
     };
   } catch (err) {
     console.error(err);
