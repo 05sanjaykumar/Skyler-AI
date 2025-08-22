@@ -15,6 +15,10 @@ interface AuthRequest extends Request {
 router.post("/order", verifyJWT, async (req: AuthRequest, res: Response) => {
   try {
     const { amount, plan } = req.body;
+    
+    if (!amount || typeof amount !== "number") {
+      return res.status(400).json({ error: "Invalid amount" });
+    }
     if (!plan) return res.status(400).json({ error: "Plan is required" });
 
     const orderId = `order_${Date.now()}_${req.userId}`;
@@ -31,7 +35,8 @@ router.post("/order", verifyJWT, async (req: AuthRequest, res: Response) => {
       // Optionally, include order_meta, notes, etc
     };
 
-    const order = await cashfree.PGCreateOrder(request);
+    const orderResponse = await cashfree.PGCreateOrder(request);
+    const order = orderResponse.data;
 
     // Save transaction in DB as before
     await prisma.transaction.create({
@@ -42,7 +47,7 @@ router.post("/order", verifyJWT, async (req: AuthRequest, res: Response) => {
         paymentProvider: "Cashfree",
         providerTxnId: orderId,
         status: "pending",
-        metadata: order,
+        metadata: JSON.parse(JSON.stringify(order)),
         type: "credits_purchase",
       },
     });
@@ -61,22 +66,42 @@ router.post("/webhook", async (req: Request, res: Response) => {
 
     const orderId = event.data.order.order_id;
     const paymentStatus = event.data.payment.payment_status;
-
     const status = paymentStatus === "SUCCESS" ? "success" : "failed";
 
+    // Fetch transaction (to get plan back)
+    const txn = await prisma.transaction.findUnique({
+      where: { providerTxnId: orderId },
+    });
+
+    if (!txn) {
+      console.error("Transaction not found:", orderId);
+      return res.status(404).send("Transaction not found");
+    }
+
+    // Pull plan back from metadata
+    const plan = (txn.metadata as any)?.plan || "mini";
+
+    // Same credits logic as PayPal
+    const PLANS: Record<string, { credits: number; days: number }> = {
+      mini: { credits: 100, days: 30 },
+      pro: { credits: 200, days: 30 },
+    };
+    const creditsBought = status === "success" ? PLANS[plan]?.credits || 0 : 0;
+
+    let userData = null;
+    if (status === "success") {
+      userData = await purchasePlanForUser(txn.userId, plan);
+    }
+
     // Update transaction
-    const txn = await prisma.transaction.update({
+    await prisma.transaction.update({
       where: { providerTxnId: orderId },
       data: {
         status,
-        metadata: event,
+        creditsBought,
+        metadata: JSON.parse(JSON.stringify(event)), // save Cashfree webhook payload
       },
     });
-
-    // Give credits if success
-    if (status === "success") {
-      await purchasePlanForUser(txn.userId, "mini"); // TODO: map orderId → plan
-    }
 
     res.status(200).send("OK");
   } catch (err) {
@@ -84,5 +109,6 @@ router.post("/webhook", async (req: Request, res: Response) => {
     res.status(500).send("FAIL");
   }
 });
+
 
 export default router;
