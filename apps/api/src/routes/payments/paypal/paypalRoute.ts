@@ -49,7 +49,6 @@ router.post("/order", verifyJWT, async (req: AuthRequest, res: Response) => {
 });
 
 // POST /api/paypal/capture
-// POST /api/paypal/capture
 router.post("/capture", verifyJWT, async (req: AuthRequest, res: Response) => {
   try {
     const { orderId, plan } = req.body;
