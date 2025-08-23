@@ -117,7 +117,7 @@ export default function CreateFilterForm({ instance, onGenerate }: { instance: a
     try {
       await saveForm(result); // ✅ persist to backend
       console.log("Submitted and saved:", result);
-      alert("Filter saved successfully!");
+      onGenerate(); // trigger parent to generate emails
     } catch (err) {
       console.error("Error on submit:", err);
       alert("Failed to save filter.");

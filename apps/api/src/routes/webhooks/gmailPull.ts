@@ -104,26 +104,40 @@ router.get("/:instanceId", verifyJWT, async (req: AuthRequest, res: Response) =>
     const messages: any[] = [];
 
     if (data.messages) {
-      for (const msg of data.messages) {
-        const msgData = await gmail.users.messages.get({
-          userId: "me",
-          id: msg.id!,
-        });
+      if (data.messages) {
+        const BATCH_SIZE = 10; // tweak: 20–50 is usually safe for Gmail API
 
-        const payload = msgData.data.payload;
-        const headers = payload?.headers || [];
+        // Break messages into chunks
+        for (let i = 0; i < data.messages.length; i += BATCH_SIZE) {
+          const batch = data.messages.slice(i, i + BATCH_SIZE);
 
-        messages.push({
-          id: msg.id!,
-          threadId: msgData.data.threadId,
-          date: headers.find((h: any) => h.name === "Date")?.value,
-          from: headers.find((h: any) => h.name === "From")?.value,
-          to: headers.find((h: any) => h.name === "To")?.value,
-          subject: headers.find((h: any) => h.name === "Subject")?.value,
-          snippet: msgData.data.snippet || "",
-          aiContent: generateAIContent(payload, msgData.data.snippet ?? ""),
-          body: null,   
-        });
+          // Fire all requests in this batch in parallel
+          const batchResults = await Promise.all(
+            batch.map(async (msg) => {
+              const msgData = await gmail.users.messages.get({
+                userId: "me",
+                id: msg.id!,
+              });
+
+              const payload = msgData.data.payload;
+              const headers = payload?.headers || [];
+
+              return {
+                id: msg.id!,
+                threadId: msgData.data.threadId,
+                date: headers.find((h: any) => h.name === "Date")?.value,
+                from: headers.find((h: any) => h.name === "From")?.value,
+                to: headers.find((h: any) => h.name === "To")?.value,
+                subject: headers.find((h: any) => h.name === "Subject")?.value,
+                snippet: msgData.data.snippet || "",
+                aiContent: generateAIContent(payload, msgData.data.snippet ?? ""),
+                body: null,
+              };
+            })
+          );
+
+          messages.push(...batchResults); // add results of this batch
+        }
       }
     }
 
