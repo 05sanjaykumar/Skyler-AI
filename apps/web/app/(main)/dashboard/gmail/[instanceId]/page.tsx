@@ -6,10 +6,10 @@ import { useSession } from "next-auth/react";
 import { db } from "@/lib/db";
 
 // import PromptSection from "@/components/PromptSection";
-import PromptSection from "@/components/main/PromptSection";
-import EmailsSection from "@/components/main/EmailsSection";
-import EmailDetail from "@/components/main/EmailDetail";
-import ReplySection from "@/components/main/ReplySection";
+import PromptSection from "@/components/Gmail/PromptSection";
+import EmailsSection from "@/components/Gmail/EmailsSection";
+import EmailDetail from "@/components/Gmail/EmailDetail";
+import ReplySection from "@/components/Gmail/ReplySection";
 
 type Email = {
   id: string;
