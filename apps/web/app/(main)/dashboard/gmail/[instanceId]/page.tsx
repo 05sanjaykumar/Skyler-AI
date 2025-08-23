@@ -10,6 +10,7 @@ import PromptSection from "@/components/Gmail/PromptSection";
 import EmailsSection from "@/components/Gmail/EmailsSection";
 import EmailDetail from "@/components/Gmail/EmailDetail";
 import ReplySection from "@/components/Gmail/ReplySection";
+import GmailForm from "@/components/Gmail/GmailForm";
 
 type Email = {
   id: string;
