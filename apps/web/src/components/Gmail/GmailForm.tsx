@@ -1,3 +1,4 @@
+// apps/web/src/components/Gmail/GmailForm.tsx
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -13,6 +14,7 @@ import { Slider } from "@/components/ui/slider";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useSession } from "next-auth/react";
 import { useCreditsStore } from "@/store/credits-store";
+import { useEffect } from "react";
 
 // -----------------
 // Schema Definition
@@ -70,13 +72,6 @@ export default function CreateFilterForm({ instance, onGenerate }: { instance: a
   });
 
   async function onSubmit(values: FormValues) {
-
-    if (!session?.appToken) return;
-    const ok = await deductCredits(session.appToken, 2);
-    if (!ok) {
-      alert("Not enough credits to generate.");
-      return;
-    }
     // -------- Gmail Query Construction --------
     const gmailParts: string[] = [];
     if (values.from) gmailParts.push(`from:${values.from}`);
@@ -119,9 +114,71 @@ export default function CreateFilterForm({ instance, onGenerate }: { instance: a
       aiFilterRules,
     };
 
-    console.log("Submitted:", result);
-    alert("Filter saved!\n" + JSON.stringify(result, null, 2));
+    try {
+      await saveForm(result); // ✅ persist to backend
+      console.log("Submitted and saved:", result);
+      alert("Filter saved successfully!");
+    } catch (err) {
+      console.error("Error on submit:", err);
+      alert("Failed to save filter.");
+    }
   }
+
+  const saveForm = async (details: any) => {
+    if (!session?.appToken) return;
+    const ok = await deductCredits(session.appToken, 2);
+    if (!ok) {
+      alert("Not enough credits to generate.");
+      return;
+    }
+
+    try {
+       await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/gmail/prompt/${instance.id}/saveForm`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.appToken}`,
+          },
+          credentials: "include",
+          body: JSON.stringify({ details }),
+        }
+      );
+      console.log("Form saved successfully");
+    } catch (error) {
+      console.error("Error saving form:", error);
+    }
+  }
+
+  // LoadForm
+ useEffect(() => {
+    if (!session?.appToken || !instance?.id) return;
+
+    const loadForm = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/gmail/prompt/${instance.id}/loadForm`,
+          {
+            headers: {
+              Authorization: `Bearer ${session.appToken}`,
+            },
+            credentials: "include",
+          }
+        );
+        if (res.ok) {
+          const saved = await res.json();
+          if (saved) form.reset(saved); // ✅ hydrate
+        }
+      } catch (err) {
+        console.error("Load form error:", err);
+      }
+    };
+
+    loadForm();
+  }, [session?.appToken, instance?.id]);
+
+  
 
   const today = new Date().toISOString().slice(0, 10);
   const after = form.watch("after");
