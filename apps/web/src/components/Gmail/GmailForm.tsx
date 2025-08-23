@@ -168,7 +168,27 @@ export default function CreateFilterForm({ instance, onGenerate }: { instance: a
         );
         if (res.ok) {
           const saved = await res.json();
-          if (saved) form.reset(saved); // ✅ hydrate
+          if (saved) {
+            const mapped: FormValues = {
+              from: saved.gmailParams?.searchQuery?.match(/from:(\S+)/)?.[1] || "",
+              to: saved.gmailParams?.searchQuery?.match(/to:(\S+)/)?.[1] || "",
+              subject: saved.gmailParams?.searchQuery?.match(/subject:(\S+)/)?.[1] || "",
+              hasWords: "", // you’d need to parse searchQuery further if you want
+              notWords: "",
+              hasAttachment: saved.gmailParams?.searchQuery?.includes("has:attachment") || false,
+              after: saved.gmailParams?.dateQuery?.match(/after:(\S+)/)?.[1] || "",
+              before: saved.gmailParams?.dateQuery?.match(/before:(\S+)/)?.[1] || "",
+              aiEnabled: !!saved.aiFilterRules,
+              aiKeywords: saved.aiFilterRules?.keywords?.join(", ") || "",
+              sentiment: saved.aiFilterRules?.sentiment || "any",
+              enableSemantic: saved.aiFilterRules?.requiresSemanticAnalysis || false,
+              similarityThreshold: saved.aiFilterRules?.similarityThreshold || 0.8,
+              outputFormat: saved.outputFormat || "summary", // fallback
+              maxResults: saved.gmailParams?.maxResults || 50,
+            };
+            form.reset(mapped);
+          }
+          console.log("Loaded saved form:", saved);
         }
       } catch (err) {
         console.error("Load form error:", err);

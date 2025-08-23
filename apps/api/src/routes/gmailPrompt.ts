@@ -65,10 +65,9 @@ router.post("/:id/saveForm", verifyJWT, async (req: AuthRequest, res: Response) 
   }
 });
 
-router.get("/gmail/prompt/:id/loadForm", verifyJWT, async (req: AuthRequest, res: Response) => {
+router.get("/:id/loadForm", verifyJWT, async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-
     const instance = await prisma.aIInstance.findUnique({ where: { id } });
     if (!instance || instance.userId !== req.userId) {
       return res.status(404).json({ error: "Instance not found" });
