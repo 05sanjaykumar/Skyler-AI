@@ -31,6 +31,9 @@ const formSchema = z.object({
   enableSemantic: z.boolean(),
   similarityThreshold: z.number().min(0.5).max(0.95),
   outputFormat: z.enum(["raw", "summary", "digest"]),
+
+  // ✅ New
+  maxResults: z.number().min(1).max(500),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -55,6 +58,7 @@ export default function CreateFilterForm() {
       enableSemantic: false,
       similarityThreshold: 0.8,
       outputFormat: "summary",
+      maxResults: 50, // ✅ default
     },
   });
 
@@ -63,6 +67,11 @@ export default function CreateFilterForm() {
     console.log("Submitted filter:", values);
     alert("Filter saved!\n" + JSON.stringify(values, null, 2));
   }
+
+  // Today's date in yyyy-mm-dd format for date input max attribute
+  const today = new Date().toISOString().slice(0, 10);
+  const after = form.watch("after");
+  const before = form.watch("before");
 
   return (
     <Card className="max-w-2xl mx-auto mt-6 shadow-lg rounded-2xl">
@@ -76,11 +85,11 @@ export default function CreateFilterForm() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label>From</Label>
-              <Input placeholder="example@domain.com" {...form.register("from")} />
+              <Input placeholder="example@domain.com, name, etc" {...form.register("from")} />
             </div>
             <div>
               <Label>To</Label>
-              <Input placeholder="recipient@domain.com" {...form.register("to")} />
+              <Input placeholder="recipient@domain.com, name, etc" {...form.register("to")} />
             </div>
           </div>
 
@@ -103,12 +112,27 @@ export default function CreateFilterForm() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="after">After Date</Label>
-              <Input type="date" id="after" {...form.register("after")} />
+              <Input type="date" id="after" {...form.register("after")} max={before || today}
+          className="border rounded p-2" />
             </div>
             <div>
               <Label htmlFor="before">Before Date</Label>
-              <Input type="date" id="before" {...form.register("before")} />
+              <Input type="date" id="before" {...form.register("before")}  min={after || undefined}
+          max={today} className="border rounded p-2" />
             </div>
+          </div>
+
+          {/* --- Max Results --- */}
+          <div>
+            <Label>Max Results (1–500)</Label>
+            <Input
+              type="number"
+              min={1}
+              max={500}
+              defaultValue={50}
+              {...form.register("maxResults", { valueAsNumber: true })}
+              className="w-32"
+            />
           </div>
 
           <div className="flex items-center space-x-2">
