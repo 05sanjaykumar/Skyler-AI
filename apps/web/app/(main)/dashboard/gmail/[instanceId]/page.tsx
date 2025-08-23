@@ -133,7 +133,7 @@ export default function InstanceDetailPage({ params }: { params: Promise<{ insta
       <div className="w-full md:w-3/5 p-4 border-r border-gray-300 overflow-auto">
         <h1 className="text-2xl font-bold mb-4 uppercase">{instance.name} INSTANCE</h1>
 
-        <PromptSection 
+        <GmailForm 
         instance={instance} 
         onGenerate={fetchEmails} 
         />

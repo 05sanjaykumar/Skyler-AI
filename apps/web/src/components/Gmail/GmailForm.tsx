@@ -46,7 +46,7 @@ type FormValues = z.infer<typeof formSchema>;
 export default function CreateFilterForm({ instance, onGenerate }: { instance: any, onGenerate: () => void }) {
 
   const { data: session } = useSession();
-  const { credits } = useCreditsStore();
+  const { deductCredits } = useCreditsStore();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -69,7 +69,14 @@ export default function CreateFilterForm({ instance, onGenerate }: { instance: a
     },
   });
 
-  function onSubmit(values: FormValues) {
+  async function onSubmit(values: FormValues) {
+
+    if (!session?.appToken) return;
+    const ok = await deductCredits(session.appToken, 2);
+    if (!ok) {
+      alert("Not enough credits to generate.");
+      return;
+    }
     // -------- Gmail Query Construction --------
     const gmailParts: string[] = [];
     if (values.from) gmailParts.push(`from:${values.from}`);

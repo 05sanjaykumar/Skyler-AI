@@ -40,6 +40,31 @@ router.post("/:id", verifyJWT, async (req: AuthRequest, res: Response) => {
   }
 });
 
+// api/gmail/prompt/:id/save
+router.post("/gmail/prompt/:id/save", verifyJWT, async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { details } = req.body;
+
+    const instance = await prisma.aIInstance.findUnique({ where: { id } });
+    if (!instance || instance.userId !== req.userId) {
+      return res.status(404).json({ error: "Instance not found" });
+    }
+
+    await prisma.aIInstance.update({
+      where: { id },
+      data: {
+        promptDecode: JSON.parse(JSON.stringify(details)),
+        promptName: details // optional if you want to store raw prompt text too
+      }
+    });
+
+    res.json(details);
+  } catch (error) {
+    console.error("Decode Prompt Error:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 
 
 export default router;
