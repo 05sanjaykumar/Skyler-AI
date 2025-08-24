@@ -1,0 +1,89 @@
+// apps/web/src/store/mails.ts
+import { db } from "@/lib/db";
+import { create } from "zustand";
+
+export interface Email {
+  id: string;
+  subject: string;
+  body?: string;
+  from: string;
+  to: string;
+  date: string;
+  payload?: Record<string, any>;
+  snippet?: string;
+  instanceId?: string;
+}
+
+interface MailState {
+  emails: Email[];
+  selectedEmail: Email | null;
+  emailsLoading: boolean;
+
+  setSelectedEmail: (email: Email | null) => void;
+  loadCachedEmails: (instanceId: string) => Promise<void>;
+  saveEmails: (instanceId: string, emails: Email[]) => Promise<void>;
+}
+
+export const useMailStore = create<MailState>((set, get) => ({
+  emails: [],
+  selectedEmail: null,
+  emailsLoading: false,
+
+  setSelectedEmail: (email) => set({ selectedEmail: email }),
+
+  saveEmails: async (instanceId, emails) => {
+    // wipe old cache for that instance
+    await db.emails.where("instanceId").equals(instanceId).delete();
+
+    const emailsWithInstance = emails.map((email) => ({
+      ...email,
+      instanceId,
+      snippet: email.snippet ?? "",
+    }));
+    await db.emails.bulkPut(emailsWithInstance);
+
+    console.log("Emails cached locally!: ", emailsWithInstance);
+    set({ emails: emailsWithInstance });
+  },
+
+  loadCachedEmails: async (instanceId) => {
+    set({ emailsLoading: true });
+    const cachedEmails = await db.emails.where("instanceId").equals(instanceId).toArray();
+
+    const normalized: Email[] = cachedEmails.map((e) => ({
+      id: e.id,
+      subject: e.subject,
+      body: e.body || "",
+      from: e.from,
+      to: e.to,
+      date: e.date,
+      payload: e.payload || {},
+      snippet: e.snippet,
+      instanceId: e.instanceId,
+    }));
+
+    set({ emails: normalized, emailsLoading: false });
+    console.log("Loaded emails from cache:", normalized);
+  },
+
+  deleteCachedEmail: async (instanceId: string, emailId: string) => {
+    await db.emails
+      .where({ instanceId, id: emailId })
+      .delete();
+
+    const filtered = get().emails.filter(
+      (e) => !(e.instanceId === instanceId && e.id === emailId)
+    );
+
+    set((state) => ({
+      emails: filtered,
+      selectedEmail:
+        state.selectedEmail?.id === emailId &&
+        state.selectedEmail?.instanceId === instanceId
+          ? null
+          : state.selectedEmail,
+    }));
+
+    console.log(`Deleted email ${emailId} from cache for instance ${instanceId}`);
+  },
+}));

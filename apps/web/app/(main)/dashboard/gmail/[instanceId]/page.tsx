@@ -4,9 +4,10 @@
 import { use, useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { db } from "@/lib/db";
+import { useMailStore } from "@/store/mails";
 
-// import PromptSection from "@/components/PromptSection";
-import PromptSection from "@/components/Gmail/PromptSection";
+
+// import PromptSection from "@/components/Gmail/PromptSection";
 import EmailsSection from "@/components/Gmail/EmailsSection";
 import EmailDetail from "@/components/Gmail/EmailDetail";
 import ReplySection from "@/components/Gmail/ReplySection";
@@ -32,6 +33,8 @@ export default function InstanceDetailPage({ params }: { params: Promise<{ insta
   const [emails, setEmails] = useState<Email[]>([]);
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
   const [emailsLoading, setEmailsLoading] = useState(false);
+
+  
 
     // Helper functions for Dexie
   async function saveEmails(emails: Email[]) {
