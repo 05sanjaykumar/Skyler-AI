@@ -1,19 +1,7 @@
 // apps/web/src/store/mails.ts
 import { db } from "@/lib/db";
 import { create } from "zustand";
-
-export interface Email {
-  id: string;
-  subject: string;
-  body?: string;
-  from: string;
-  to: string;
-  date: string;
-  payload?: Record<string, any>;
-  snippet?: string;
-  instanceId?: string;
-}
-
+import { Email } from "@/../types/email";
 interface MailState {
   emails: Email[];
   selectedEmail: Email | null;

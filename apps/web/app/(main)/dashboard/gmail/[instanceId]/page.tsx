@@ -25,59 +25,23 @@ type Email = {
 };
 
 export default function InstanceDetailPage({ params }: { params: Promise<{ instanceId: string }> }) {
-  const { instanceId } = use(params);
-  const [instance, setInstance] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+    const { instanceId } = use(params);
   const { data: session, status } = useSession();
 
-  const [emails, setEmails] = useState<Email[]>([]);
-  const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
-  const [emailsLoading, setEmailsLoading] = useState(false);
+  const [instance, setInstance] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  
+  // grab zustand state/actions
+  const {
+    emails,
+    emailsLoading,
+    loadCachedEmails,
+    saveEmails,
+    selectedEmail,
+    setSelectedEmail,
+  } = useMailStore();
 
-    // Helper functions for Dexie
-  async function saveEmails(emails: Email[]) {
-    await db.emails.where("instanceId").equals(instanceId).delete();
-    const emailsWithInstance = emails.map(email => ({
-      ...email,
-      instanceId,
-    }));
-    await db.emails.bulkPut(emailsWithInstance); // directly store as-is
-    console.log("Emails cached locally!: ", emailsWithInstance);
-  }
-
-  async function loadEmails(): Promise<Email[]> {
-    const cachedEmails = await db.emails.where("instanceId").equals(instanceId).toArray();
-
-    const normalized: Email[] = cachedEmails.map((e) => ({
-      id: e.id,
-      subject: e.subject,
-      body: e.body || "",        // default to empty string
-      from: e.from,
-      to: e.to,
-      date: e.date,
-      payload: e.payload || {},  // default to empty object
-      snippet: e.snippet,
-    }));
-
-    return normalized;
-  }
-
-  // Load cached emails first; fallback to fetch if empty
-  const loadCachedEmails = async () => {
-    setEmailsLoading(true);
-
-    const cachedEmails = await loadEmails();
-    if (cachedEmails.length > 0) {
-      setEmails(cachedEmails);
-      console.log("Loaded emails from cache:", cachedEmails);
-    }
-    setEmailsLoading(false);
-  };
-
-
-  // Fetch instance data
+  // fetch instance metadata
   useEffect(() => {
     if (status !== "authenticated") return;
 
@@ -100,32 +64,35 @@ export default function InstanceDetailPage({ params }: { params: Promise<{ insta
     fetchInstance();
   }, [instanceId, session?.appToken, status]);
 
-  // Fetch emails on load & when instance changes
+  // fetch + cache emails from backend
   const fetchEmails = async () => {
     if (status !== "authenticated") return;
 
-    setEmailsLoading(true);
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/gmail/pull/${instanceId}`, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${session?.appToken || ""}`,
-      },
-      credentials: "include",
-    });
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/gmail/pull/${instanceId}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.appToken || ""}`,
+        },
+        credentials: "include",
+      });
 
-    if (res.ok) {
-      const data = await res.json();
-      setEmails(data.messages);
-      await saveEmails(data.messages);
-      console.log("Fetched emails:", data.messages);
+      if (res.ok) {
+        const data = await res.json();
+        await saveEmails(instanceId, data.messages);
+        console.log("Fetched emails:", data.messages);
+      }
+    } catch (err) {
+      console.error("Failed fetching emails:", err);
     }
-    setEmailsLoading(false);
   };
 
-  // Run once on mount
+  // load cached emails on mount
   useEffect(() => {
-    loadCachedEmails();
-  }, [instanceId, session?.appToken, status]);
+    if (status === "authenticated") {
+      loadCachedEmails(instanceId);
+    }
+  }, [instanceId, session?.appToken, status, loadCachedEmails]);
 
   if (loading) return <div>Loading instance...</div>;
   if (!instance) return <div>Instance not found</div>;
@@ -149,7 +116,6 @@ export default function InstanceDetailPage({ params }: { params: Promise<{ insta
             <EmailsSection
               emails={emails}
               onSelect={setSelectedEmail}
-              onDelete={(id) => setEmails((prev) => prev.filter((e) => e.id !== id))}
             />
           )}
         </div>

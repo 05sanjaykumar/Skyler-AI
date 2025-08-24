@@ -2,48 +2,18 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-
-type Email = {
-  payload: {
-    headers: {
-      name: string;
-      value: string;
-    }[];
-  };
-  snippet: string;
-  id: string;
-  subject: string;
-  body: string;
-  from: string;
-  to: string;
-  date: string;
-};
+import { Email } from "@/../types/email";
 
 
 export default function EmailsSection({
   emails,
   onSelect,
-  onDelete,
 }: {
   emails: Email[];
   onSelect: (email: Email) => void;
-  onDelete: (emailId: string) => void;
 }) {
   const { data: session } = useSession();
 
-  async function deleteEmail(id: string) {
-    if (!session?.appToken) return;
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/emails/${id}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${session.appToken}`,
-      },
-      credentials: "include",
-    });
-    if (res.ok) {
-      onDelete(id);
-    }
-  }
 
   if (emails.length === 0) return <p>No emails found.</p>;
 
@@ -66,7 +36,6 @@ export default function EmailsSection({
       <button
         onClick={(e) => {
           e.stopPropagation(); // prevent triggering onSelect
-          deleteEmail(email.id);
         }}
         className="ml-4 text-xs text-red-500 hover:text-red-600 transition-colors"
       >
