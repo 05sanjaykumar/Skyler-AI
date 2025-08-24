@@ -12,7 +12,7 @@ const StoreBox = ({
   return (
     <div>
       <h2>Store</h2>
-      <p>Items in your store will appear here.</p>
+      <p>Coming soon.</p>
     </div>
   )
 }

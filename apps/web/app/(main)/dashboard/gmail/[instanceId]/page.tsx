@@ -3,7 +3,7 @@
 
 import { use, useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { useMailStore } from "@/store/mails";
+import { useMailStore } from "@/store/gmail/mails";
 
 import SearchBox from "@/components/Gmail/SearchBox";
 import EmailDetail from "@/components/Gmail/EmailDetail";

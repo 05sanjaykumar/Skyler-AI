@@ -1,5 +1,5 @@
-// apps/web/src/store/mails.ts
-import { db } from "@/lib/db";
+// apps/web/src/store/gmail/mails.ts
+import { db } from "@/store/gmail/db";
 import { create } from "zustand";
 import { Email } from "@/../types/email";
 interface MailState {

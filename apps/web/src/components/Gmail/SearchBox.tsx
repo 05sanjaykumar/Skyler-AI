@@ -3,7 +3,7 @@
 
 import { useSession } from "next-auth/react";
 import { Email } from "@/../types/email";
-import { useMailStore } from "@/store/mails";
+import { useMailStore } from "@/store/gmail/mails";
 
 
 export default function SearchBox({
