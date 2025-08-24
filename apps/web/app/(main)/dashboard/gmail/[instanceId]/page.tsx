@@ -3,7 +3,6 @@
 
 import { use, useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { db } from "@/lib/db";
 import { useMailStore } from "@/store/mails";
 
 
@@ -12,6 +11,7 @@ import EmailsSection from "@/components/Gmail/EmailsSection";
 import EmailDetail from "@/components/Gmail/EmailDetail";
 import ReplySection from "@/components/Gmail/ReplySection";
 import GmailForm from "@/components/Gmail/GmailForm";
+import StoreBox from "@/components/Gmail/StoreBox";
 
 type Email = {
   id: string;
@@ -92,7 +92,7 @@ export default function InstanceDetailPage({ params }: { params: Promise<{ insta
         />
 
         <div className="mt-8 border-2 border-black p-2 rounded-sm dark:border-white">
-          <h2 className="text-xl font-semibold mb-2">Emails</h2>
+          <h2 className="text-xl font-semibold mb-2">Search Results</h2>
           {emailsLoading ? (
             <p>Loading emails...</p>
           ) : (
