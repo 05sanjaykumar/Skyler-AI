@@ -154,8 +154,9 @@ router.get("/:instanceId", verifyJWT, async (req: AuthRequest, res: Response) =>
     if(aiFilterRules && aiFilterRules.requiresSemanticAnalysis) {
       const classifier = new EmailClassifier();
       await classifier.init();
+      console.log('inside ai filter')
       const filteredEmails = await classifier.filterEmails(messages, aiFilterRules);
-      res.json({ instanceId, count: filteredEmails.length, messages: filteredEmails });
+      return res.json({ instanceId, count: filteredEmails.length, messages: filteredEmails });
     }
     res.json({
       instanceId,
