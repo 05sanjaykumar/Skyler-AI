@@ -33,6 +33,7 @@ model User {
 
   // Usage tracking for pay-per-request
   creditsRemaining   Int      @default(0) 
+  maxInstances       Int      @default(10)
   planExpirationDate     DateTime?              
 }
 
@@ -79,12 +80,21 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+enum Platform {
+  GMAIL
+  OUTLOOK
+  WHATSAPP
+  SLACK
+  DISCORD
+  TELEGRAM
+}
 model AIInstance {
   id          String         @id @default(cuid())
   userId      String
   name        String
   promptName  String?
-   // New fields for expansion
+  platform    Platform   @default(GMAIL)
+  storeBox    String[] // New field for store box items
   webhook      String?   // optional webhook for pushing filtered data
   promptDecode Json?     // JSON with structured filters (gmailFilters, aiFilterRules, etc.)
 
