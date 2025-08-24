@@ -295,7 +295,7 @@ export default function CreateFilterForm({ instance, onGenerate }: { instance: a
                       }
                       className="flex space-x-4 mt-2"
                     >
-                      {["any", "positive", "neutral", "negative"].map((s) => (
+                      {["any", "positive", "negative"].map((s) => (
                         <div className="flex items-center space-x-2" key={s}>
                           <RadioGroupItem value={s} id={`sent-${s}`} />
                           <Label htmlFor={`sent-${s}`}>{s}</Label>

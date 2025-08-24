@@ -176,7 +176,6 @@ export class EmailClassifier {
         sentimentOK = s === rules.sentiment.toLowerCase();
       }
 
-      console.log(`Email: ${email.subject} sentiment=${sentimentOK}`);
 
       // CONTENT MATCH
       const literalOK = keywords.length ? this.keywordMatch(email, keywords) : true;
