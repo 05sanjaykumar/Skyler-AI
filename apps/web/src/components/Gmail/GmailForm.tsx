@@ -15,6 +15,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useSession } from "next-auth/react";
 import { useCreditsStore } from "@/store/credits-store";
 import { useEffect } from "react";
+import { CollapsibleFilters } from '@/components/CollapsibleFilters';
 
 // -----------------
 // Schema Definition
@@ -37,7 +38,7 @@ const formSchema = z.object({
   similarityThreshold: z.number().min(0.5).max(0.95),
   outputFormat: z.enum(["raw", "summary", "digest"]),
 
-  maxResults: z.number().min(1).max(500),
+  maxResults: z.number().min(1).max(200),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -211,136 +212,138 @@ export default function CreateFilterForm({ instance, onGenerate }: { instance: a
       </CardHeader>
       <CardContent>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <CollapsibleFilters>
           {/* Basic Filters */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>From</Label>
-              <Input placeholder="example@domain.com, name" {...form.register("from")} />
-            </div>
-            <div>
-              <Label>To</Label>
-              <Input placeholder="recipient@domain.com, name" {...form.register("to")} />
-            </div>
-          </div>
-
-          <div>
-            <Label>Subject Contains</Label>
-            <Input placeholder="invoice, report..." {...form.register("subject")} />
-          </div>
-
-          <div>
-            <Label>Has Words</Label>
-            <Input placeholder="urgent, NDA..." {...form.register("hasWords")} />
-          </div>
-
-          <div>
-            <Label>Does Not Have Words</Label>
-            <Input placeholder="spam, promo..." {...form.register("notWords")} />
-          </div>
-
-          {/* Dates */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>After Date</Label>
-              <Input
-                type="date"
-                {...form.register("after")}
-                max={before || today}
-              />
-            </div>
-            <div>
-              <Label>Before Date</Label>
-              <Input
-                type="date"
-                {...form.register("before")}
-                min={after || undefined}
-                max={today}
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Switch
-              checked={form.watch("hasAttachment")}
-              onCheckedChange={(val) => form.setValue("hasAttachment", val)}
-            />
-            <Label>Has Attachment?</Label>
-          </div>
-
-          {/* --------- AI Filters Section --------- */}
-          <div className="pt-4 border-t">
-            <div className="flex items-center space-x-2 mb-2">
-              <Switch
-                checked={form.watch("aiEnabled")}
-                onCheckedChange={(val) => form.setValue("aiEnabled", val)}
-              />
-              <Label>Enable AI Filters</Label>
-            </div>
-
-            {form.watch("aiEnabled") && (
-              <div className="space-y-4 pl-4 border-l">
-                <div>
-                  <Label>AI Keywords</Label>
-                  <Input placeholder="refund, complaint..." {...form.register("aiKeywords")} />
-                </div>
-
-                <div>
-                  <Label>Sentiment</Label>
-                  <RadioGroup
-                    defaultValue="any"
-                    onValueChange={(val) =>
-                      form.setValue("sentiment", val as FormValues["sentiment"])
-                    }
-                    className="flex space-x-4 mt-2"
-                  >
-                    {["any", "positive", "neutral", "negative"].map((s) => (
-                      <div className="flex items-center space-x-2" key={s}>
-                        <RadioGroupItem value={s} id={`sent-${s}`} />
-                        <Label htmlFor={`sent-${s}`}>{s}</Label>
-                      </div>
-                    ))}
-                  </RadioGroup>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    checked={form.watch("enableSemantic")}
-                    onCheckedChange={(val) =>
-                      form.setValue("enableSemantic", val)
-                    }
-                  />
-                  <Label>Enable Semantic Match</Label>
-                </div>
-                {form.watch("enableSemantic") && (
-                    <div>
-                        <Label>Similarity Threshold ({form.watch("similarityThreshold")})</Label>
-                        <Slider
-                        defaultValue={[0.8]}
-                        min={0.5}
-                        max={0.95}
-                        step={0.05}
-                        onValueChange={(val) =>
-                            form.setValue("similarityThreshold", val[0] ?? 0.8)
-                        }
-                        />
-                    </div>
-                )}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>From</Label>
+                <Input placeholder="example@domain.com, name" {...form.register("from")} />
               </div>
-            )}
-          </div>
+              <div>
+                <Label>To</Label>
+                <Input placeholder="recipient@domain.com, name" {...form.register("to")} />
+              </div>
+            </div>
 
-          {/* Max Results */}
-          <div>
-            <Label>Max Results (1–500)</Label>
-            <Input
-              type="number"
-              min={1}
-              max={500}
-              {...form.register("maxResults", { valueAsNumber: true })}
-              className="w-32"
-            />
-          </div>
+            <div>
+              <Label>Subject Contains</Label>
+              <Input placeholder="invoice, report..." {...form.register("subject")} />
+            </div>
 
+            <div>
+              <Label>Has Words</Label>
+              <Input placeholder="urgent, NDA..." {...form.register("hasWords")} />
+            </div>
+
+            <div>
+              <Label>Does Not Have Words</Label>
+              <Input placeholder="spam, promo..." {...form.register("notWords")} />
+            </div>
+
+            {/* Dates */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>After Date</Label>
+                <Input
+                  type="date"
+                  {...form.register("after")}
+                  max={before || today}
+                />
+              </div>
+              <div>
+                <Label>Before Date</Label>
+                <Input
+                  type="date"
+                  {...form.register("before")}
+                  min={after || undefined}
+                  max={today}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={form.watch("hasAttachment")}
+                onCheckedChange={(val) => form.setValue("hasAttachment", val)}
+              />
+              <Label>Has Attachment?</Label>
+            </div>
+
+            {/* --------- AI Filters Section --------- */}
+            <div className="pt-4 border-t">
+              <div className="flex items-center space-x-2 mb-2">
+                <Switch
+                  checked={form.watch("aiEnabled")}
+                  onCheckedChange={(val) => form.setValue("aiEnabled", val)}
+                />
+                <Label>Enable AI Filters</Label>
+              </div>
+
+              {form.watch("aiEnabled") && (
+                <div className="space-y-4 pl-4 border-l">
+                  <div>
+                    <Label>AI Keywords</Label>
+                    <Input placeholder="refund, complaint..." {...form.register("aiKeywords")} />
+                  </div>
+
+                  <div>
+                    <Label>Sentiment</Label>
+                    <RadioGroup
+                      defaultValue="any"
+                      onValueChange={(val) =>
+                        form.setValue("sentiment", val as FormValues["sentiment"])
+                      }
+                      className="flex space-x-4 mt-2"
+                    >
+                      {["any", "positive", "neutral", "negative"].map((s) => (
+                        <div className="flex items-center space-x-2" key={s}>
+                          <RadioGroupItem value={s} id={`sent-${s}`} />
+                          <Label htmlFor={`sent-${s}`}>{s}</Label>
+                        </div>
+                      ))}
+                    </RadioGroup>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      checked={form.watch("enableSemantic")}
+                      onCheckedChange={(val) =>
+                        form.setValue("enableSemantic", val)
+                      }
+                    />
+                    <Label>Enable Semantic Match</Label>
+                  </div>
+                  {form.watch("enableSemantic") && (
+                      <div>
+                          <Label>Similarity Threshold ({form.watch("similarityThreshold")})</Label>
+                          <Slider
+                          defaultValue={[0.8]}
+                          min={0.5}
+                          max={0.95}
+                          step={0.05}
+                          onValueChange={(val) =>
+                              form.setValue("similarityThreshold", val[0] ?? 0.8)
+                          }
+                          />
+                      </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Max Results */}
+            <div>
+              <Label>Max Results (1–200)</Label>
+              <Input
+                type="number"
+                min={1}
+                max={200}
+                {...form.register("maxResults", { valueAsNumber: true })}
+                className="w-32"
+              />
+            </div>
+
+          </CollapsibleFilters>
           {/* Actions */}
           <div className="flex gap-3">
             <Button type="submit">Save Filter</Button>
