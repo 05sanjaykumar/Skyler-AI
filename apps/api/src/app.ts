@@ -4,8 +4,9 @@ import bodyParser from "body-parser";
 import { registerUser } from "./routes/auth/register";
 import { verifyUser } from "./routes/auth/verify-user";
 import instancesRouter from "./routes/instancesRoute";
-import gmailPromptRouter from "./routes/gmailPrompt";
-import googlePull from './routes/webhooks/gmailPull';
+import gmailPromptRouter from "./routes/gmail/gmailPrompt";
+import googlePull from './routes/gmail/webhooks/gmailPull';
+import gmailStoreBox from './routes/gmail/gmailStoreBox';
 import creditsRoute from './routes/creditsRoute';
 import payPalRoute from './routes/payments/paypal/paypalRoute';
 import cashfreeRoute from './routes/payments/cashfree/cashfreeRoutes';
@@ -27,12 +28,19 @@ app.get('/', (_req, res) => {
   res.send('Hello from TypeScript Express!')
 })
 
+// AUTH
 app.post("/api/register", registerUser);
 app.post("/api/verify-user", verifyUser);
+
+// DEFAULT
 app.use("/api/instances", instancesRouter);
+app.use("/api/credits", creditsRoute);
+
+// GMAIL
 app.use("/api/gmail/prompt", gmailPromptRouter);
 app.use("/api/gmail/pull", googlePull);
-app.use("/api/credits", creditsRoute);
+app.use("/api/gmail/storebox", gmailStoreBox);
+// PAYMENTS
 app.use("/api/paypal", payPalRoute);
 app.use("/api/cashfree", cashfreeRoute);
 

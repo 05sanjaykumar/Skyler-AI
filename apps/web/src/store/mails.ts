@@ -6,6 +6,7 @@ interface MailState {
   emails: Email[];
   selectedEmail: Email | null;
   emailsLoading: boolean;
+  storeBoxEmails: Email[];
 
   setSelectedEmail: (email: Email | null) => void;
   loadCachedEmails: (instanceId: string) => Promise<void>;
@@ -18,6 +19,7 @@ export const useMailStore = create<MailState>((set, get) => ({
   emails: [],
   selectedEmail: null,
   emailsLoading: false,
+  storeBoxEmails: [],
 
   setSelectedEmail: (email) => set({ selectedEmail: email }),
 
@@ -101,5 +103,22 @@ export const useMailStore = create<MailState>((set, get) => ({
     } finally {
       set({ emailsLoading: false });
     }
+  },
+  // --- StoreBox methods ---
+  addToStoreBox: (email: Email, instanceId: string) => {
+    const { storeBoxEmails } = get();
+    // prevent duplicates
+    if (!storeBoxEmails.find((e) => e.id === email.id)) {
+      set({ storeBoxEmails: [...storeBoxEmails, email] });
+      console.log("Added email to StoreBox:", email);
+    }
+  },
+
+  deleteFromStoreBox: (emailId: string, instanceId: string) => {
+    set((state) => ({
+      storeBoxEmails: state.storeBoxEmails.filter((e) => e.id !== emailId),
+      selectedEmail: state.selectedEmail?.id === emailId ? null : state.selectedEmail,
+    }));
+    console.log("Deleted email from StoreBox:", emailId);
   },
 }));
