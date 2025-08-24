@@ -36,9 +36,9 @@ export default function InstanceDetailPage({ params }: { params: Promise<{ insta
     emails,
     emailsLoading,
     loadCachedEmails,
-    saveEmails,
     selectedEmail,
     setSelectedEmail,
+    fetchEmailsFromBackend
   } = useMailStore();
 
   // fetch instance metadata
@@ -67,24 +67,7 @@ export default function InstanceDetailPage({ params }: { params: Promise<{ insta
   // fetch + cache emails from backend
   const fetchEmails = async () => {
     if (status !== "authenticated") return;
-
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/gmail/pull/${instanceId}`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session?.appToken || ""}`,
-        },
-        credentials: "include",
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        await saveEmails(instanceId, data.messages);
-        console.log("Fetched emails:", data.messages);
-      }
-    } catch (err) {
-      console.error("Failed fetching emails:", err);
-    }
+    fetchEmailsFromBackend(instanceId, session?.appToken || "");
   };
 
   // load cached emails on mount
@@ -115,6 +98,7 @@ export default function InstanceDetailPage({ params }: { params: Promise<{ insta
           ) : (
             <EmailsSection
               emails={emails}
+              instance={instance}
               onSelect={setSelectedEmail}
             />
           )}

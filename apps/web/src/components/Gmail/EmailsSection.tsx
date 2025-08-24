@@ -3,16 +3,20 @@
 
 import { useSession } from "next-auth/react";
 import { Email } from "@/../types/email";
+import { useMailStore } from "@/store/mails";
 
 
 export default function EmailsSection({
   emails,
   onSelect,
+  instance
 }: {
   emails: Email[];
   onSelect: (email: Email) => void;
+  instance: any;
 }) {
   const { data: session } = useSession();
+  const { deleteCachedEmail } = useMailStore();
 
 
   if (emails.length === 0) return <p>No emails found.</p>;
@@ -36,6 +40,7 @@ export default function EmailsSection({
       <button
         onClick={(e) => {
           e.stopPropagation(); // prevent triggering onSelect
+          deleteCachedEmail(instance.id,email.id);
         }}
         className="ml-4 text-xs text-red-500 hover:text-red-600 transition-colors"
       >

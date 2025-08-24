@@ -10,6 +10,8 @@ interface MailState {
   setSelectedEmail: (email: Email | null) => void;
   loadCachedEmails: (instanceId: string) => Promise<void>;
   saveEmails: (instanceId: string, emails: Email[]) => Promise<void>;
+  deleteCachedEmail: (instanceId: string, emailId: string) => Promise<void>;
+  fetchEmailsFromBackend: (instanceId: string, token: string) => Promise<void>;
 }
 
 export const useMailStore = create<MailState>((set, get) => ({
@@ -73,5 +75,31 @@ export const useMailStore = create<MailState>((set, get) => ({
     }));
 
     console.log(`Deleted email ${emailId} from cache for instance ${instanceId}`);
+  },
+
+  fetchEmailsFromBackend: async (instanceId, token) => {
+    set({ emailsLoading: true });
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/gmail/pull/${instanceId}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: "include",
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        await get().saveEmails(instanceId, data.messages);
+        console.log("Fetched emails from backend:", data.messages);
+      } else {
+        console.error("Failed to fetch emails:", res.status);
+      }
+    } catch (err) {
+      console.error("Error fetching emails:", err);
+    } finally {
+      set({ emailsLoading: false });
+    }
   },
 }));
