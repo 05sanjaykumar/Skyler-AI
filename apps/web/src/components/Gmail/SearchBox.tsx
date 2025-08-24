@@ -6,7 +6,7 @@ import { Email } from "@/../types/email";
 import { useMailStore } from "@/store/mails";
 
 
-export default function EmailsSection({
+export default function SearchBox({
   emails,
   onSelect,
   instance

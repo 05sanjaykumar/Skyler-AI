@@ -1,7 +1,14 @@
 // apps/web/src/components/main/StoreBox.tsx
 import React from 'react'
+import { Email } from "@/../types/email";
 
-const StoreBox = () => {
+const StoreBox = ({
+  onSelect,
+  instance
+}: {
+  onSelect: (email: Email) => void;
+  instance: any;
+}) => {
   return (
     <div>
       <h2>Store</h2>

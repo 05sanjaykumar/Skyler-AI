@@ -5,31 +5,21 @@ import { use, useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useMailStore } from "@/store/mails";
 
-
-// import PromptSection from "@/components/Gmail/PromptSection";
-import EmailsSection from "@/components/Gmail/EmailsSection";
+import SearchBox from "@/components/Gmail/SearchBox";
 import EmailDetail from "@/components/Gmail/EmailDetail";
 import ReplySection from "@/components/Gmail/ReplySection";
 import GmailForm from "@/components/Gmail/GmailForm";
 import StoreBox from "@/components/Gmail/StoreBox";
 
-type Email = {
-  id: string;
-  subject: string;
-  body: string;
-  from: string;
-  to: string;
-  date: string;
-  payload: any;
-  snippet: string;
-};
+import { Search, Archive } from "lucide-react";
 
 export default function InstanceDetailPage({ params }: { params: Promise<{ instanceId: string }> }) {
-    const { instanceId } = use(params);
+  const { instanceId } = use(params);
   const { data: session, status } = useSession();
 
   const [instance, setInstance] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [activeBox, setActiveBox] = useState<"search" | "store">("search");
 
   // grab zustand state/actions
   const {
@@ -86,21 +76,42 @@ export default function InstanceDetailPage({ params }: { params: Promise<{ insta
       <div className="w-full md:w-3/5 p-4 border-r border-gray-300 overflow-auto">
         <h1 className="text-2xl font-bold mb-4 uppercase">{instance.name} INSTANCE</h1>
 
-        <GmailForm 
-        instance={instance} 
-        onGenerate={fetchEmails} 
-        />
+        <GmailForm instance={instance} onGenerate={fetchEmails} />
 
-        <div className="mt-8 border-2 border-black p-2 rounded-sm dark:border-white">
-          <h2 className="text-xl font-semibold mb-2">Search Results</h2>
-          {emailsLoading ? (
-            <p>Loading emails...</p>
+        {/* toggle buttons */}
+        <div className="flex items-center gap-3 mt-4">
+          <button
+            onClick={() => setActiveBox("search")}
+            className={`p-2 rounded-lg flex items-center gap-1 ${
+              activeBox !== "search" ? "bg-black text-white" : "bg-gray-200 dark:bg-gray-700"
+            }`}
+          >
+            <Search size={16} /> Search
+          </button>
+          <button
+            onClick={() => setActiveBox("store")}
+            className={`p-2 rounded-lg flex items-center gap-1 ${
+              activeBox !== "store" ? "bg-black text-white" : "bg-gray-200 dark:bg-gray-700"
+            }`}
+          >
+            <Archive size={16} /> Store
+          </button>
+        </div>
+
+        {/* active box content */}
+        <div className="mt-6 border-2 border-black p-2 rounded-sm dark:border-white">
+          <h2 className="text-xl font-semibold mb-2">
+            {activeBox === "search" ? "Search Results" : "Stored Emails"}
+          </h2>
+
+          {activeBox === "search" ? (
+            emailsLoading ? (
+              <div className="p-4 text-gray-500">Searching emails...</div>
+            ) : (
+              <SearchBox emails={emails} instance={instance} onSelect={setSelectedEmail} />
+            )
           ) : (
-            <EmailsSection
-              emails={emails}
-              instance={instance}
-              onSelect={setSelectedEmail}
-            />
+            <StoreBox instance={instance} onSelect={setSelectedEmail} />
           )}
         </div>
       </div>
@@ -113,7 +124,9 @@ export default function InstanceDetailPage({ params }: { params: Promise<{ insta
             <ReplySection instanceId={instanceId} email={selectedEmail} />
           </>
         ) : (
-          <div className="text-center text-gray-500 mt-10">Select an email to view details</div>
+          <div className="text-center text-gray-500 mt-10">
+            Select an email to view details
+          </div>
         )}
       </div>
     </div>
