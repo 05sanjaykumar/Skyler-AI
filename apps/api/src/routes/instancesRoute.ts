@@ -5,7 +5,7 @@ import { verifyJWT } from "../middleware/auth";
 
 const router = Router();
 
-const MAX_INSTANCES = 10;
+const PLATFORM = "GMAIL";
 interface AuthRequest extends Request {
   userId?: string;
 }
@@ -15,7 +15,7 @@ router.get("/", verifyJWT, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!;
     const instances = await prisma.aIInstance.findMany({
-      where: { userId },
+      where: { userId, platform: PLATFORM },
     });
     res.json(instances);
   } catch (error) {
@@ -28,11 +28,15 @@ router.get("/", verifyJWT, async (req: AuthRequest, res: Response) => {
 router.get("/count", verifyJWT, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!;
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) return res.status(404).json({ error: "User not found" });
+
     const instanceCount = await prisma.aIInstance.count({
-      where: { userId },
+      where: { userId, platform: PLATFORM },
     });
     console.log("Instance count for user:", userId, instanceCount);
-    res.json({ count: MAX_INSTANCES-instanceCount });
+    res.json({ count: user.maxInstances - instanceCount });
   } catch (error) {
     console.error("Get Instance Count Error:", error);
     res.status(500).json({ error: "Server error" });
@@ -49,7 +53,7 @@ router.get("/:id", verifyJWT, async (req: AuthRequest, res: Response) => {
       where: { id },
     });
 
-    if (!instance || instance.userId !== userId) {
+    if (!instance || instance.userId !== userId || instance.platform !== PLATFORM) {
       return res.status(404).json({ error: "Instance not found" });
     }
     console.log("Fetched instance from backend :", instance);
@@ -74,9 +78,9 @@ router.post("/", verifyJWT, async (req: AuthRequest, res: Response) => {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    const instanceCount = await prisma.aIInstance.count({ where: { userId } });
+    const instanceCount = await prisma.aIInstance.count({ where: { userId, platform: PLATFORM } });
 
-    if (instanceCount >= MAX_INSTANCES) {
+    if (instanceCount >= user.maxInstances) {
       return res.status(403).json({ error: "Instance limit reached" });
     }
 
@@ -86,6 +90,8 @@ router.post("/", verifyJWT, async (req: AuthRequest, res: Response) => {
         name,
         promptName: null,
         userId,
+        storeBox: [],
+        platform: PLATFORM,
       },
     });
 
@@ -108,7 +114,7 @@ router.patch("/:id/name", verifyJWT, async (req: AuthRequest, res: Response) => 
     }
 
     const instance = await prisma.aIInstance.findUnique({ where: { id } });
-    if (!instance || instance.userId !== userId) {
+    if (!instance || instance.userId !== userId || instance.platform !== PLATFORM) {
       return res.status(404).json({ error: "Instance not found" });
     }
 
@@ -132,7 +138,7 @@ router.delete("/:id", verifyJWT, async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
 
     const instance = await prisma.aIInstance.findUnique({ where: { id } });
-    if (!instance || instance.userId !== userId) {
+    if (!instance || instance.userId !== userId || instance.platform !== PLATFORM) {
       return res.status(404).json({ error: "Instance not found" });
     }
 
