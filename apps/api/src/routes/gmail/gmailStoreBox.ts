@@ -1,3 +1,4 @@
+// apps/api/src/routes/gmail/gmailStoreBox.ts
 import { Router, Request, Response } from "express";
 import { prisma } from "@skyler-ai/prisma";
 import { verifyJWT } from "../../middleware/auth";

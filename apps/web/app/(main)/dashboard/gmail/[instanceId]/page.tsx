@@ -11,7 +11,7 @@ import ReplySection from "@/components/Gmail/ReplySection";
 import GmailForm from "@/components/Gmail/GmailForm";
 import StoreBox from "@/components/Gmail/StoreBox";
 
-import { Search, Archive } from "lucide-react";
+import { Search, Archive, Save } from "lucide-react";
 
 export default function InstanceDetailPage({ params }: { params: Promise<{ instanceId: string }> }) {
   const { instanceId } = use(params);
@@ -94,7 +94,7 @@ export default function InstanceDetailPage({ params }: { params: Promise<{ insta
               activeBox !== "store" ? "bg-black text-white" : "bg-gray-200 dark:bg-gray-700"
             }`}
           >
-            <Archive size={16} /> Store
+            <Save size={16} /> Store
           </button>
         </div>
 
@@ -108,7 +108,7 @@ export default function InstanceDetailPage({ params }: { params: Promise<{ insta
             emailsLoading ? (
               <div className="p-4 text-gray-500">Searching emails...</div>
             ) : (
-              <SearchBox emails={emails} instance={instance} onSelect={setSelectedEmail} />
+              <SearchBox emails={emails.reverse()} instance={instance} onSelect={setSelectedEmail} />
             )
           ) : (
             <StoreBox instance={instance} onSelect={setSelectedEmail} />

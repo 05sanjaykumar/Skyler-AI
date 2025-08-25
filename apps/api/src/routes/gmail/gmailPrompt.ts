@@ -1,4 +1,4 @@
-// apps/api/src/routes/gmailPrompt.ts
+// apps/api/src/routes/gmail/gmailPrompt.ts
 
 import { Router, Request, Response } from "express";
 import { prisma } from "@skyler-ai/prisma";

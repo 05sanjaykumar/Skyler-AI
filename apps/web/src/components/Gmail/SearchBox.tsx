@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Trash2, MoreVertical, Inbox } from "lucide-react";
+import { Trash2, MoreVertical, Inbox, Reply } from "lucide-react";
 
 export default function EmailsSection({
   emails,
@@ -48,6 +48,10 @@ export default function EmailsSection({
     setSelected([]);
   };
 
+  const replyMessage = () => {
+    console.log("Replying to emails:", selected);
+  }
+
   const bulkStore = () => {
     console.log("Storing emails:", selected);
     // implement storeBox logic here
@@ -72,6 +76,15 @@ export default function EmailsSection({
         {selected.length > 0 && (
           <div className="flex space-x-2">
             <Button
+              variant="default"
+              size="sm"
+              onClick={replyMessage}
+              className="flex items-center space-x-1 bg-blue-400 hover:bg-blue-500 dark:text-white dark:bg-blue-600 dark:hover:bg-blue-700"
+            >
+              <Reply className="h-4 w-4" />
+              <span>Reply</span>
+            </Button>
+            <Button
               variant="destructive"
               size="sm"
               onClick={bulkDelete}
@@ -92,84 +105,85 @@ export default function EmailsSection({
           </div>
         )}
       </div>
-
-      {/* Email List */}
-      {emails.map((email) => {
-        const sender =
+      <div className="max-h-[calc(100vh-200px)] overflow-y-auto">
+        {/* Email List */}
+        {emails.map((email) => {
+          const sender =
           email.from?.replace(/^"|"$/g, "") || email.to || "Unknown Sender";
-        const initials = sender.charAt(0).toUpperCase();
-
-        return (
-          <Card
+          const initials = sender.charAt(0).toUpperCase();
+          
+          return (
+            <Card
             key={email.id}
             className={`cursor-pointer transition-colors ${
               selected.includes(email.id) ? "bg-accent" : "hover:bg-accent"
             }`}
             onClick={() => onSelect(email)}
-          >
-            <CardContent className="flex items-start justify-between p-3">
-              {/* Left side: Checkbox + Avatar + Info */}
-              <div className="flex items-start space-x-3 flex-1 min-w-0">
-                <Checkbox
-                  checked={selected.includes(email.id)}
-                  onCheckedChange={() => toggleSelect(email.id)}
-                  className="mt-1"
-                />
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback>{initials}</AvatarFallback>
-                </Avatar>
+            >
+              <CardContent className="flex items-start justify-between p-3">
+                {/* Left side: Checkbox + Avatar + Info */}
+                <div className="flex items-start space-x-3 flex-1 min-w-0">
+                  <Checkbox
+                    checked={selected.includes(email.id)}
+                    onCheckedChange={() => toggleSelect(email.id)}
+                    className="mt-1"
+                    />
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback>{initials}</AvatarFallback>
+                  </Avatar>
 
-                <div className="flex-1 min-w-0">
-                  {/* Sender + Date row */}
-                  <div className="flex items-center space-x-2 min-w-0">
-                    <h3 className="text-sm font-medium truncate flex-1 min-w-0">
-                      {sender}
-                    </h3>
-                    <span className="text-[11px] text-muted-foreground whitespace-nowrap flex-shrink-0">
-                      {new Date(email.date).toLocaleDateString(undefined, {
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </span>
+                  <div className="flex-1 min-w-0">
+                    {/* Sender + Date row */}
+                    <div className="flex items-center space-x-2 min-w-0">
+                      <h3 className="text-sm font-medium truncate flex-1 min-w-0">
+                        {sender}
+                      </h3>
+                      <span className="text-[11px] text-muted-foreground whitespace-nowrap flex-shrink-0">
+                        {new Date(email.date).toLocaleDateString(undefined, {
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </span>
+                    </div>
+
+                    {/* Subject */}
+                    <p className="text-sm font-semibold truncate min-w-0">
+                      {email.subject || "(No Subject)"}
+                    </p>
+
+                    {/* Snippet */}
+                    <p className="text-xs text-muted-foreground truncate min-w-0">
+                      {email.snippet || email.body || "(No preview)"}
+                    </p>
                   </div>
-
-                  {/* Subject */}
-                  <p className="text-sm font-semibold truncate min-w-0">
-                    {email.subject || "(No Subject)"}
-                  </p>
-
-                  {/* Snippet */}
-                  <p className="text-xs text-muted-foreground truncate min-w-0">
-                    {email.snippet || email.body || "(No preview)"}
-                  </p>
                 </div>
-              </div>
 
-              {/* Right side: Actions */}
-              <div className="ml-2 flex-shrink-0">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      className="text-red-500"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deleteCachedEmail(instance.id, email.id);
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" /> Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </CardContent>
-          </Card>
-        );
-      })}
+                {/* Right side: Actions */}
+                {/* <div className="ml-2 flex-shrink-0">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        className="text-red-500"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteCachedEmail(instance.id, email.id);
+                        }}
+                        >
+                        <Trash2 className="h-4 w-4 mr-2" /> Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div> */}
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
     </div>
   );
 }
