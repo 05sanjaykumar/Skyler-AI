@@ -3,7 +3,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import { registerUser } from "./routes/auth/register";
 import { verifyUser } from "./routes/auth/verify-user";
-import instancesRouter from "./routes/instancesRoute";
+import gmailInstance from "./routes/gmail/gmailInstances";
 import gmailPromptRouter from "./routes/gmail/gmailPrompt";
 import googlePull from './routes/gmail/webhooks/gmailPull';
 import gmailStoreBox from './routes/gmail/gmailStoreBox';
@@ -33,13 +33,13 @@ app.post("/api/register", registerUser);
 app.post("/api/verify-user", verifyUser);
 
 // DEFAULT
-app.use("/api/instances", instancesRouter);
 app.use("/api/credits", creditsRoute);
 
 // GMAIL
 app.use("/api/gmail/prompt", gmailPromptRouter);
 app.use("/api/gmail/pull", googlePull);
 app.use("/api/gmail/storebox", gmailStoreBox);
+app.use("/api/gmail/instances", gmailInstance);
 // PAYMENTS
 app.use("/api/paypal", payPalRoute);
 app.use("/api/cashfree", cashfreeRoute);

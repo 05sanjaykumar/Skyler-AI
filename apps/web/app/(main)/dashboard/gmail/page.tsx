@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react'
 import { Server, SquarePen, Trash2, X, Plus, Check  } from 'lucide-react'
 import { useSession } from "next-auth/react";
-import Link from "next/link";
 
 
 type Instance = {
@@ -14,7 +13,6 @@ type Instance = {
 export default function DashboardPage() {
   const { data: session, status } = useSession();
   const [instances, setInstances] = useState<Instance[]>([])
-  const [creditsLeft, setCreditsLeft] = useState(3) // example, fetch from API later
   const [instancesLeft, setInstancesLeft] = useState(1) // example, fetch from API later
   const [newInstanceName, setNewInstanceName] = useState('')
   const [creating, setCreating] = useState(false)
@@ -34,15 +32,14 @@ export default function DashboardPage() {
     console.log("Backend URL", backendUrl);
     async function fetchInstancesAndQuota() {
       try {
-        const res = await fetch(`${backendUrl}/api/instances`, {
+        const res = await fetch(`${backendUrl}/api/gmail/instances`, {
           headers: getAuthHeaders(),
         })
         if (!res.ok) throw new Error('Failed to fetch instances')
         const data: Instance[] = await res.json()
         console.log("Fetched instances:", data)
         setInstances(data)
-        setCreditsLeft(20)
-        const instanceCount = await fetch(`${backendUrl}/api/instances/count`, {
+        const instanceCount = await fetch(`${backendUrl}/api/gmail/instances/count`, {
           headers: getAuthHeaders(),
           credentials:'include'
         })
@@ -63,7 +60,7 @@ export default function DashboardPage() {
       return
     }
     try {
-      const res = await fetch(`${backendUrl}/api/instances`, {
+      const res = await fetch(`${backendUrl}/api/gmail/instances`, {
         method: 'POST',
         headers: getAuthHeaders(),
         credentials: "include",
@@ -92,7 +89,7 @@ export default function DashboardPage() {
   const saveEdit = async (id: string) => {
     if (!editName.trim()) return
     try {
-      const res = await fetch(`${backendUrl}/api/instances/${id}/name`, {
+      const res = await fetch(`${backendUrl}/api/gmail/instances/${id}/name`, {
         method: 'PATCH',
         credentials: "include",
         headers: getAuthHeaders(),
@@ -117,7 +114,7 @@ export default function DashboardPage() {
   const deleteInstance = async (id: string) => {
     if (!confirm('Delete this instance?')) return
     try {
-      const res = await fetch(`${backendUrl}/api/instances/${id}`, {
+      const res = await fetch(`${backendUrl}/api/gmail/instances/${id}`, {
         method: 'DELETE',
         credentials: "include",
         headers: getAuthHeaders(),

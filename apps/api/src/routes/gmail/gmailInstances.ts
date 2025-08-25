@@ -1,7 +1,7 @@
-// apps/api/src/routes/instances.ts
+// apps/api/src/routes/gmail/instances.ts
 import { Router, Request, Response } from "express";
 import { prisma } from "@skyler-ai/prisma";
-import { verifyJWT } from "../middleware/auth";
+import { verifyJWT } from "../../middleware/auth";
 
 const router = Router();
 
