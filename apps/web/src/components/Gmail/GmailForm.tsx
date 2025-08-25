@@ -35,7 +35,7 @@ const formSchema = z.object({
   aiKeywords: z.string().optional(),
   sentiment: z.enum(["any", "positive", "neutral", "negative"]),
   enableSemantic: z.boolean(),
-  similarityThreshold: z.number().min(0.5).max(0.95),
+  similarityThreshold: z.number().min(0.0).max(1.0),
   outputFormat: z.enum(["raw", "summary", "digest"]),
 
   maxResults: z.number().min(1).max(200),
@@ -318,9 +318,9 @@ export default function CreateFilterForm({ instance, onGenerate }: { instance: a
                           <Label>Similarity Threshold ({form.watch("similarityThreshold")})</Label>
                           <Slider
                           defaultValue={[0.8]}
-                          min={0.5}
-                          max={0.95}
-                          step={0.05}
+                          min={0.0}
+                          max={1.0}
+                          step={0.1}
                           onValueChange={(val) =>
                               form.setValue("similarityThreshold", val[0] ?? 0.8)
                           }

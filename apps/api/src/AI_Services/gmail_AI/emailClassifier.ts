@@ -143,19 +143,21 @@ export class EmailClassifier {
     keywordVectors: number[][],
     threshold: number
   ): Promise<boolean> {
-    const emailVec = await this.getVector(emailText);
+    // Split text into sentences
+    const sentences = emailText.split(/[.?!\n]/).map(s => s.trim()).filter(Boolean);
 
-    let matched = false;
-    for (let i = 0; i < keywordVectors.length; i++) {
-      const sim = cosine(emailVec, keywordVectors[i]);
-      if (this.DEBUG) console.log("sim", i, sim.toFixed(3));
-      if (isFinite(sim) && sim >= threshold) {
-        matched = true;
-        break;
+    for (const sentence of sentences) {
+      const sentenceVec = await this.getVector(sentence);
+      for (let i = 0; i < keywordVectors.length; i++) {
+        const sim = cosine(sentenceVec, keywordVectors[i]);
+        if (isFinite(sim) && sim >= threshold) {
+          return true; // match found
+        }
       }
     }
-    return matched;
+    return false;
   }
+
 
   async filterEmails(emails: Email[], rules: AIFilterRules): Promise<Email[]> {
     const keywords = rules.keywords?.filter(Boolean) ?? [];
