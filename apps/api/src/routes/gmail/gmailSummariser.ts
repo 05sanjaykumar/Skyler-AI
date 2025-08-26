@@ -1,0 +1,58 @@
+// apps/api/src/routes/gmail/gmailSummariser.ts
+
+import { Router, Request, Response } from "express";
+import { verifyJWT } from "../../middleware/auth";
+import { prisma } from "@skyler-ai/prisma";
+import { applyRulesToEmail } from "../../AI_Services/gmail_AI/applyRulesToEmail";
+
+const router = Router();
+
+interface AuthRequest extends Request {
+  userId?: string;
+}
+
+router.post("/:id", verifyJWT, async (req: AuthRequest, res: Response) => {
+  const userId = req.userId;
+  const { emailBody } = req.body;
+
+  if (!userId) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  try {
+    const email = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!email) {
+      return res.status(404).json({ error: "Email not found" });
+    }
+
+    const instances = await prisma.aIInstance.findMany({
+      where: { userId },
+      select: { ruleBox: true },
+    });
+
+    if (!instances || instances.length === 0) {
+      return res.status(404).json({ error: "No instances found" });
+    }
+
+    const rules = instances
+    .map(i => (i.ruleBox ? JSON.parse(i.ruleBox) : null))
+    .filter(Boolean)
+    .flatMap(r => r.rules || []);
+
+    if (!rules.length) {
+        return res.status(400).json({ error: "No rules found in rule box" });
+    }
+    console.log("Rules found:", rules);
+    const result = await applyRulesToEmail(emailBody, rules);
+
+    res.json(result);
+  } catch (error) {
+    console.error("Error summarizing email:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+export default router;

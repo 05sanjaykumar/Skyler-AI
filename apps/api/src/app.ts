@@ -7,6 +7,7 @@ import gmailInstance from "./routes/gmail/gmailInstances";
 import gmailPromptRouter from "./routes/gmail/gmailPrompt";
 import googlePull from './routes/gmail/webhooks/gmailPull';
 import gmailRuleBox from './routes/gmail/gmailRuleBox';
+import gmailSummariser from './routes/gmail/gmailSummariser';
 import creditsRoute from './routes/creditsRoute';
 import payPalRoute from './routes/payments/paypal/paypalRoute';
 import cashfreeRoute from './routes/payments/cashfree/cashfreeRoutes';
@@ -40,6 +41,7 @@ app.use("/api/gmail/prompt", gmailPromptRouter);
 app.use("/api/gmail/pull", googlePull);
 app.use("/api/gmail/rulebox", gmailRuleBox);
 app.use("/api/gmail/instances", gmailInstance);
+app.use("/api/gmail/summarise", gmailSummariser);
 // PAYMENTS
 app.use("/api/paypal", payPalRoute);
 app.use("/api/cashfree", cashfreeRoute);

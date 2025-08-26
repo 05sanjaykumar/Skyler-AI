@@ -95,10 +95,34 @@ export default function EmailDetail({ emailId, instanceId }: EmailDetailProps) {
   const cleanBody = DOMPurify.sanitize(email.body);
 
   const handleQuickReply = async () => {
-    if (!email || rules.length === 0) return;
+  if (!email || rules.length === 0) return;
 
-    console.log('Fill here')
-  };
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/gmail/summarise/${instanceId}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.appToken || ""}`,
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          emailBody: email.body,
+        }),
+      }
+    );
+
+    if (!res.ok) throw new Error("Failed to generate quick reply");
+
+    const data = await res.json();
+    console.log("Quick reply generated:", data);
+
+  } catch (err) {
+    console.error(err);
+  }
+};
+
 
   return (
     <div className="mb-4 max-h-[80vh] overflow-auto">
