@@ -11,7 +11,7 @@ const StoreBox = ({
 }) => {
   return (
     <div>
-      <h2>Store</h2>
+      <h2>Store Cached Data Without Search replacing existing Data</h2>
       <p>Coming soon.</p>
     </div>
   )

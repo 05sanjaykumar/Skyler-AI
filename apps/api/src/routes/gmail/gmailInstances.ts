@@ -90,7 +90,6 @@ router.post("/", verifyJWT, async (req: AuthRequest, res: Response) => {
         name,
         promptName: null,
         userId,
-        storeBox: [],
         platform: PLATFORM,
       },
     });

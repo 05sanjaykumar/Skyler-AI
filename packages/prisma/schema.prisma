@@ -94,7 +94,7 @@ model AIInstance {
   name        String
   promptName  String?
   platform    Platform   @default(GMAIL)
-  storeBox    String[] // New field for store box items
+  ruleBox    String?   // New field for rule box items
   webhook      String?   // optional webhook for pushing filtered data
   promptDecode Json?     // JSON with structured filters (gmailFilters, aiFilterRules, etc.)
 

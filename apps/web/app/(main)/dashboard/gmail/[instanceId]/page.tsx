@@ -7,11 +7,11 @@ import { useMailStore } from "@/store/gmail/mails";
 
 import SearchBox from "@/components/Gmail/SearchBox";
 import EmailDetail from "@/components/Gmail/EmailDetail";
-import ReplySection from "@/components/Gmail/ReplySection";
 import GmailForm from "@/components/Gmail/GmailForm";
 import StoreBox from "@/components/Gmail/StoreBox";
+import EmailRules from "@/components/Gmail/EmailRules";
 
-import { Search, Archive, Save } from "lucide-react";
+import { Search, Archive, Save, FileText, SlidersHorizontal } from "lucide-react";
 
 export default function InstanceDetailPage({ params }: { params: Promise<{ instanceId: string }> }) {
   const { instanceId } = use(params);
@@ -20,6 +20,8 @@ export default function InstanceDetailPage({ params }: { params: Promise<{ insta
   const [instance, setInstance] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeBox, setActiveBox] = useState<"search" | "store">("search");
+  const [showRules, setShowRules] = useState(false);
+
 
   // grab zustand state/actions
   const {
@@ -120,8 +122,28 @@ export default function InstanceDetailPage({ params }: { params: Promise<{ insta
       <div className="w-full md:w-3/5 p-4 overflow-auto flex flex-col">
         {selectedEmail ? (
           <>
-            <EmailDetail emailId={selectedEmail.id} />
-            <ReplySection instanceId={instanceId} email={selectedEmail} />
+            {/* Toggle Button */}
+            <div className="flex justify-end mb-2">
+              <button
+                onClick={() => setShowRules((prev) => !prev)}
+                className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                {showRules ? (
+                  <SlidersHorizontal className="h-4 w-4" />
+                ) : (
+                  <FileText className="h-4 w-4" />
+                )}
+              </button>
+            </div>
+
+            {/* Conditional View */}
+            {showRules ? (
+              <EmailRules instanceId={instanceId} token={session?.appToken || ""} />
+            ) : (
+              <>
+                <EmailDetail emailId={selectedEmail.id} />
+              </>
+            )}
           </>
         ) : (
           <div className="text-center text-gray-500 mt-10">

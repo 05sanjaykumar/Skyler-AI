@@ -6,7 +6,7 @@ import { verifyUser } from "./routes/auth/verify-user";
 import gmailInstance from "./routes/gmail/gmailInstances";
 import gmailPromptRouter from "./routes/gmail/gmailPrompt";
 import googlePull from './routes/gmail/webhooks/gmailPull';
-import gmailStoreBox from './routes/gmail/gmailStoreBox';
+import gmailRuleBox from './routes/gmail/gmailRuleBox';
 import creditsRoute from './routes/creditsRoute';
 import payPalRoute from './routes/payments/paypal/paypalRoute';
 import cashfreeRoute from './routes/payments/cashfree/cashfreeRoutes';
@@ -38,7 +38,7 @@ app.use("/api/credits", creditsRoute);
 // GMAIL
 app.use("/api/gmail/prompt", gmailPromptRouter);
 app.use("/api/gmail/pull", googlePull);
-app.use("/api/gmail/storebox", gmailStoreBox);
+app.use("/api/gmail/storebox", gmailRuleBox);
 app.use("/api/gmail/instances", gmailInstance);
 // PAYMENTS
 app.use("/api/paypal", payPalRoute);
