@@ -4,7 +4,6 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import DOMPurify from "dompurify";
-import { openGmailCompose, draftReplyFromRules } from "@/lib/gmail/reply";
 
 interface Email {
   id: string;
@@ -97,14 +96,8 @@ export default function EmailDetail({ emailId, instanceId }: EmailDetailProps) {
 
   const handleQuickReply = async () => {
     if (!email || rules.length === 0) return;
-    const draft = await draftReplyFromRules(email, rules);
-    if (draft) {
-      openGmailCompose({
-        to: email.from,
-        subject: `Re: ${email.subject}`,
-        body: draft.body,
-      });
-    }
+
+    console.log('Fill here')
   };
 
   return (
