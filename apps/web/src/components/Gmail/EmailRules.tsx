@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Card } from "@/components/ui/card";
 
 const EmailRules = ({
   instanceId,
@@ -99,6 +98,7 @@ const EmailRules = ({
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
         className="min-h-[150px]"
+        maxLength={1000}
       />
 
       <div className="flex gap-2">
