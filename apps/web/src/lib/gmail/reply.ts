@@ -41,6 +41,8 @@ export async function draftReplyFromRules(
 Best,
 {{me}}`;
 
+console.log("TEMPLATE: ", defaultTemplate);
+
   const tpl = match.rule.template ?? defaultTemplate;
 
   const sender = cleanSender(email.from);

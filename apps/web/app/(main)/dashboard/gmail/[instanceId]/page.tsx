@@ -151,7 +151,7 @@ export default function InstanceDetailPage({ params }: { params: Promise<{ insta
           <EmailRules instanceId={instanceId} token={session?.appToken || ""} />
         ) : selectedEmail ? (
           // Only show EmailDetail if email is selected
-          <EmailDetail emailId={selectedEmail.id} />
+          <EmailDetail instanceId={instanceId} emailId={selectedEmail.id} />
         ) : (
           // Fallback if Detail tab is open but no email is selected
           <div className="text-center text-gray-500 mt-10">

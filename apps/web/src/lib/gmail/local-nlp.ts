@@ -1,14 +1,23 @@
 // src/lib/local-nlp.ts
-import { pipeline } from "@xenova/transformers";
+// src/lib/local-nlp.ts
 
-// keep one instance in memory
 let embedderPromise: Promise<any> | null = null;
 
 export async function getEmbedder() {
   if (!embedderPromise) {
-    // small, fast sentence embeddings
-    embedderPromise = pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2");
+    embedderPromise = (async () => {
+      const { pipeline, env } = await import("@xenova/transformers");
+
+      // configure env before creating pipeline
+      env.allowRemoteModels = true;
+      env.allowLocalModels = true;
+      env.cacheDir = "/models";
+
+      console.log("✅ Initializing embedder...");
+      return pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2");
+    })();
   }
+
   return embedderPromise;
 }
 
@@ -20,12 +29,10 @@ export function cosineSim(a: number[], b: number[]): number {
   let dot = 0, na = 0, nb = 0;
   for (let i = 0; i < a.length; i++) {
     const av = a[i]!;
-    const bv = b[i]!; // `!` tells TS we’re sure it’s not undefined
-
+    const bv = b[i]!;
     dot += av * bv;
     na += av * av;
     nb += bv * bv;
   }
   return dot / (Math.sqrt(na) * Math.sqrt(nb));
 }
-
