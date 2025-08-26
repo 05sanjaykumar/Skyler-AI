@@ -38,7 +38,7 @@ app.use("/api/credits", creditsRoute);
 // GMAIL
 app.use("/api/gmail/prompt", gmailPromptRouter);
 app.use("/api/gmail/pull", googlePull);
-app.use("/api/gmail/storebox", gmailRuleBox);
+app.use("/api/gmail/rulebox", gmailRuleBox);
 app.use("/api/gmail/instances", gmailInstance);
 // PAYMENTS
 app.use("/api/paypal", payPalRoute);

@@ -1,4 +1,3 @@
-// apps/web/src/components/main/EmailRules.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -6,97 +5,123 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 
-interface Rule {
-  id: string;
-  text: string;
-}
-
-const EmailRules = ({ instanceId, token }: { instanceId: string; token: string }) => {
-  const [rules, setRules] = useState<Rule[]>([]);
+const EmailRules = ({
+  instanceId,
+  token,
+}: {
+  instanceId: string;
+  token: string;
+}) => {
   const [draft, setDraft] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [saved, setSaved] = useState(false);
 
-  // Load rules on mount
+  // Load ruleBox on mount
   useEffect(() => {
-    const fetchRules = async () => {
+    const fetchRuleBox = async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/gmail/rules/${instanceId}`,
-          { headers: { Authorization: `Bearer ${token}` } }
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/gmail/rulebox/${instanceId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            credentials: "include",
+          }
         );
         if (res.ok) {
           const data = await res.json();
-          setRules(data.rules || []);
+          setDraft(data.ruleBox || "");
         }
       } catch (err) {
-        console.error("Failed to fetch rules", err);
+        console.error("Failed to fetch ruleBox", err);
       }
     };
-    fetchRules();
+    fetchRuleBox();
   }, [instanceId, token]);
 
-  // Save rule
+  // Save ruleBox (overwrite)
   const handleSave = async () => {
     if (!draft.trim()) return;
-
+    setLoading(true);
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/gmail/rules/${instanceId}`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/gmail/rulebox/${instanceId}`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ text: draft }),
+          credentials: "include",
+          body: JSON.stringify({ ruleBox: draft }),
         }
       );
       if (res.ok) {
-        const saved = await res.json();
-        setRules((prev) => [...prev, saved]);
-        setDraft("");
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000); // reset after 2s
       }
     } catch (err) {
-      console.error("Failed to save rule", err);
+      console.error("Save error", err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Clear textarea only
-  const handleClear = () => {
-    setDraft("");
+  // Clear ruleBox
+  const handleClear = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/gmail/rulebox/${instanceId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: "include",
+        }
+      );
+      if (res.ok) {
+        setDraft("");
+      }
+    } catch (err) {
+      console.error("Clear error", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="space-y-4">
-      {/* Textarea for typing rules */}
       <Textarea
-        placeholder="Define a rule (e.g. 'If subject contains invoice, draft payment reply automatically')"
+        placeholder="Define your rules (plain text)."
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
-        className="min-h-[100px]"
+        className="min-h-[150px]"
       />
 
-      {/* Action buttons */}
       <div className="flex gap-2">
-        <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700">
-          Save
+        <Button
+          onClick={handleSave}
+          disabled={loading}
+          className={`${
+            saved
+              ? "bg-green-600 hover:bg-green-700"
+              : "bg-blue-600 hover:bg-blue-700"
+          }`}
+        >
+          {saved ? "Saved!" : "Save"}
         </Button>
-        <Button variant="destructive" onClick={handleClear}>
+        <Button
+          variant="destructive"
+          onClick={handleClear}
+          disabled={loading}
+        >
           Clear
         </Button>
       </div>
 
-      {/* Saved rules */}
-      <div className="space-y-2">
-        {rules.length === 0 ? (
-          <p className="text-sm text-gray-500">No rules defined yet.</p>
-        ) : (
-          rules.map((rule) => (
-            <Card key={rule.id} className="p-3 text-sm">
-              {rule.text}
-            </Card>
-          ))
-        )}
-      </div>
     </div>
   );
 };

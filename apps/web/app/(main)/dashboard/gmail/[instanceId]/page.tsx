@@ -69,6 +69,13 @@ export default function InstanceDetailPage({ params }: { params: Promise<{ insta
     }
   }, [instanceId, session?.appToken, status, loadCachedEmails]);
 
+  useEffect(() => {
+    if (selectedEmail) {
+      setShowRules(false); // switch to detail view when email selected
+    }
+  }, [selectedEmail]);
+
+
   if (loading) return <div>Loading instance...</div>;
   if (!instance) return <div>Instance not found</div>;
 
@@ -118,34 +125,35 @@ export default function InstanceDetailPage({ params }: { params: Promise<{ insta
         </div>
       </div>
 
-      {/* Right side: Email Detail + Reply */}
+      {/* Right side: Email Detail + Rules */}
       <div className="w-full md:w-3/5 p-4 overflow-auto flex flex-col">
-        {selectedEmail ? (
-          <>
-            {/* Toggle Button */}
-            <div className="flex justify-end mb-2">
-              <button
-                onClick={() => setShowRules((prev) => !prev)}
-                className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
-              >
-                {showRules ? (
-                  <SlidersHorizontal className="h-4 w-4" />
-                ) : (
-                  <FileText className="h-4 w-4" />
-                )}
-              </button>
-            </div>
-
-            {/* Conditional View */}
-            {showRules ? (
-              <EmailRules instanceId={instanceId} token={session?.appToken || ""} />
-            ) : (
-              <>
-                <EmailDetail emailId={selectedEmail.id} />
-              </>
-            )}
-          </>
+        {/* Two toggle buttons */}
+        <div className="flex justify-end gap-2 mb-2">
+          <button
+            onClick={() => setShowRules(false)}
+            className={`p-2 rounded-md flex items-center gap-1 ${
+              !showRules ? "bg-gray-200 dark:bg-gray-700" : "hover:bg-gray-100 dark:hover:bg-gray-800"
+            }`}
+          >
+            <FileText className="h-4 w-4" /> Detail
+          </button>
+          <button
+            onClick={() => setShowRules(true)}
+            className={`p-2 rounded-md flex items-center gap-1 ${
+              showRules ? "bg-gray-200 dark:bg-gray-700" : "hover:bg-gray-100 dark:hover:bg-gray-800"
+            }`}
+          >
+            <SlidersHorizontal className="h-4 w-4" /> Rules
+          </button>
+        </div>
+        {showRules ? (
+          // Always show EmailRules, regardless of selectedEmail
+          <EmailRules instanceId={instanceId} token={session?.appToken || ""} />
+        ) : selectedEmail ? (
+          // Only show EmailDetail if email is selected
+          <EmailDetail emailId={selectedEmail.id} />
         ) : (
+          // Fallback if Detail tab is open but no email is selected
           <div className="text-center text-gray-500 mt-10">
             Select an email to view details
           </div>
