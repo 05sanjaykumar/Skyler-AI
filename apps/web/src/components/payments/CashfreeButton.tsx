@@ -19,6 +19,7 @@ export default function CashfreeButton({ plan }: { plan: any }) {
   const handleCashfreePayment = async () => {
     setLoading(true);
     try {
+        console.log(`Creating Cashfree order for plan: ${plan.planId} and price: ${plan.amount}`);
       const orderRes = await fetch(`${backendUrl}/api/cashfree/order`, {
         method: "POST",
         headers: getAuthHeaders(),
@@ -42,8 +43,10 @@ export default function CashfreeButton({ plan }: { plan: any }) {
           .then((result: any) => {
             if (result.error) {
               router.push("/payments/failure");
-            } else if (result.redirect) {
-              console.log("Redirecting to Cashfree checkout...");
+            } else {
+              const { creditsRemaining, planExpirationDate } = result;
+              console.log('Cashfree payment result:', result);
+              router.push(`/payments/success?credits=${creditsRemaining}&expiry=${planExpirationDate}`);
             }
           });
       };
