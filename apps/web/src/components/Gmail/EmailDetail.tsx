@@ -106,7 +106,7 @@ export default function EmailDetail({ emailId, instanceId }: EmailDetailProps) {
     try {
       const plainTextBody = DOMPurify.sanitize(email.body, { ALLOWED_TAGS: [] });
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/gmail/summarise/${instanceId}`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/gmail/summarise/${instanceId}/groq`,
         {
           method: "POST",
           headers: {
@@ -116,6 +116,7 @@ export default function EmailDetail({ emailId, instanceId }: EmailDetailProps) {
           credentials: "include",
           body: JSON.stringify({
             emailBody: plainTextBody,
+            emailFrom: email.from,
           }),
         }
       );
@@ -146,17 +147,28 @@ export default function EmailDetail({ emailId, instanceId }: EmailDetailProps) {
           disabled={generating}
           className="mt-4 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50"
         >
-          {generating ? "Generating..." : "Quick Reply"}
+          {generating ? "Generating..." : "Generate Reply using Rules"}
         </button>
       )}
 
       {quickReply && (
-        <div className="mt-4 p-4 border border-gray-300 rounded-lg bg-gray-50">
-          <h3 className="font-semibold mb-2">Quick Reply Draft:</h3>
-          <p className="mb-2"><strong>Rule Used:</strong> {quickReply.bestRule.text}</p>
-          <p>{quickReply.draft}</p>
-        </div>
-      )}
+  <div className="mt-4 p-4 border border-gray-300 bg-background">
+    <h3 className="font-semibold mb-2">Draft</h3>
+    <p className="mb-2"><strong>Rule Used:</strong> {quickReply.bestRule.text}</p>
+    <p>{quickReply.draft}</p>
+
+    {/* Open in Gmail button */}
+    <a
+      href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(email.from || '')}&su=${encodeURIComponent(email.subject || '')}&body=${encodeURIComponent(quickReply.draft)}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="mt-2 inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+    >
+      Open Draft in Gmail
+    </a>
+  </div>
+)}
+
     </div>
   );
 }

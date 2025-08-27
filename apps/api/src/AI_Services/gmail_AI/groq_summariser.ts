@@ -36,6 +36,7 @@ export class GmailSummariser {
    */
   public async summariseEmail(
     emailBody: string,
+    emailFrom: string,
     rules: Rule[]
   ): Promise<SummariserResult> {
     if (!rules.length) {
@@ -45,9 +46,13 @@ export class GmailSummariser {
     // Build structured prompt for Groq
     const prompt = `
 You are a professional customer support assistant.
-Summarise the email below in one concise sentence.
-Then, choose the most relevant rule from the given list of rules.
-Finally, draft a professional, polite, and friendly reply to the email using that rule.
+The email below is from: ${emailFrom}.
+Use the sender information to tailor the response appropriately.
+
+Task:
+1. Summarise the email in ONE concise sentence.
+2. Choose the most relevant rule from the given list of rules.
+3. Draft a professional, polite, and friendly reply to the email using that rule.
 
 Email:
 """${emailBody}"""
@@ -57,11 +62,11 @@ ${rules.map((r, i) => `${i + 1}. ${r.text}`).join("\n")}
 
 Requirements:
 - Summarise the email in 1 sentence
-- Select only one rule from the list that matches the email
-- Draft a reply in 2-3 sentences maximum
+- Select ONLY ONE rule from the list that is most relevant
+- Draft the reply in 2–3 sentences maximum
 - Friendly, professional, polite tone
 - Do NOT add greetings, signatures, or unrelated commentary
-- Respond ONLY with valid JSON in the following format:
+- Respond ONLY in JSON in EXACTLY this format:
 
 {
   "summary": "<one sentence summarising email>",
@@ -71,6 +76,7 @@ Requirements:
   },
   "draft": "<draft reply text>"
 }
+- The JSON must be parseable. DO NOT include any extra text outside of JSON.
 `;
 
     // Call LLM

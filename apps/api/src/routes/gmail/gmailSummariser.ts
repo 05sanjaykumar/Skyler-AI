@@ -62,7 +62,7 @@ router.post("/:id", verifyJWT, async (req: AuthRequest, res: Response) => {
 
 router.post("/:id/groq", verifyJWT, async (req: AuthRequest, res: Response) => {
   const userId = req.userId;
-  const { emailBody } = req.body;
+  const { emailBody, emailFrom } = req.body;
   console.log("Email body:", emailBody);
 
   if (!userId) {
@@ -99,11 +99,11 @@ router.post("/:id/groq", verifyJWT, async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: "No rules found in rule box" });
     }
 
-    console.log("Rules found:", rules);
+    console.log("From found:", emailFrom);
 
     // Call the Groq summariser
     const summariser = new GmailSummariser();
-    const result = await summariser.summariseEmail(emailBody, rules);
+    const result = await summariser.summariseEmail(emailBody,emailFrom, rules);
 
     res.json(result);
   } catch (error) {
