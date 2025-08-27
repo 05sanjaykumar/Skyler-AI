@@ -3,7 +3,7 @@
 import { Router, Request, Response } from "express";
 import { verifyJWT } from "../../middleware/auth";
 import { prisma } from "@skyler-ai/prisma";
-import { applyRulesToEmail } from "../../AI_Services/gmail_AI/applyRulesToEmail";
+// import { applyRulesToEmail } from "../../AI_Services/gmail_AI/applyRulesToEmail";
 import { GmailSummariser } from "../../AI_Services/gmail_AI/groq_summariser";
 
 
@@ -13,52 +13,52 @@ interface AuthRequest extends Request {
   userId?: string;
 }
 
-router.post("/:id", verifyJWT, async (req: AuthRequest, res: Response) => {
-  const userId = req.userId;
-  const { emailBody } = req.body;
-  console.log("Email body:", emailBody);
+// router.post("/:id", verifyJWT, async (req: AuthRequest, res: Response) => {
+//   const userId = req.userId;
+//   const { emailBody } = req.body;
+//   console.log("Email body:", emailBody);
 
-  if (!userId) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
+//   if (!userId) {
+//     return res.status(401).json({ error: "Unauthorized" });
+//   }
 
-  try {
-    const email = await prisma.user.findUnique({
-      where: { id: userId },
-    });
+//   try {
+//     const email = await prisma.user.findUnique({
+//       where: { id: userId },
+//     });
 
-    if (!email) {
-      return res.status(404).json({ error: "Email not found" });
-    }
+//     if (!email) {
+//       return res.status(404).json({ error: "Email not found" });
+//     }
 
-    const instances = await prisma.aIInstance.findMany({
-      where: { userId },
-      select: { ruleBox: true },
-    });
+//     const instances = await prisma.aIInstance.findMany({
+//       where: { userId },
+//       select: { ruleBox: true },
+//     });
 
-    if (!instances || instances.length === 0) {
-      return res.status(404).json({ error: "No instances found" });
-    }
-    const rules: { id: string; text: string }[] = [];
+//     if (!instances || instances.length === 0) {
+//       return res.status(404).json({ error: "No instances found" });
+//     }
+//     const rules: { id: string; text: string }[] = [];
 
-    instances.forEach((instance, idx) => {
-    if (instance.ruleBox) {
-        rules.push({ id: `${idx}`, text: instance.ruleBox });
-      }
-    });
+//     instances.forEach((instance, idx) => {
+//     if (instance.ruleBox) {
+//         rules.push({ id: `${idx}`, text: instance.ruleBox });
+//       }
+//     });
 
-    if (!rules.length) {
-        return res.status(400).json({ error: "No rules found in rule box" });
-    }
-    console.log("Rules found:", rules);
-    const result = await applyRulesToEmail(emailBody, rules);
+//     if (!rules.length) {
+//         return res.status(400).json({ error: "No rules found in rule box" });
+//     }
+//     console.log("Rules found:", rules);
+//     const result = await applyRulesToEmail(emailBody, rules);
 
-    res.json(result);
-  } catch (error) {
-    console.error("Error summarizing email:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
+//     res.json(result);
+//   } catch (error) {
+//     console.error("Error summarizing email:", error);
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// });
 
 router.post("/:id/groq", verifyJWT, async (req: AuthRequest, res: Response) => {
   const userId = req.userId;

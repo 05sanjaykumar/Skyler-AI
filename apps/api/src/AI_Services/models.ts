@@ -6,10 +6,10 @@ import { pipeline } from "@xenova/transformers";
 
 export let sentimentAnalyzer: any;
 export let embedder: any;
-export let summarizer: any;
+// export let summarizer: any;
 
 export async function loadModels() {
-  if (sentimentAnalyzer && embedder && summarizer) return;
+  if (sentimentAnalyzer && embedder) return;
 
   sentimentAnalyzer = await pipeline(
     "sentiment-analysis",
@@ -18,5 +18,5 @@ export async function loadModels() {
 
   embedder = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2");
 
-  summarizer = await pipeline("text2text-generation", "Xenova/flan-t5-base");
+  // summarizer = await pipeline("text2text-generation", "Xenova/flan-t5-base");
 }
