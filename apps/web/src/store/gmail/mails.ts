@@ -54,7 +54,7 @@ export const useMailStore = create<MailState>((set, get) => ({
       instanceId: e.instanceId,
     }));
 
-    set({ emails: normalized, emailsLoading: false });
+    set({ emails: normalized.reverse(), emailsLoading: false });
     console.log("Loaded emails from cache:", normalized);
   },
 

@@ -125,9 +125,19 @@ export default function CreateFilterForm({ instance, onGenerate }: { instance: a
     }
   }
 
+  const refreshEmail = async () => {
+    if (!session?.appToken) return;
+    const ok = await deductCredits(session.appToken, 1);
+    try {
+        onGenerate(); 
+    } catch (err) {
+      console.error("Error refreshing emails:", err);
+    }
+  };
+
   const saveForm = async (details: any) => {
     if (!session?.appToken) return;
-    const ok = await deductCredits(session.appToken, 2);
+    const ok = await deductCredits(session.appToken, 1);
     if (!ok) {
       alert("Not enough credits to generate.");
       return;
@@ -350,9 +360,9 @@ export default function CreateFilterForm({ instance, onGenerate }: { instance: a
             <Button
               type="button"
               variant="secondary"
-              onClick={form.handleSubmit(onSubmit)}
+              onClick={refreshEmail}
             >
-              Test Filter
+              Refresh Emails
             </Button>
           </div>
         </form>

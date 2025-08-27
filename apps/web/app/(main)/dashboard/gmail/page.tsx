@@ -75,6 +75,7 @@ export default function DashboardPage() {
       setInstances((prev) => [...prev, newInstance])
       setNewInstanceName('')
       setCreating(false)
+      setInstancesLeft((prev) => prev - 1)
     } catch (err) {
       console.error(err)
       alert('Server error while creating instance')
@@ -125,6 +126,7 @@ export default function DashboardPage() {
         return
       }
       setInstances((prev) => prev.filter((inst) => inst.id !== id))
+      setInstancesLeft((prev) => prev + 1)
     } catch (err) {
       console.error(err)
       alert('Server error while deleting instance')
