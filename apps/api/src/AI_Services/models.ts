@@ -18,5 +18,5 @@ export async function loadModels() {
 
   embedder = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2");
 
-  summarizer = await pipeline("text2text-generation", "Xenova/flan-t5-small");
+  summarizer = await pipeline("text2text-generation", "Xenova/flan-t5-base");
 }

@@ -1,4 +1,4 @@
-// apps/api/src/AI_Services/promptDecoder.ts
+// apps/api/src/AI_Services/gmail_AI/promptDecoder.ts
 import { ChatGroq } from "@langchain/groq";
 import * as dotenv from 'dotenv';
 dotenv.config();

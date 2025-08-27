@@ -1,5 +1,3 @@
-// apps/web/src/components/main/EmailsDetails.tsx
-
 "use client";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
@@ -20,6 +18,12 @@ interface Rule {
   template?: string;
 }
 
+interface QuickReplyResult {
+  summary: string;
+  draft: string;
+  bestRule: Rule;
+}
+
 interface EmailDetailProps {
   emailId: string;
   instanceId: string;
@@ -30,6 +34,8 @@ export default function EmailDetail({ emailId, instanceId }: EmailDetailProps) {
   const [email, setEmail] = useState<Email | null>(null);
   const [rules, setRules] = useState<Rule[]>([]);
   const [loading, setLoading] = useState(true);
+  const [quickReply, setQuickReply] = useState<QuickReplyResult | null>(null);
+  const [generating, setGenerating] = useState(false);
 
   // fetch email
   useEffect(() => {
@@ -78,7 +84,6 @@ export default function EmailDetail({ emailId, instanceId }: EmailDetailProps) {
 
         if (res.ok) {
           const data = await res.json();
-          console.log('rules loaded :', data.ruleBox);
           setRules(data.ruleBox || []);
         }
       } catch (err) {
@@ -95,36 +100,40 @@ export default function EmailDetail({ emailId, instanceId }: EmailDetailProps) {
   const cleanBody = DOMPurify.sanitize(email.body);
 
   const handleQuickReply = async () => {
-  if (!email || rules.length === 0) return;
+    if (!email || rules.length === 0) return;
 
-  try {
-    const plainTextBody = DOMPurify.sanitize(email.body, { ALLOWED_TAGS: [] });
-    console.log("Generating quick reply for email body:", plainTextBody);
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/gmail/summarise/${instanceId}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session?.appToken || ""}`,
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          emailBody: plainTextBody,
-        }),
-      }
-    );
+    setGenerating(true);
+    try {
+      const plainTextBody = DOMPurify.sanitize(email.body, { ALLOWED_TAGS: [] });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/gmail/summarise/${instanceId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session?.appToken || ""}`,
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            emailBody: plainTextBody,
+          }),
+        }
+      );
 
-    if (!res.ok) throw new Error("Failed to generate quick reply");
+      if (!res.ok) throw new Error("Failed to generate quick reply");
 
-    const data = await res.json();
-    console.log("Quick reply generated:", data);
-
-  } catch (err) {
-    console.error(err);
-  }
-};
-
+      const data = await res.json();
+      setQuickReply({
+        summary: data.summary,
+        draft: data.draft,
+        bestRule: data.bestRule,
+      });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   return (
     <div className="mb-4 max-h-[80vh] overflow-auto">
@@ -134,10 +143,19 @@ export default function EmailDetail({ emailId, instanceId }: EmailDetailProps) {
       {rules.length > 0 && (
         <button
           onClick={handleQuickReply}
-          className="mt-4 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800"
+          disabled={generating}
+          className="mt-4 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50"
         >
-          Quick Reply
+          {generating ? "Generating..." : "Quick Reply"}
         </button>
+      )}
+
+      {quickReply && (
+        <div className="mt-4 p-4 border border-gray-300 rounded-lg bg-gray-50">
+          <h3 className="font-semibold mb-2">Quick Reply Draft:</h3>
+          <p className="mb-2"><strong>Rule Used:</strong> {quickReply.bestRule.text}</p>
+          <p>{quickReply.draft}</p>
+        </div>
       )}
     </div>
   );
