@@ -80,7 +80,7 @@ export default function Topbar() {
 
           {/* These will only show on mobile */}
           <div className="block md:hidden">
-            <DropdownMenuItem onClick={() => router.push("/payments")}>
+            <DropdownMenuItem onClick={() => router.push("/payments/plans")}>
               <Copyright className="w-4 h-4 mr-2" /> Buy Credits
             </DropdownMenuItem>
             <DropdownMenuItem>
@@ -112,7 +112,7 @@ export default function Topbar() {
 
       {/* These will only show on desktop */}
       <div className="hidden md:flex items-center space-x-2">
-        <Button className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 shadow-lg" onClick={() => router.push("/payments")}>
+        <Button className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 shadow-lg" onClick={() => router.push("/payments/plans")}>
           <Copyright className="w-4 h-4 mr-2" />
           Buy Credits
         </Button>
