@@ -98,6 +98,8 @@ export default function EmailDetail({ emailId, instanceId }: EmailDetailProps) {
   if (!email || rules.length === 0) return;
 
   try {
+    const plainTextBody = DOMPurify.sanitize(email.body, { ALLOWED_TAGS: [] });
+    console.log("Generating quick reply for email body:", plainTextBody);
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/gmail/summarise/${instanceId}`,
       {
@@ -108,7 +110,7 @@ export default function EmailDetail({ emailId, instanceId }: EmailDetailProps) {
         },
         credentials: "include",
         body: JSON.stringify({
-          emailBody: email.body,
+          emailBody: plainTextBody,
         }),
       }
     );

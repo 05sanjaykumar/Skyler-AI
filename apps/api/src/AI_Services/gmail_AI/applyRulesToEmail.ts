@@ -1,3 +1,4 @@
+// apps/api/src/AI_Services/gmail_AI/applyRules.ts
 import { loadModels, embedder, summarizer } from "../models";
 
 // cosineSimilarity helper

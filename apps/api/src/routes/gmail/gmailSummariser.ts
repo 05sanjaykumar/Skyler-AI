@@ -14,6 +14,7 @@ interface AuthRequest extends Request {
 router.post("/:id", verifyJWT, async (req: AuthRequest, res: Response) => {
   const userId = req.userId;
   const { emailBody } = req.body;
+  console.log("Email body:", emailBody);
 
   if (!userId) {
     return res.status(401).json({ error: "Unauthorized" });
@@ -36,11 +37,13 @@ router.post("/:id", verifyJWT, async (req: AuthRequest, res: Response) => {
     if (!instances || instances.length === 0) {
       return res.status(404).json({ error: "No instances found" });
     }
+    const rules: { id: string; text: string }[] = [];
 
-    const rules = instances
-    .map(i => (i.ruleBox ? JSON.parse(i.ruleBox) : null))
-    .filter(Boolean)
-    .flatMap(r => r.rules || []);
+    instances.forEach((instance, idx) => {
+    if (instance.ruleBox) {
+        rules.push({ id: `${idx}`, text: instance.ruleBox });
+      }
+    });
 
     if (!rules.length) {
         return res.status(400).json({ error: "No rules found in rule box" });

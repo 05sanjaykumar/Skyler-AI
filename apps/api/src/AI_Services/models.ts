@@ -1,7 +1,8 @@
-// apps/api/src/AI_Services/models
-
 // models.ts
+// Fix "ReferenceError: self is not defined" bug when running directly with node
+
 import { pipeline } from "@xenova/transformers";
+
 
 export let sentimentAnalyzer: any;
 export let embedder: any;
@@ -17,5 +18,5 @@ export async function loadModels() {
 
   embedder = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2");
 
-  summarizer = await pipeline("text2text-generation", "Xenova/google/flan-t5-small");
+  summarizer = await pipeline("text2text-generation", "Xenova/flan-t5-small");
 }
