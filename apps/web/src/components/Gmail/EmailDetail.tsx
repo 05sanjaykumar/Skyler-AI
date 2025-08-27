@@ -138,37 +138,56 @@ export default function EmailDetail({ emailId, instanceId }: EmailDetailProps) {
 
   return (
     <div className="mb-4 max-h-[80vh] overflow-auto">
-      <h2 className="text-xl font-semibold">{email.subject}</h2>
-      <div className="mt-2" dangerouslySetInnerHTML={{ __html: cleanBody }} />
+  <h2 className="text-xl font-semibold">{email.subject}</h2>
 
+  <div className="mt-4 p-4 border border-gray-200 rounded-lg bg-background">
+    <div className="max-h-[60vh] overflow-auto">
+      <div dangerouslySetInnerHTML={{ __html: cleanBody }} />
+    </div>
+
+    {/* Action buttons grouped together */}
+    <div className="flex gap-3 mt-4">
+      {/* Direct open in Gmail */}
+      <a
+        href={`https://mail.google.com/mail/u/0/#inbox/${encodeURIComponent(email.id)}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+      >
+        Open in Gmail
+      </a>
+
+      {/* Quick Reply generator */}
       {rules.length > 0 && (
         <button
           onClick={handleQuickReply}
           disabled={generating}
-          className="mt-4 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50"
+          className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50"
         >
           {generating ? "Generating..." : "Generate Reply using Rules"}
         </button>
       )}
-
-      {quickReply && (
-  <div className="mt-4 p-4 border border-gray-300 bg-background">
-    <h3 className="font-semibold mb-2">Draft</h3>
-    <p className="mb-2"><strong>Rule Used:</strong> {quickReply.bestRule.text}</p>
-    <p>{quickReply.draft}</p>
-
-    {/* Open in Gmail button */}
-    <a
-      href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(email.from || '')}&su=${encodeURIComponent(email.subject || '')}&body=${encodeURIComponent(quickReply.draft)}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="mt-2 inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-    >
-      Open Draft in Gmail
-    </a>
-  </div>
-)}
-
     </div>
+  </div>
+
+  {quickReply && (
+    <div className="mt-4 p-4 border border-gray-300 bg-background rounded-lg">
+      <h3 className="font-semibold mb-2">Draft</h3>
+      <p className="mb-2"><strong>Rule Used:</strong> {quickReply.bestRule.text}</p>
+      <p>{quickReply.draft}</p>
+
+      {/* Open the generated draft in Gmail */}
+      <a
+        href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(email.from || '')}&su=${encodeURIComponent(email.subject || '')}&body=${encodeURIComponent(quickReply.draft)}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-2 inline-block text-decoration-none px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+      >
+        Open Draft in Gmail
+      </a>
+    </div>
+  )}
+</div>
+
   );
 }
