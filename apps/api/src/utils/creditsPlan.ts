@@ -15,7 +15,7 @@ export async function purchasePlanForUser(userId: string, plan: "mini" | "pro") 
   const updated = await prisma.user.update({
     where: { id: userId },
     data: {
-      creditsRemaining: credits, // reset/add credits
+      creditsRemaining: { increment: credits }, // reset/add credits
       planExpirationDate: expirationDate,
     },
     select: { creditsRemaining: true, planExpirationDate: true },

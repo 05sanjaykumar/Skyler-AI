@@ -1,5 +1,6 @@
+// apps/web/src/components/payments/CashfreeButton.tsx
 'use client'
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
@@ -17,9 +18,11 @@ export default function CashfreeButton({ plan }: { plan: any }) {
   });
 
   const handleCashfreePayment = async () => {
+    if (!plan) {
+      return;
+    }
     setLoading(true);
     try {
-        console.log(`Creating Cashfree order for plan: ${plan.planId} and price: ${plan.amount}`);
       const orderRes = await fetch(`${backendUrl}/api/cashfree/order`, {
         method: "POST",
         headers: getAuthHeaders(),
@@ -56,7 +59,7 @@ export default function CashfreeButton({ plan }: { plan: any }) {
     } finally {
       setLoading(false);
     }
-  };
+  };  
 
   return (
     <button disabled={loading} onClick={handleCashfreePayment} className="bg-gray-700 px-6 py-2 rounded text-white">

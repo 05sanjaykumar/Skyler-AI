@@ -6,11 +6,16 @@ import { PaymentMethodToggle } from "@/components/payments/PaymentMethodToggle";
 import PaypalButton from "@/components/payments/PaypalButton";
 import CashfreeButton from "@/components/payments/CashfreeButton";
 import { Button } from "@/components/ui/button";
+import { useEffect } from "react";
 
 export default function CheckoutPage() {
   const { planId } = useParams();
   const router = useRouter();
   const plan = plans.find(p => p.planId === planId);
+
+  useEffect(() => {
+    console.log(`CheckoutPage mounted with plan: ${plan?.amount}`);
+  }, [planId]);
 
   const [method, setMethod] = React.useState<"paypal" | "cashfree">("paypal");
 
