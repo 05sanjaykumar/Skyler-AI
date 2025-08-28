@@ -19,7 +19,7 @@ export default function PaypalButton({ plan }: { plan: any }) {
   const handlePaypalPayment = async () => {
     setLoading(true);
     try {
-      const orderRes = await fetch(`${backendUrl}/api/paypal/order`, {
+      const orderRes = await fetch(`${backendUrl}/api/payments/paypal/order`, {
         method: "POST",
         headers: getAuthHeaders(),
         body: JSON.stringify({ amount: plan.amount, plan: plan.planId }),
@@ -37,7 +37,7 @@ export default function PaypalButton({ plan }: { plan: any }) {
         window.paypal.Buttons({
           createOrder: () => order.id,
           onApprove: async (data: any) => {
-            const captureRes = await fetch(`${backendUrl}/api/paypal/capture`, {
+            const captureRes = await fetch(`${backendUrl}/api/payments/paypal/capture`, {
               method: "POST",
               headers: getAuthHeaders(),
               body: JSON.stringify({ orderId: data.orderID, plan: plan.planId }),

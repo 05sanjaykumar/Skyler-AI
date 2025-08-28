@@ -22,7 +22,7 @@ export default function CashfreeButton({ plan }: { plan: any }) {
     setLoading(true);
 
     try {
-      const orderRes = await fetch(`${backendUrl}/api/cashfree/order`, {
+      const orderRes = await fetch(`${backendUrl}/api/payments/cashfree/order`, {
         method: "POST",
         headers: getAuthHeaders(),
         body: JSON.stringify({ amount: plan.amount, plan: plan.planId }),
@@ -50,7 +50,7 @@ export default function CashfreeButton({ plan }: { plan: any }) {
               router.push("/payments/failure");
             } else {
               // ✅ use captured order_id here
-              const response = await fetch(`${backendUrl}/api/cashfree/check-status`, {
+              const response = await fetch(`${backendUrl}/api/payments/cashfree/check-status`, {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",

@@ -35,7 +35,7 @@ router.post("/order", verifyJWT, async (req: AuthRequest, res: Response) => {
         customer_phone: "9999999999",
       },
       order_meta: {
-        notify_url: `${env.NGROK}/api/cashfree/webhook/`,
+        notify_url: `${env.NGROK}/api/payments/cashfree/webhook/`,
         return_url: `${env.FRONTEND_URL}/payments/cashfree-return?order_id=${orderId}`
       }
     };

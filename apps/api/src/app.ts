@@ -45,7 +45,7 @@ app.use("/api/gmail/rulebox", gmailRuleBox);
 app.use("/api/gmail/instances", gmailInstance);
 app.use("/api/gmail/summarise", gmailSummariser);
 // PAYMENTS
-app.use("/api/paypal", payPalRoute);
-app.use("/api/cashfree", cashfreeRoute);
+app.use("/api/payments/paypal", payPalRoute);
+app.use("/api/payments/cashfree", cashfreeRoute);
 
 export default app;
