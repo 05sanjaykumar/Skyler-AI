@@ -18,10 +18,9 @@ export default function CashfreeButton({ plan }: { plan: any }) {
   });
 
   const handleCashfreePayment = async () => {
-    if (!plan) {
-      return;
-    }
+    if (!plan) return;
     setLoading(true);
+
     try {
       const orderRes = await fetch(`${backendUrl}/api/cashfree/order`, {
         method: "POST",
@@ -30,7 +29,9 @@ export default function CashfreeButton({ plan }: { plan: any }) {
       });
       if (!orderRes.ok) throw new Error("Failed to create Cashfree order");
 
-      const { payment_session_id } = await orderRes.json();
+      const { payment_session_id, order_id } = await orderRes.json(); // ✅ capture order_id
+      console.log("Cashfree Order Response:", { payment_session_id, order_id });
+
       const script = document.createElement("script");
       script.src = "https://sdk.cashfree.com/js/v3/cashfree.js";
       script.async = true;
@@ -42,14 +43,31 @@ export default function CashfreeButton({ plan }: { plan: any }) {
           alert("Cashfree SDK failed to load.");
           return;
         }
+
         cf.checkout({ paymentSessionId: payment_session_id, redirectTarget: "_modal" })
-          .then((result: any) => {
+          .then(async (result: any) => {
             if (result.error) {
               router.push("/payments/failure");
             } else {
-              const { creditsRemaining, planExpirationDate } = result;
-              console.log('Cashfree payment result:', result);
-              router.push(`/payments/success?credits=${creditsRemaining}&expiry=${planExpirationDate}`);
+              // ✅ use captured order_id here
+              const response = await fetch(`${backendUrl}/api/cashfree/check-status`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ order_id }),
+              });
+
+              const data = await response.json();
+              console.log("Check-status response:", data);
+
+              if (data.status === "success") {
+                const { creditsRemaining, planExpirationDate } = data.userData;
+                router.push(`/payments/success?credits=${creditsRemaining}&expiry=${planExpirationDate}`);
+              } else {
+                router.push("/payments/failure");
+              }
             }
           });
       };
@@ -59,7 +77,8 @@ export default function CashfreeButton({ plan }: { plan: any }) {
     } finally {
       setLoading(false);
     }
-  };  
+  };
+
 
   return (
     <button disabled={loading} onClick={handleCashfreePayment} className="bg-gray-700 px-6 py-2 rounded text-white">
