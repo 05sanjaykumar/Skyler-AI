@@ -63,7 +63,7 @@ export default function DashboardPage() {
                 onClick={() => item.href && router.push(item.href)}
                 className="flex flex-col items-center justify-center p-6 rounded-xl bg-card shadow-sm hover:shadow-md hover:scale-[1.02] transition-all border dark:bg-zinc-700"
               >
-                {renderIcon(item.icon)}
+                {/* {renderIcon(item.icon)} */}
                 <span className="text-foreground font-medium">{item.name}</span>
               </button>
             ))}
@@ -79,7 +79,7 @@ export default function DashboardPage() {
                 key={idx}
                 className="flex flex-col items-center justify-center p-6 rounded-xl bg-muted shadow-sm border opacity-60 cursor-not-allowed"
               >
-                {renderIcon(item.icon)}
+                {/* {renderIcon(item.icon)} */}
                 <span className="text-muted-foreground font-medium">{item.name}</span>
               </div>
             ))}
