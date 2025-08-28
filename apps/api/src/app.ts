@@ -11,6 +11,7 @@ import gmailSummariser from './routes/gmail/gmailSummariser';
 import creditsRoute from './routes/creditsRoute';
 import payPalRoute from './routes/payments/paypal/paypalRoute';
 import cashfreeRoute from './routes/payments/cashfree/cashfreeRoutes';
+import profile from './routes/profile';
 import cors from "cors";
 import dotenv from "dotenv";
 dotenv.config();
@@ -35,6 +36,7 @@ app.post("/api/verify-user", verifyUser);
 
 // DEFAULT
 app.use("/api/credits", creditsRoute);
+app.use("/api/profile", profile);
 
 // GMAIL
 app.use("/api/gmail/prompt", gmailPromptRouter);

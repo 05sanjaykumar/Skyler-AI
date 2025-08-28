@@ -94,8 +94,8 @@ export default function Topbar() {
           </div>
 
           {/* Always show */}
-          <DropdownMenuItem>
-            <User className="w-4 h-4 mr-2" /> Profile
+          <DropdownMenuItem  onClick={() => router.push("/profile")}>
+            <User className="w-4 h-4 mr-2"/> Profile
           </DropdownMenuItem>
           <DropdownMenuItem>
             <Settings className="w-4 h-4 mr-2" /> Settings
