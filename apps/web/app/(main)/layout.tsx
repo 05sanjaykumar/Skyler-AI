@@ -1,5 +1,4 @@
 // apps/web/app/dashboard/layout.tsx
-import "../globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import AuthGuard from "@/lib/auth-wrapper"
 
