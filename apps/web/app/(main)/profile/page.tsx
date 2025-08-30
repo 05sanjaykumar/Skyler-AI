@@ -159,18 +159,23 @@ const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
         <CardContent>
           <ul className="space-y-2">
             <li>
-              <Link href="/privacy" className="text-sm">
+              <Link href="/legal/privacy" className="text-sm">
                 Privacy Policy
               </Link>
             </li>
             <li>
-              <Link href="/terms" className="text-sm">
+              <Link href="/legal/terms" className="text-sm">
                 Terms of Service
               </Link>
             </li>
             <li>
-              <Link href="/refund" className="text-sm">
+              <Link href="/legal/refund" className="text-sm">
                 Refund Policy
+              </Link>
+            </li>
+            <li>
+              <Link href="/legal/disclaimer" className="text-sm">
+                Disclaimer
               </Link>
             </li>
           </ul>

@@ -31,6 +31,7 @@ export default function Footer() {
           <h4 className="font-medium mb-3">Resources</h4>
           <ul className="space-y-2 text-sm text-muted-foreground">
             <li><Link href="/support" className="hover:text-foreground">Support</Link></li>
+            <li><Link href="/about" className="hover:text-foreground">About Us</Link></li>
           </ul>
         </div>
 
@@ -38,9 +39,13 @@ export default function Footer() {
         <div>
           <h4 className="font-medium mb-3">Company</h4>
           <ul className="space-y-2 text-sm text-muted-foreground">
-            <li><Link href="/about" className="hover:text-foreground">About Us</Link></li>
-            <li><Link href="/privacy" className="hover:text-foreground">Privacy Policy</Link></li>
-            <li><Link href="/terms" className="hover:text-foreground">Terms of Service</Link></li>
+            © 2025 Skyler Inbox. All rights reserved. 
+            <div>
+              <a href="/legal/terms" className="underline mx-1">Terms</a>
+              <a href="/legal/privacy" className="underline mx-1">Privacy</a>
+              <a href="/legal/disclaimer" className="underline mx-1">Disclaimer</a>
+              <a href="/legal/refund" className="underline mx-1">Refund</a>
+            </div>
           </ul>
 
           <div className="flex gap-4 mt-4">
