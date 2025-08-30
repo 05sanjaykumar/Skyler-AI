@@ -141,11 +141,11 @@ const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
       {/* Support */}
       <Card>
         <CardHeader>
-          <CardTitle>Support</CardTitle>
+          <CardTitle>Contact Us</CardTitle>
         </CardHeader>
         <CardContent>
-          <Button className="w-full" onClick={() => router.push("/support")}>
-            Get Support
+          <Button className="w-full" onClick={() => router.push("/contact")}>
+            Contact Us and Get Support
           </Button>
         </CardContent>
       </Card>

@@ -100,8 +100,8 @@ export default function Topbar() {
           <DropdownMenuItem>
             <Settings className="w-4 h-4 mr-2" /> Settings
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => router.push("/support")}>
-            <Headset className="w-4 h-4 mr-2" /> Support
+          <DropdownMenuItem onClick={() => router.push("/contact")}>
+            <Headset className="w-4 h-4 mr-2" /> Contact | Support
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem className="text-red-600" onClick={() => signOut()}>

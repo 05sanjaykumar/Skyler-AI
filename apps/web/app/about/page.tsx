@@ -237,7 +237,7 @@ export default function AboutPage() {
                             digital communication? I'd love to hear from you.
                         </p>
                         <div className="flex justify-center space-x-4">
-                            <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
+                            <Button size="lg" className="bg-blue-600 hover:bg-blue-700" onClick={() => window.location.href = "/contact"}>
                                 <Mail className="w-4 h-4 mr-2" />
                                 Get in Touch
                                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -253,9 +253,9 @@ export default function AboutPage() {
                             <Link href="https://www.sanjaybuilds.com/" target="_blank" className="text-muted-foreground hover:text-foreground">
                                 <FaGlobe size={24} />
                             </Link>
-                                        <Link href="https://github.com/05sanjaykumar" target="_blank" className="text-muted-foreground hover:text-foreground">
-              <FaGithub size={24} />
-            </Link>
+                            <Link href="https://github.com/05sanjaykumar" target="_blank" className="text-muted-foreground hover:text-foreground">
+                                <FaGithub size={24} />
+                            </Link>
                         </div>
                     </motion.div>
                 </div>

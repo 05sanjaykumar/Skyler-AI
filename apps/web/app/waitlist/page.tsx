@@ -40,7 +40,7 @@ export default function WaitlistPage() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-6">
       <h1 className="text-4xl font-bold mb-6 text-center">Join the Skyler Inbox Beta</h1>
       <p className="text-gray-600 mb-6 text-center max-w-md">
-        Enter your email below to get early access and approval for the beta version.
+        Enter your email below to get early access and approval for the beta version. We will contact you shortly once you've been approved.
       </p>
 
       <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
