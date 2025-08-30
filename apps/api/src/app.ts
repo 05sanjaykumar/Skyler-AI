@@ -4,7 +4,7 @@ import bodyParser from "body-parser";
 import { registerUser } from "./routes/auth/register";
 import { verifyUser } from "./routes/auth/verify-user";
 import gmailInstance from "./routes/gmail/gmailInstances";
-import gmailPromptRouter from "./routes/gmail/gmailPrompt";
+import gmailForms from "./routes/gmail/gmailForms";
 import googlePull from './routes/gmail/webhooks/gmailPull';
 import gmailRuleBox from './routes/gmail/gmailRuleBox';
 import gmailSummariser from './routes/gmail/gmailSummariser';
@@ -41,7 +41,7 @@ app.use("/api/profile", profile);
 app.use("/api/mail", mail);
 
 // GMAIL
-app.use("/api/gmail/prompt", gmailPromptRouter);
+app.use("/api/gmail/form", gmailForms);
 app.use("/api/gmail/pull", googlePull);
 app.use("/api/gmail/rulebox", gmailRuleBox);
 app.use("/api/gmail/instances", gmailInstance);

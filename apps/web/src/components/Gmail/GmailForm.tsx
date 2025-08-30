@@ -140,15 +140,9 @@ export default function CreateFilterForm({ instance, onGenerate }: { instance: a
 
   const saveForm = async (details: any) => {
     if (!session?.appToken) return;
-    const ok = await deductCredits(session.appToken, 1);
-    if (!ok) {
-      alert("Not enough credits to save form.");
-      return;
-    }
-
     try {
        await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/gmail/prompt/${instance.id}/saveForm`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/gmail/form/${instance.id}/saveForm`,
         {
           method: "POST",
           headers: {
@@ -172,7 +166,7 @@ export default function CreateFilterForm({ instance, onGenerate }: { instance: a
     const loadForm = async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/gmail/prompt/${instance.id}/loadForm`,
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/gmail/form/${instance.id}/loadForm`,
           {
             headers: {
               Authorization: `Bearer ${session.appToken}`,
