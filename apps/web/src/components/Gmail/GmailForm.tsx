@@ -118,7 +118,6 @@ export default function CreateFilterForm({ instance, onGenerate }: { instance: a
     try {
       await saveForm(result); // ✅ persist to backend
       console.log("Submitted and saved:", result);
-      onGenerate(); // trigger parent to generate emails
     } catch (err) {
       console.error("Error on submit:", err);
       alert("Failed to save filter.");
@@ -128,6 +127,10 @@ export default function CreateFilterForm({ instance, onGenerate }: { instance: a
   const refreshEmail = async () => {
     if (!session?.appToken) return;
     const ok = await deductCredits(session.appToken, 1);
+    if(!ok){
+      alert("Not enough credits to refresh emails.");
+      return;
+    }
     try {
         onGenerate(); 
     } catch (err) {
@@ -139,7 +142,7 @@ export default function CreateFilterForm({ instance, onGenerate }: { instance: a
     if (!session?.appToken) return;
     const ok = await deductCredits(session.appToken, 1);
     if (!ok) {
-      alert("Not enough credits to generate.");
+      alert("Not enough credits to save form.");
       return;
     }
 
@@ -356,7 +359,7 @@ export default function CreateFilterForm({ instance, onGenerate }: { instance: a
           </CollapsibleFilters>
           {/* Actions */}
           <div className="flex gap-3">
-            <Button type="submit">Save Filter</Button>
+            <Button type="submit">Save Form</Button>
             <Button
               type="button"
               variant="secondary"
