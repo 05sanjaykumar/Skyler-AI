@@ -1,8 +1,11 @@
 // apps/web/src/components/footer.tsx
 "use client"
 
-import { Github, Twitter, Linkedin, Heart } from "lucide-react"
+import { Heart } from "lucide-react"
 import Link from "next/link"
+import { FaGithub } from 'react-icons/fa';
+import { FaXTwitter } from 'react-icons/fa6';
+import { FaLinkedin } from "react-icons/fa";
 
 export default function Footer() {
   return (
@@ -47,18 +50,6 @@ export default function Footer() {
               <a href="/legal/refund" className="underline mx-1">Refund</a>
             </div>
           </ul>
-
-          <div className="flex gap-4 mt-4">
-            <Link href="https://github.com/05sanjaykumar" target="_blank" className="text-muted-foreground hover:text-foreground">
-              <Github className="w-5 h-5" />
-            </Link>
-            <Link href="https://x.com/sky_bolt20907" target="_blank" className="text-muted-foreground hover:text-foreground">
-              <Twitter className="w-5 h-5" />
-            </Link>
-            <Link href="https://www.linkedin.com/in/sanjay-kumar-6382a1372/" target="_blank" className="text-muted-foreground hover:text-foreground">
-              <Linkedin className="w-5 h-5" />
-            </Link>
-          </div>
         </div>
       </div>
 

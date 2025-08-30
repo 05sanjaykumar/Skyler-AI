@@ -11,10 +11,13 @@ import {
     Users, 
     Target, 
     ArrowRight,
-    Linkedin,
-    Twitter,
     Mail
 } from "lucide-react";
+import Link from "next/link"
+
+
+import { FaLinkedin, FaGithub, FaGlobe } from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
 
 import image from './image.png'
 
@@ -241,12 +244,18 @@ export default function AboutPage() {
                             </Button>
                         </div>
                         <div className="flex justify-center space-x-6 mt-8">
-                            <Button variant="ghost" size="sm">
-                                <Linkedin className="w-5 h-5" />
-                            </Button>
-                            <Button variant="ghost" size="sm">
-                                <Twitter className="w-5 h-5" />
-                            </Button>
+                            <Link href="https://x.com/sky_bolt20907" target="_blank" className="text-muted-foreground hover:text-foreground">
+                                <FaXTwitter size={24} />
+                            </Link>
+                            <Link href="https://www.linkedin.com/in/sanjay-kumar-6382a1372/" target="_blank" className="text-muted-foreground hover:text-foreground">
+                                <FaLinkedin size={24} />
+                            </Link>
+                            <Link href="https://www.sanjaybuilds.com/" target="_blank" className="text-muted-foreground hover:text-foreground">
+                                <FaGlobe size={24} />
+                            </Link>
+                                        <Link href="https://github.com/05sanjaykumar" target="_blank" className="text-muted-foreground hover:text-foreground">
+              <FaGithub size={24} />
+            </Link>
                         </div>
                     </motion.div>
                 </div>
