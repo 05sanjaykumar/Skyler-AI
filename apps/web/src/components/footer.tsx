@@ -11,7 +11,7 @@ export default function Footer() {
         
         {/* Company */}
         <div>
-          <h3 className="font-semibold mb-3">Skyler AI</h3>
+          <h3 className="font-semibold mb-3">SkylerInbox</h3>
           <p className="text-sm text-muted-foreground">
             AI-powered tools for modern businesses. Currently in beta — building fast, improving daily.
           </p>
@@ -60,14 +60,14 @@ export default function Footer() {
       {/* Bottom bar */}
         <div className="border-t text-xs text-muted-foreground py-4 px-4 md:px-6 text-center space-y-1">
             <p className="flex items-center justify-center gap-1">
-                © {new Date().getFullYear()} Skyler AI. Built with
+                © {new Date().getFullYear()} SkylerInbox. Built with
                 <Heart className="w-3 h-3 text-red-500" /> by Sanjay Kumar.
             </p>
             <p className="text-[11px] text-muted-foreground">
                 Beta release — things may change quickly.
             </p>
             <p className="text-[11px] text-muted-foreground">
-                Skyler AI is an independent product and is not affiliated with or endorsed 
+                SkylerInbox is an independent product and is not affiliated with or endorsed 
                 by Gmail, Slack, WhatsApp, Discord, or any other third-party platforms mentioned.
             </p>
         </div>

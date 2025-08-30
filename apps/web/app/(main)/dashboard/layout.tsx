@@ -1,8 +1,6 @@
 // apps/web/app/dashboard/layout.tsx
 import { ThemeProvider } from "@/components/theme-provider";
 import TopBar from "@/components/top-bar";
-import Footer from "@/components/footer";
-
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -10,7 +8,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="min-h-screen flex flex-col bg-background dark:bg-[#1E1E1E]">
           <TopBar />
           <main >{children}</main>
-          <Footer />
       </div>
     </ThemeProvider>
   );

@@ -29,7 +29,7 @@ export default function DashboardPage() {
     comingSoon: [
       { name: "Slack", icon: slack, active: false },
       { name: "Discord", icon: discord, active: false },
-      { name: "WhatsApp", icon: whatsapp, active: false }
+      { name: "OutLook", icon: whatsapp, active: false }
     ]
   }
 
@@ -87,6 +87,5 @@ export default function DashboardPage() {
         </section>
       </div>
     </main>
-
   )
 }

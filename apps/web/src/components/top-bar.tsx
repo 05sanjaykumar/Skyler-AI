@@ -44,7 +44,7 @@ export default function Topbar() {
       <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-lg shadow-lg">
         S
       </div>
-      <span className="font-bold text-lg hidden sm:inline">Skyler AI</span>
+      <span className="font-bold text-lg hidden sm:inline">SkylerInbox</span>
       <div className="inline-flex items-center justify-center px-4 py-1 text-sm font-medium tracking-wide text-green-600 transition-colors duration-200 rounded-full bg-gray-100 dark:bg-slate-800">
         Beta ✨
       </div>
