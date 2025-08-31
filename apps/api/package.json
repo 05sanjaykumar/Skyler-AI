@@ -10,7 +10,7 @@
   "migrate:reset": "dotenv -e .env -- pnpm prisma migrate reset --force --skip-seed --schema=../../packages/prisma/schema.prisma",
   "prisma:generate:dev": "dotenv -e .env -- pnpm prisma generate --schema=../../packages/prisma/schema.prisma",
 
-  "test": "cross-env NODE_ENV=test jest --runInBand --detectOpenHandles",
+  "test": "dotenv -e .env.test jest --runInBand --detectOpenHandles",
   "test:prepare": "dotenv -e .env.test -- pnpm prisma migrate reset --force --skip-seed --schema=../../packages/prisma/schema.prisma --skip-generate",
   "prisma:generate:test": "dotenv -e .env.test -- pnpm prisma generate --schema=../../packages/prisma/schema.prisma",
 
