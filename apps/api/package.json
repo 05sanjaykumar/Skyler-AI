@@ -4,10 +4,19 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "cross-env NODE_ENV=test jest --runInBand --detectOpenHandles",
-    "test:prepare": "dotenv -e .test.env -- pnpm prisma migrate reset --force --skip-seed --schema=../../packages/prisma/schema.prisma --skip-generate",
-    "dev": "ts-node-dev --respawn --transpile-only src/server.ts"
-  },
+  "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+
+  "migrate:dev": "dotenv -e .env -- pnpm prisma migrate dev --schema=../../packages/prisma/schema.prisma",
+  "migrate:reset": "dotenv -e .env -- pnpm prisma migrate reset --force --skip-seed --schema=../../packages/prisma/schema.prisma",
+  "prisma:generate:dev": "dotenv -e .env -- pnpm prisma generate --schema=../../packages/prisma/schema.prisma",
+
+  "test": "cross-env NODE_ENV=test jest --runInBand --detectOpenHandles",
+  "test:prepare": "dotenv -e .env.test -- pnpm prisma migrate reset --force --skip-seed --schema=../../packages/prisma/schema.prisma --skip-generate",
+  "prisma:generate:test": "dotenv -e .env.test -- pnpm prisma generate --schema=../../packages/prisma/schema.prisma",
+
+  "migrate:prod": "dotenv -e .env.production -- pnpm prisma migrate deploy --schema=../../packages/prisma/schema.prisma",
+  "prisma:generate:prod": "dotenv -e .env.production -- pnpm prisma generate --schema=../../packages/prisma/schema.prisma"
+},
   "keywords": [],
   "author": "",
   "license": "ISC",

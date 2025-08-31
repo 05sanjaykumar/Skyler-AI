@@ -10,3 +10,8 @@ export const cleanUpDB = async () => {
   await prisma.contactUsMessage.deleteMany();
   await prisma.user.deleteMany();
 };
+
+// Disconnect Prisma after all tests finish
+afterAll(async () => {
+  await prisma.$disconnect();
+});

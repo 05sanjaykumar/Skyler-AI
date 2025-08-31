@@ -4,7 +4,7 @@ const tsJestTransformCfg = createDefaultPreset().transform;
 const dotenv = require("dotenv");
 const path = require("path");
 
-dotenv.config({ path: path.resolve(__dirname, ".test.env") });
+dotenv.config({ path: path.resolve(__dirname, ".env.test") });
 
 /** @type {import("jest").Config} **/
 module.exports = {
