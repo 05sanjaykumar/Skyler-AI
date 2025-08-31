@@ -33,7 +33,7 @@ model User {
 
   // Usage tracking for pay-per-request
   creditsRemaining   Int      @default(0) 
-  maxInstances       Int      @default(10)
+  maxInstances       Int      @default(3)
   planExpirationDate     DateTime?              
 }
 
@@ -128,4 +128,18 @@ model CreditLog {
   createdAt DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id])
+}
+
+model WaitlistEntry {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
+
+model ContactUsMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  message   String
+  createdAt DateTime @default(now())
 }

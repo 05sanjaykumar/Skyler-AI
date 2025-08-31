@@ -2,6 +2,12 @@
 
 import { Router, Request, Response } from "express";
 import { verifyJWT } from "../middleware/auth";
+import { Resend } from "resend";
+import dotenv from "dotenv";
+
+dotenv.config();
+const resend = new Resend(process.env.RESEND_API_KEY);
+
 
 const router = Router();
 
@@ -9,6 +15,7 @@ interface AuthRequest extends Request {
   userId?: string;
 }
 
+// api/mail/waitlist
 router.post("/waitlist", verifyJWT, async (req: AuthRequest, res: Response) => {
   const { userId } = req;
   const { email } = req.body;
@@ -25,6 +32,8 @@ router.post("/waitlist", verifyJWT, async (req: AuthRequest, res: Response) => {
   }
 });
 
+
+// api/mail/contact-us
 router.post("/contact-us", verifyJWT, async (req: AuthRequest, res: Response) => {
   const { userId } = req;
   const { email } = req.body;
@@ -41,20 +50,5 @@ router.post("/contact-us", verifyJWT, async (req: AuthRequest, res: Response) =>
   }
 });
 
-router.post("/support", verifyJWT, async (req: AuthRequest, res: Response) => {
-  const { userId } = req;
-  const { email } = req.body;
-
-  if (!userId || !email) {
-    return res.status(400).json({ error: "Missing userId or email" });
-  }
-
-  try {
-    console.log("Subscribing user to newsletter:", userId, "with email:", email);
-  } catch (error) {
-    console.error("Error subscribing user to newsletter:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
 
 export default router;
