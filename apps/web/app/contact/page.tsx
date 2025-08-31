@@ -4,6 +4,8 @@
 import React, { useState } from "react";
 import { ChevronDown, ChevronUp, MessageSquare, Mail } from "lucide-react";
 
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+
 // --- FAQ Data ---
 const faqData = [
   {
@@ -41,18 +43,31 @@ export default function SupportPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormStatus("Submitting...");
 
-    // Simulate API call
-    setTimeout(() => {
-      setFormStatus(
-        "✅ Thank you! Your message has been received. We’ll get back to you soon."
-      );
-      setFormData({ name: "", email: "", message: "" });
-    }, 1200);
+    try {
+      const response = await fetch(`${backendUrl}/api/mail/contact-us`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setFormStatus("✅ Thank you! Your message has been received. We’ll get back to you soon.");
+        setFormData({ name: "", email: "", message: "" });
+      } else {
+        setFormStatus(`❌ ${data.error || "Something went wrong. Please try again."}`);
+      }
+    } catch (error) {
+      console.error(error);
+      setFormStatus("❌ Something went wrong. Please try again.");
+    }
   };
+
 
   return (
     <main className="bg-background min-h-screen py-16">
@@ -112,7 +127,7 @@ export default function SupportPage() {
             Send us a message and our team will get back to you quickly.
           </p>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          {/* <form onSubmit={handleSubmit} className="space-y-5">
             <input
               type="text"
               name="name"
@@ -151,7 +166,15 @@ export default function SupportPage() {
                 {formStatus}
               </p>
             )}
-          </form>
+          </form> */}
+          <div className="text-center text-sm text-muted-foreground mt-2">
+            <a
+              href="mailto:contact@sanjaybuilds.com"
+              className="text-primary font-medium hover:underline"
+              >
+              contact@sanjaybuilds.com
+            </a>
+          </div>
         </section>
       </div>
     </main>
