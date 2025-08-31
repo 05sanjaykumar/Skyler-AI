@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { toast, Toaster } from "sonner";
 
 const EmailRules = ({
   instanceId,
@@ -33,7 +34,7 @@ const EmailRules = ({
           setDraft(data.ruleBox || "");
         }
       } catch (err) {
-        console.error("Failed to fetch ruleBox", err);
+        toast.error("Failed to fetch ruleBox");
       }
     };
     fetchRuleBox();
@@ -61,7 +62,7 @@ const EmailRules = ({
         setTimeout(() => setSaved(false), 2000); // reset after 2s
       }
     } catch (err) {
-      console.error("Save error", err);
+        toast.error("Save error");
     } finally {
       setLoading(false);
     }
@@ -85,7 +86,7 @@ const EmailRules = ({
         setDraft("");
       }
     } catch (err) {
-      console.error("Clear error", err);
+      toast.error("Clear error");
     } finally {
       setLoading(false);
     }
@@ -93,6 +94,7 @@ const EmailRules = ({
 
   return (
     <div className="space-y-4">
+      <Toaster />
       <Textarea
         placeholder="Define your rules (plain text)."
         value={draft}

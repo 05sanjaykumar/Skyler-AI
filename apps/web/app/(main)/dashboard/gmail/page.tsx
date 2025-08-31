@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { Server, SquarePen, Trash2, X, Plus, Check  } from 'lucide-react'
 import { useSession } from "next-auth/react";
+import { toast, Toaster } from 'sonner';
 
 
 type Instance = {
@@ -47,7 +48,7 @@ export default function DashboardPage() {
         console.log("Fetched instance count:", count)
         setInstancesLeft(count)
       } catch (err) {
-        console.error(err)
+        toast.error('Failed to fetch instances')
       }
     }
     fetchInstancesAndQuota()
@@ -56,7 +57,7 @@ export default function DashboardPage() {
   const handleCreate = async () => {
     if (!newInstanceName.trim()) return
     if (instancesLeft <= 0) {
-      alert('Instance limit reached for your plan')
+      toast.error('Instance limit reached for your plan')
       return
     }
     try {
@@ -68,7 +69,7 @@ export default function DashboardPage() {
       })
       if (!res.ok) {
         const error = await res.json()
-        alert(error.error || 'Failed to create instance')
+        toast.error(error.error || 'Failed to create instance')
         return
       }
       const newInstance = await res.json()
@@ -77,8 +78,7 @@ export default function DashboardPage() {
       setCreating(false)
       setInstancesLeft((prev) => prev - 1)
     } catch (err) {
-      console.error(err)
-      alert('Server error while creating instance')
+      toast.error('Server error while creating instance')
     }
   }
 
@@ -98,7 +98,7 @@ export default function DashboardPage() {
       })
       if (!res.ok) {
         const error = await res.json()
-        alert(error.error || 'Failed to update instance')
+        toast.error(error.error || 'Failed to update instance')
         return
       }
       const updated = await res.json()
@@ -107,8 +107,7 @@ export default function DashboardPage() {
       )
       setEditingId(null)
     } catch (err) {
-      console.error(err)
-      alert('Server error while updating instance')
+      toast.error('Server error while updating instance')
     }
   }
 
@@ -122,14 +121,13 @@ export default function DashboardPage() {
       })
       if (!res.ok) {
         const error = await res.json()
-        alert(error.error || 'Failed to delete instance')
+        toast.error(error.error || 'Failed to delete instance')
         return
       }
       setInstances((prev) => prev.filter((inst) => inst.id !== id))
       setInstancesLeft((prev) => prev + 1)
     } catch (err) {
-      console.error(err)
-      alert('Server error while deleting instance')
+      toast.error('Server error while deleting instance')
     }
   }
 
@@ -145,6 +143,7 @@ export default function DashboardPage() {
     <div className="bg-background min-h-screen font-sans antialiased">
       <div className="p-8 max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-8">
+            <Toaster/>
             <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
                 Your Email Instances
             </h1>

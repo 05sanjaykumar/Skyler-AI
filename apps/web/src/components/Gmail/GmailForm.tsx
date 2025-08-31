@@ -16,6 +16,8 @@ import { useSession } from "next-auth/react";
 import { useCreditsStore } from "@/store/credits-store";
 import { useEffect } from "react";
 import { CollapsibleFilters } from '@/components/CollapsibleFilters';
+import { toast, Toaster } from "sonner";
+
 
 // -----------------
 // Schema Definition
@@ -117,10 +119,9 @@ export default function CreateFilterForm({ instance, onGenerate }: { instance: a
 
     try {
       await saveForm(result); // ✅ persist to backend
-      console.log("Submitted and saved:", result);
+      toast.success("Filter saved successfully!");
     } catch (err) {
-      console.error("Error on submit:", err);
-      alert("Failed to save filter.");
+      toast.error("Failed to save filter.");
     }
   }
 
@@ -128,7 +129,7 @@ export default function CreateFilterForm({ instance, onGenerate }: { instance: a
     if (!session?.appToken) return;
     const ok = await deductCredits(session.appToken, 1);
     if(!ok){
-      alert("Not enough credits to refresh emails.");
+      toast.error("Not enough credits to refresh emails.");
       return;
     }
     try {
@@ -214,6 +215,7 @@ export default function CreateFilterForm({ instance, onGenerate }: { instance: a
 
   return (
     <Card className="max-w-2xl mx-auto mt-6 shadow-lg rounded-2xl">
+      <Toaster /> 
       <CardHeader>
         <h2 className="text-xl font-semibold">Create Email Filter</h2>
       </CardHeader>
