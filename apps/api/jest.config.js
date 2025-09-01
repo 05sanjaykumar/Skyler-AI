@@ -1,20 +1,24 @@
 // apps/api/jest.config.js
-const { createDefaultPreset } = require("ts-jest");
-const tsJestTransformCfg = createDefaultPreset().transform;
 const dotenv = require("dotenv");
 const path = require("path");
 
 dotenv.config({ path: path.resolve(__dirname, ".env.test") });
 
-/** @type {import("jest").Config} **/
 module.exports = {
-  preset: "ts-jest",
+  preset: "ts-jest/presets/default-esm",
   testEnvironment: "node",
+  extensionsToTreatAsEsm: [".ts"],
   transform: {
-    ...tsJestTransformCfg,
+    "^.+\\.(t|j)sx?$": [
+      "ts-jest",
+      { useESM: true, tsconfig: "<rootDir>/tsconfig.jest.json" },
+    ],
   },
-  testMatch: ["<rootDir>/src/__tests__/**/*.test.ts"],
+  transformIgnorePatterns: [
+    "/node_modules/(?!(@xenova/transformers)/)",
+  ],
+  moduleNameMapper: {
+    "^(\\.{1,2}/.*)\\.js$": "$1",
+  },
   setupFilesAfterEnv: ["<rootDir>/src/__tests__/setup.ts"],
-  collectCoverage: true,
-  collectCoverageFrom: ["src/**/*.ts", "!src/__tests__/**"],
 };

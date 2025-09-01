@@ -5,6 +5,9 @@ import { prisma } from "@skyler-ai/prisma";
 
 export const api = () => request(app);
 
+jest.mock("@xenova/transformers");
+
+
 export const cleanUpDB = async () => {
   await prisma.waitlistEntry.deleteMany();
   await prisma.contactUsMessage.deleteMany();
