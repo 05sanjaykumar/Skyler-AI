@@ -90,10 +90,10 @@ export default function SignupPage() {
               <Input
                 id="name"
                 type="text"
-                placeholder="Your name"
+                placeholder="log in with google, not available for now"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                required
+                disabled
               />
             </div>
 
@@ -102,10 +102,11 @@ export default function SignupPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="m@example.com"
+                placeholder="log in with google, not available for now"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required
+                disabled
+
               />
             </div>
 
@@ -115,23 +116,25 @@ export default function SignupPage() {
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
+                  placeholder="log in with google, not available for now"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required
+                  disabled
                   className="pr-10"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  disabled
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
             </div>
 
-            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+            disabled>
               Sign up
             </Button>
           </form>

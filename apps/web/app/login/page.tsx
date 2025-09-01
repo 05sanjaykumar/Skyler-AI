@@ -91,10 +91,10 @@ export default function Login() {
               <Input
                 id="email"
                 type="email"
-                placeholder="m@example.com"
+                placeholder="log in with google, not available for now"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required
+                disabled
               />
             </div>
 
@@ -106,11 +106,11 @@ export default function Login() {
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
+                  placeholder="log in with google, not available for now"
                   className="pr-10"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required
+                  disabled
                 />
                 <button
                   type="button"
@@ -128,6 +128,7 @@ export default function Login() {
                   type="checkbox"
                   id="remember"
                   className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  disabled
                 />
                 <Label htmlFor="remember" className="text-sm text-gray-600">
                   Remember me
@@ -137,12 +138,14 @@ export default function Login() {
                 type="button"
                 variant="link"
                 className="px-0 text-sm text-blue-600 hover:text-blue-700"
+                disabled
               >
                 Forgot password?
               </Button>
             </div>
 
-            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+            disabled>
               Log in
             </Button>
           </form>
