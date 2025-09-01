@@ -17,8 +17,6 @@ interface AuthRequest extends Request {
 router.post("/waitlist", async (req: AuthRequest, res: Response) => {
   const { email } = req.body;
 
-  console.log('received email:', email);
-
   if (!email) {
     return res.status(400).json({ error: "Missing email" });
   }

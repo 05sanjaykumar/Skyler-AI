@@ -18,9 +18,9 @@ module.exports = {
     "/node_modules/(?!(@xenova/transformers)/)",
   ],
   moduleNameMapper: {
-    "^(\\.{1,2}/.*)\\.js$": "$1",
-    "^.*/middleware/auth$": "<rootDir>/src/middleware/__mocks__/auth.ts",
+    "^(\\.{1,2}/.*)?middleware/auth$": "<rootDir>/src/__mocks__/auth.ts",
+
   },
   setupFilesAfterEnv: ["<rootDir>/src/testUtils/setup.ts"],
+   maxWorkers: 1,
 };
-

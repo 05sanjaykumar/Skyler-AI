@@ -18,6 +18,10 @@ describe("Credits Routes", () => {
     });
   });
 
+    afterEach(async () => {
+    await prisma.user.deleteMany(); // clean slate
+    });
+
   describe("GET /api/credits", () => {
     it("should return credits and plan expiration", async () => {
       const res = await api().get("/api/credits");
