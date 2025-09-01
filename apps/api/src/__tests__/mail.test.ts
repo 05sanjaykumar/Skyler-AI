@@ -1,5 +1,5 @@
 // apps/api/src/__tests__/mail.test.ts
-import { api, cleanUpDB } from "./setup";
+import { api, cleanUpDB } from "../testUtils/setup";
 
 beforeEach(async () => {
   await cleanUpDB();
