@@ -14,6 +14,10 @@ export const cleanUpDB = async () => {
   await prisma.user.deleteMany();
 };
 
+beforeEach(async () => {
+  await cleanUpDB();
+});
+
 // Disconnect Prisma after all tests finish
 afterAll(async () => {
   await prisma.$disconnect();

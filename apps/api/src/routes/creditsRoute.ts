@@ -1,5 +1,4 @@
-// apps/api/src/routes/credits.ts
-
+// apps/api/src/routes/creditsRoute.ts
 import { Router, Request, Response } from "express";
 import { prisma } from "@skyler-ai/prisma";
 import { verifyJWT } from "../middleware/auth";
