@@ -29,11 +29,18 @@ router.get("/", verifyJWT, async (req: AuthRequest, res: Response) => {
 
     // Check expiration
     if (user.planExpirationDate && user.planExpirationDate < new Date()) {
+      const newExpirationDate = new Date();
+      newExpirationDate.setDate(newExpirationDate.getDate() + 30); // 30 days from today
+
       const updated = await prisma.user.update({
         where: { id: userId },
-        data: { creditsRemaining: 0 },
+        data: {
+          creditsRemaining: 25,
+          planExpirationDate: newExpirationDate, // push expiration forward
+        },
         select: { creditsRemaining: true, planExpirationDate: true },
       });
+
       return res.json(updated);
     }
 
@@ -66,11 +73,19 @@ router.post("/checkCredits", verifyJWT, async (req: AuthRequest, res: Response) 
       if (!user) throw new Error("User not found");
 
       if (user.planExpirationDate && user.planExpirationDate < new Date()) {
-        await tx.user.update({
+        const newExpirationDate = new Date();
+        newExpirationDate.setDate(newExpirationDate.getDate() + 30); // 30 days from today
+
+        const updated = await prisma.user.update({
           where: { id: userId },
-          data: { creditsRemaining: 0 },
+          data: {
+            creditsRemaining: 25,
+            planExpirationDate: newExpirationDate, // push expiration forward
+          },
+          select: { creditsRemaining: true, planExpirationDate: true },
         });
-        throw new Error("Plan expired");
+
+        return res.json(updated);
       }
 
       if (user.creditsRemaining < cost) {

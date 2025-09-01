@@ -83,9 +83,9 @@ export default function Topbar() {
             <DropdownMenuItem onClick={() => router.push("/payments/plans")}>
               <Copyright className="w-4 h-4 mr-2" /> Buy Credits
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            {/* <DropdownMenuItem>
               <Bell className="w-4 h-4 mr-2" /> Notifications
-            </DropdownMenuItem>
+            </DropdownMenuItem> */}
             <DropdownMenuItem onClick={toggleTheme}>
               {theme === "dark" ? <Sun className="w-4 h-4 mr-2" /> : <Moon className="w-4 h-4 mr-2" />}
               Toggle Theme
@@ -116,9 +116,9 @@ export default function Topbar() {
           <Copyright className="w-4 h-4 mr-2" />
           Buy Credits
         </Button>
-        <Button variant="ghost" size="icon">
+        {/* <Button variant="ghost" size="icon">
           <Bell className="w-5 h-5" />
-        </Button>
+        </Button> */}
         <Button variant="ghost" size="icon" onClick={toggleTheme}>
           {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
         </Button>
