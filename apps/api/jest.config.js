@@ -19,6 +19,8 @@ module.exports = {
   ],
   moduleNameMapper: {
     "^(\\.{1,2}/.*)\\.js$": "$1",
+    "^.*/middleware/auth$": "<rootDir>/src/middleware/__mocks__/auth.ts",
   },
   setupFilesAfterEnv: ["<rootDir>/src/testUtils/setup.ts"],
 };
+
