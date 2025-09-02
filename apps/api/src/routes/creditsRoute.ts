@@ -65,6 +65,7 @@ router.post("/checkCredits", verifyJWT, async (req: AuthRequest, res: Response) 
 
   try {
     const updatedUser = await prisma.$transaction(async (tx) => {
+      // Fetch user
       const user = await tx.user.findUnique({
         where: { id: userId },
         select: { creditsRemaining: true, planExpirationDate: true },
@@ -72,15 +73,16 @@ router.post("/checkCredits", verifyJWT, async (req: AuthRequest, res: Response) 
 
       if (!user) throw new Error("User not found");
 
+      // Handle expired plan
       if (user.planExpirationDate && user.planExpirationDate < new Date()) {
         const newExpirationDate = new Date();
         newExpirationDate.setDate(newExpirationDate.getDate() + 30); // 30 days from today
 
-        const updated = await prisma.user.update({
+        const updated = await tx.user.update({
           where: { id: userId },
           data: {
             creditsRemaining: 25,
-            planExpirationDate: newExpirationDate, // push expiration forward
+            planExpirationDate: newExpirationDate,
           },
           select: { creditsRemaining: true, planExpirationDate: true },
         });
@@ -88,15 +90,41 @@ router.post("/checkCredits", verifyJWT, async (req: AuthRequest, res: Response) 
         return res.json(updated);
       }
 
+      // Check if enough credits
       if (user.creditsRemaining < cost) {
         throw new Error("Insufficient credits");
       }
 
-      return tx.user.update({
+      // Deduct credits
+      const newCredits = user.creditsRemaining - cost;
+      const updated = await tx.user.update({
         where: { id: userId },
-        data: { creditsRemaining: user.creditsRemaining - cost },
+        data: { creditsRemaining: newCredits },
         select: { creditsRemaining: true, planExpirationDate: true },
       });
+
+      // Record daily usage
+      const today = new Date();
+      today.setUTCHours(0, 0, 0, 0); // truncate to start of day UTC
+
+      await tx.dailyCreditUsage.upsert({
+        where: {
+          userId_date: {
+            userId,
+            date: today,
+          },
+        },
+        update: {
+          creditsUsed: { increment: cost },
+        },
+        create: {
+          userId,
+          date: today,
+          creditsUsed: cost,
+        },
+      });
+
+      return updated;
     });
 
     return res.json(updatedUser);
@@ -104,9 +132,6 @@ router.post("/checkCredits", verifyJWT, async (req: AuthRequest, res: Response) 
     console.error("Error checking credits:", error);
     if (error.message === "User not found") {
       return res.status(404).json({ error: error.message });
-    }
-    if (error.message === "Plan expired") {
-      return res.status(403).json({ error: error.message });
     }
     if (error.message === "Insufficient credits") {
       return res.status(403).json({ error: error.message });
