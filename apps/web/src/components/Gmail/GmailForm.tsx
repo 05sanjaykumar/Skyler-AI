@@ -51,7 +51,7 @@ type FormValues = z.infer<typeof formSchema>;
 export default function CreateFilterForm({ instance, onGenerate }: { instance: any, onGenerate: () => void }) {
 
   const { data: session } = useSession();
-  const { deductCredits } = useCreditsStore();
+  const { checkCredits, deductCredits } = useCreditsStore();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -127,15 +127,24 @@ export default function CreateFilterForm({ instance, onGenerate }: { instance: a
 
   const refreshEmail = async () => {
     if (!session?.appToken) return;
-    const ok = await deductCredits(session.appToken, 1);
-    if(!ok){
+    // Step 1: Check credits
+    const ok = await checkCredits(session.appToken, 1);
+    if (!ok) {
       toast.error("Not enough credits to refresh emails.");
       return;
     }
+
+    // Step 2: Attempt email generation
     try {
-        onGenerate(); 
+      await onGenerate(); // your Gmail generation function
+      
+      // Step 3: Deduct credits only if generation succeeded
+      const deducted = await deductCredits(session.appToken, 1);
+      if (!deducted) {
+        toast.error("Failed to deduct credits after generation.");
+      }
     } catch (err) {
-      toast.error("Error refreshing emails:");
+      toast.error("Error refreshing emails.");
     }
   };
 

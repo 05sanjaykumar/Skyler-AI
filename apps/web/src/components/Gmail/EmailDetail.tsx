@@ -38,7 +38,7 @@ export default function EmailDetail({ emailId, instanceId }: EmailDetailProps) {
   const [loading, setLoading] = useState(true);
   const [quickReply, setQuickReply] = useState<QuickReplyResult | null>(null);
   const [generating, setGenerating] = useState(false);
-  const { deductCredits } = useCreditsStore();
+  const { checkCredits, deductCredits } = useCreditsStore();
 
   // fetch email
   useEffect(() => {
@@ -107,7 +107,16 @@ export default function EmailDetail({ emailId, instanceId }: EmailDetailProps) {
     if (!session?.appToken) return;
 
     setGenerating(true);
+
     try {
+      // Step 1: Check credits
+      const ok = await checkCredits(session.appToken, 1);
+      if (!ok) {
+        toast.error("Not enough credits to generate quick reply");
+        return;
+      }
+
+      // Step 2: Generate quick reply
       const plainTextBody = DOMPurify.sanitize(email.body, { ALLOWED_TAGS: [] });
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/gmail/summarise/${instanceId}/groq`,
@@ -129,21 +138,25 @@ export default function EmailDetail({ emailId, instanceId }: EmailDetailProps) {
         toast.error("Failed to generate quick reply");
         return;
       }
-      const ok = await deductCredits(session.appToken, 1);
 
-      if (!ok) {
-        toast.error("Not enough credits to generate quick reply");
+      const data = await res.json();
+
+      // Step 3: Deduct credits only if generation succeeded
+      const deducted = await deductCredits(session.appToken, 1);
+      if (!deducted) {
+        toast.error("Failed to deduct credits after generation");
         return;
       }
 
-      const data = await res.json();
       setQuickReply({
         summary: data.summary,
         draft: data.draft,
         bestRule: data.bestRule,
       });
+
     } catch (err) {
       console.error(err);
+      toast.error("Error generating quick reply");
     } finally {
       setGenerating(false);
     }

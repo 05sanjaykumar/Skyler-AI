@@ -94,7 +94,45 @@ router.post("/checkCredits", verifyJWT, async (req: AuthRequest, res: Response) 
       if (user.creditsRemaining < cost) {
         throw new Error("Insufficient credits");
       }
+      
+      return res.status(200).json({ message: "Sufficient credits" });
+    });
 
+    return res.json(updatedUser);
+  } catch (error: any) {
+    console.error("Error checking credits:", error);
+    if (error.message === "User not found") {
+      return res.status(404).json({ error: error.message });
+    }
+    if (error.message === "Insufficient credits") {
+      return res.status(403).json({ error: error.message });
+    }
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+router.post("/deductCredits", verifyJWT, async (req: AuthRequest, res: Response) => {
+
+   const userId = req.userId;
+  const { cost } = req.body;
+
+  if (!userId) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  if (cost === undefined || isNaN(cost)) {
+    return res.status(400).json({ error: "Invalid or missing cost parameter" });
+  }
+
+  try {
+    const updatedUser = await prisma.$transaction(async (tx) => {
+      // Fetch user
+      const user = await tx.user.findUnique({
+        where: { id: userId },
+        select: { creditsRemaining: true, planExpirationDate: true },
+      });
+
+      if (!user) throw new Error("User not found");
       // Deduct credits
       const newCredits = user.creditsRemaining - cost;
       const updated = await tx.user.update({
@@ -103,7 +141,7 @@ router.post("/checkCredits", verifyJWT, async (req: AuthRequest, res: Response) 
         select: { creditsRemaining: true, planExpirationDate: true },
       });
 
-      // Record daily usage
+       // Record daily usage
       const today = new Date();
       today.setUTCHours(0, 0, 0, 0); // truncate to start of day UTC
 
@@ -138,6 +176,7 @@ router.post("/checkCredits", verifyJWT, async (req: AuthRequest, res: Response) 
     }
     return res.status(500).json({ error: "Internal Server Error" });
   }
-});
+
+})
 
 export default router;
