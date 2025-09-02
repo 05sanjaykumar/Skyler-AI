@@ -1,7 +1,7 @@
 // apps/web/src/components/top-bar.tsx
 'use client'
 
-import { Bell, Sun, Moon, Settings, User, Copyright, Headset } from "lucide-react"
+import { Sun, Moon, User, Copyright, Headset, Book } from "lucide-react"
 import { signOut, useSession } from "next-auth/react"
 import { useTheme } from "next-themes"
 import { useState } from "react"
@@ -97,11 +97,11 @@ export default function Topbar() {
           <DropdownMenuItem  onClick={() => router.push("/profile")}>
             <User className="w-4 h-4 mr-2"/> Profile
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Settings className="w-4 h-4 mr-2" /> Settings
+          <DropdownMenuItem onClick={() => router.push("/docs")}>
+            <Book className="w-4 h-4 mr-2" /> Docs
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => router.push("/contact")}>
-            <Headset className="w-4 h-4 mr-2" /> Contact | Support
+            <Headset className="w-4 h-4 mr-2" /> Contact Us
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem className="text-red-600" onClick={() => signOut()}>

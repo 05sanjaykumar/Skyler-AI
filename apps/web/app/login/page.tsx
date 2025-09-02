@@ -58,8 +58,8 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <Card className="w-full max-w-md shadow-sm border border-gray-200 p-4 rounded-sm">
         <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl font-semibold text-gray-900">Log in</CardTitle>
-          <CardDescription className="text-gray-600">
+          <CardTitle className="text-2xl font-semibold text-foreground">Log in</CardTitle>
+          <CardDescription className="text-foreground">
             Enter your email and password to access your account
           </CardDescription>
         </CardHeader>
@@ -67,7 +67,7 @@ export default function Login() {
         <CardContent className="space-y-4">
           <Button
             variant="outline"
-            className="w-full flex justify-center border-gray-300 hover:bg-gray-50 transition-colors bg-transparent"
+            className="w-full flex justify-center"
             onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
           >
             <Mail className="mr-2 h-4 w-4" />
