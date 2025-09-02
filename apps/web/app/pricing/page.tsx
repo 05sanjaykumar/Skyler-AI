@@ -28,7 +28,7 @@ const plans = [
     name: "Pro",
     inboxes: 25,
     credits: 250,
-    price: "$49",
+    price: "$39",
     description: "For power users and teams who want maximum capacity.",
     color: "red",
   },

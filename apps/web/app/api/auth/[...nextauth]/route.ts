@@ -97,7 +97,7 @@ const handler = NextAuth({
         create: {
           email: user.email,
           name: user.name,
-          creditsRemaining: 20,
+          creditsRemaining: 25,
           planExpirationDate: new Date(
             Date.now() + 30 * 24 * 60 * 60 * 1000
           ),

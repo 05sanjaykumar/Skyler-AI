@@ -1,3 +1,4 @@
+// apps/web/app/(main)/payments/plans/page.tsx
 'use client'
 import { plans } from "@/lib/plans";
 import { PlanCard } from "@/components/payments/PlanCard";
