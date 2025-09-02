@@ -1,32 +1,37 @@
-import React from 'react';
+// apps/web/app/docs/page.tsx
+'use client'
 
-const DocsPage = () => {
-    return (
-        <div style={{ padding: '2rem', fontFamily: 'Arial, sans-serif' }}>
-            <h1>Documentation</h1>
-            <p>Welcome to the documentation page. Here you will find all the information you need to get started.</p>
-            <section>
-                <h2>Getting Started</h2>
-                <p>Follow the steps below to set up the project:</p>
-                <ol>
-                    <li>Clone the repository.</li>
-                    <li>Install dependencies using <code>npm install</code> or <code>yarn install</code>.</li>
-                    <li>Run the development server with <code>npm run dev</code> or <code>yarn dev</code>.</li>
-                </ol>
-            </section>
-            <section>
-                <h2>Features</h2>
-                <ul>
-                    <li>Feature 1: Description of feature 1.</li>
-                    <li>Feature 2: Description of feature 2.</li>
-                    <li>Feature 3: Description of feature 3.</li>
-                </ul>
-            </section>
-            <footer style={{ marginTop: '2rem', borderTop: '1px solid #ccc', paddingTop: '1rem' }}>
-                <p>&copy; {new Date().getFullYear()} Skyler AI. All rights reserved.</p>
-            </footer>
-        </div>
-    );
-};
+export default function DocsOverview() {
+  return (
+    <div>
 
-export default DocsPage;
+      <h1 className="text-3xl font-bold mb-6">Skyler Inbox - Documentation</h1>
+      <p className="mb-4">
+        Welcome to Skyler Inbox. With Skyler you can create multiple inboxes
+        (instances), filter emails with AI, and generate summaries with rules.
+      </p>
+
+      <h2 className="text-xl font-semibold mt-6 mb-2">How It Works</h2>
+      <ul className="list-disc list-inside space-y-2">
+        <li>
+          Choose an email provider (e.g., Gmail, Outlook) from the{" "}
+          <b>Dashboard</b>.
+        </li>
+        <li>
+          Create an inbox (instance). Free plan allows up to <b>3 inboxes</b>.
+        </li>
+        <li>
+          Open your inbox to see a form and email section. Use the form to
+          define filters, and view results in the email list.
+        </li>
+        <li>
+          The left side shows your <b>Email List</b>, the right side shows{" "}
+          <b>Email Details</b>.
+        </li>
+        <li>
+          Apply <b>Rules</b> above Email Details to generate AI summaries.
+        </li>
+      </ul>
+    </div>
+  );
+}

@@ -37,7 +37,7 @@ export default function CheckoutPage() {
           ← Back to Dashboard
         </Button>
 
-        <Card className="shadow-lg border border-gray-200">
+        <Card className="shadow-lg border border-gray-200 dark:bg-zinc-900">
           <CardHeader>
             <CardTitle className="text-2xl font-bold">
               Checkout – {plan.name}
