@@ -2,6 +2,8 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import DOMPurify from "dompurify";
+import { toast, Toaster } from "sonner";
+import { useCreditsStore } from "@/store/credits-store";
 
 interface Email {
   id: string;
@@ -36,6 +38,7 @@ export default function EmailDetail({ emailId, instanceId }: EmailDetailProps) {
   const [loading, setLoading] = useState(true);
   const [quickReply, setQuickReply] = useState<QuickReplyResult | null>(null);
   const [generating, setGenerating] = useState(false);
+  const { deductCredits } = useCreditsStore();
 
   // fetch email
   useEffect(() => {
@@ -101,6 +104,7 @@ export default function EmailDetail({ emailId, instanceId }: EmailDetailProps) {
 
   const handleQuickReply = async () => {
     if (!email || rules.length === 0) return;
+    if (!session?.appToken) return;
 
     setGenerating(true);
     try {
@@ -121,7 +125,16 @@ export default function EmailDetail({ emailId, instanceId }: EmailDetailProps) {
         }
       );
 
-      if (!res.ok) throw new Error("Failed to generate quick reply");
+      if (!res.ok) {
+        toast.error("Failed to generate quick reply");
+        return;
+      }
+      const ok = await deductCredits(session.appToken, 1);
+
+      if (!ok) {
+        toast.error("Not enough credits to generate quick reply");
+        return;
+      }
 
       const data = await res.json();
       setQuickReply({
@@ -138,6 +151,7 @@ export default function EmailDetail({ emailId, instanceId }: EmailDetailProps) {
 
   return (
     <div className="mb-4 max-h-[80vh] overflow-auto">
+      <Toaster position="top-right" richColors />
   <h2 className="text-xl font-semibold">{email.subject}</h2>
 
   <div className="mt-4 p-4 border border-gray-200 rounded-lg bg-background">

@@ -135,7 +135,7 @@ export default function CreateFilterForm({ instance, onGenerate }: { instance: a
     try {
         onGenerate(); 
     } catch (err) {
-      console.error("Error refreshing emails:", err);
+      toast.error("Error refreshing emails:");
     }
   };
 
