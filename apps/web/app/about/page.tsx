@@ -19,8 +19,6 @@ import Link from "next/link"
 import { FaLinkedin, FaGithub, FaGlobe } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 
-import image from './image.png'
-
 const fadeInUp = {
     initial: { opacity: 0, y: 60 },
     animate: { opacity: 1, y: 0 },
@@ -49,7 +47,7 @@ export default function AboutPage() {
                     <motion.div variants={fadeInUp} className="mb-8">
                         <div className="relative w-64 h-64 mx-auto mb-6">
                             <Image
-                                src={image}
+                                src="/images/profile.png"
                                 alt="Sanjay Kumar - Founder Profile"
                                 className="rounded-full object-cover border-4 border-white shadow-lg"
                                 fill

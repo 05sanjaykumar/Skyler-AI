@@ -19,7 +19,7 @@ const plans = [
   {
     name: "Starter",
     inboxes: 10,
-    credits: 100,
+    credits: 200,
     price: "$19",
     description: "Great for individuals who need more inboxes and credits.",
     color: "green",
@@ -27,7 +27,7 @@ const plans = [
   {
     name: "Pro",
     inboxes: 25,
-    credits: 250,
+    credits: 500,
     price: "$39",
     description: "For power users and teams who want maximum capacity.",
     color: "red",

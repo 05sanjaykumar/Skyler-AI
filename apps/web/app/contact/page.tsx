@@ -127,7 +127,7 @@ export default function SupportPage() {
             Send us a message and our team will get back to you quickly.
           </p>
 
-          {/* <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <input
               type="text"
               name="name"
@@ -166,15 +166,15 @@ export default function SupportPage() {
                 {formStatus}
               </p>
             )}
-          </form> */}
-          <div className="text-center text-sm text-muted-foreground mt-2">
+          </form>
+          {/* <div className="text-center text-sm text-muted-foreground mt-2">
             <a
               href="mailto:contact@sanjaybuilds.com"
               className="text-primary font-medium hover:underline"
               >
               contact@sanjaybuilds.com
             </a>
-          </div>
+          </div> */}
         </section>
       </div>
     </main>

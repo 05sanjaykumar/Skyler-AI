@@ -51,19 +51,19 @@ router.post("/contact-us", async (req: Request, res: Response) => {
       data: { name, email, message },
     });
 
-    // 
-    // await resend.emails.send({
-    //   from: "contact@sanjaybuilds.com", // must be verified in Resend
-    //   to: "contact@sanjaybuilds.com",           // your inbox
-    //   replyTo: email,                           // user's email
-    //   subject: `New Contact Us Message from ${name}`,
-    //   text: `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`,
-    //   html: `
-    //     <p><strong>Name:</strong> ${name}</p>
-    //     <p><strong>Email:</strong> ${email}</p>
-    //     <p><strong>Message:</strong><br/>${message}</p>
-    //   `,
-    // });
+    
+    await resend.emails.send({
+      from: "contact@sanjaybuilds.com", // must be verified in Resend
+      to: "contact@sanjaybuilds.com",           // your inbox
+      replyTo: email,                           // user's email
+      subject: `New Contact Us Message from ${name}`,
+      text: `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`,
+      html: `
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Message:</strong><br/>${message}</p>
+      `,
+    });
 
 
     return res.status(201).json({ message: "Message sent!", entry: newMessage });

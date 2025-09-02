@@ -10,31 +10,31 @@ import Image from "next/image";
 
 const demoImages = [
   {
-    src: "/images/Easy-quick-filter.png",
+    src: "/images/landing/Easy-quick-filter.png",
     alt: "Easy Quick Filter",
     title: "Easy Quick Filter",
     description: "Filter emails instantly with custom AI rules and smart labels."
   },
   {
-    src: "/images/Multi-inbox.png",
+    src: "/images/landing/Multi-inbox.png",
     alt: "Multi Inbox",
     title: "Multi Inbox",
     description: "Manage multiple Gmail accounts seamlessly from a single interface."
   },
   {
-    src: "/images/Semantic-Search.png",
+    src: "/images/landing/Semantic-Search.png",
     alt: "Semantic Search",
     title: "Semantic Search",
     description: "Search emails contextually, not just by keywords."
   },
   {
-    src: "/images/Sentiment-Analysis.png",
+    src: "/images/landing/Sentiment-Analysis.png",
     alt: "Sentiment Analysis",
     title: "Sentiment Analysis",
     description: "Understand the tone of your emails automatically."
   },
   {
-    src: "/images/Generate-Replies.png",
+    src: "/images/landing/Generate-Replies.png",
     alt: "Generate Replies",
     title: "Generate Replies",
     description: "Automatically generate replies based on rules set."

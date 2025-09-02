@@ -3,8 +3,8 @@ import { prisma } from "@skyler-ai/prisma";
 
 export async function purchasePlanForUser(userId: string, plan: "mini" | "pro") {
   const PLANS: Record<string, { credits: number; days: number; maxInstances: number }> = {
-    mini: { credits: 100, days: 30, maxInstances: 10 },
-    pro: { credits: 250, days: 30, maxInstances: 25 },
+    mini: { credits: 200, days: 30, maxInstances: 10 },
+    pro: { credits: 500, days: 30, maxInstances: 25 },
   };
 
   if (!PLANS[plan]) throw new Error("Invalid plan");
