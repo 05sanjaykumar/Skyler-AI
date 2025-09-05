@@ -5,18 +5,18 @@ RUN npm install -g pnpm
 
 # ---- Dependencies ----
 FROM base AS deps
-COPY ../../package.json ../../pnpm-lock.yaml ./
-COPY ../../packages/*/package.json ./packages/*/
-COPY package.json ./apps/api/
+# Copy lockfile and package.json from repo root
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+# Copy packages
+COPY packages/*/package.json ./packages/*/
+# Copy api package.json
+COPY apps/api/package.json ./apps/api/
+# Install dependencies for api only
 RUN pnpm install --filter api... --frozen-lockfile
 
 # ---- Build ----
 FROM base AS build
-COPY package.json pnpm-lock.yaml ./
-COPY packages/*/package.json ./packages/*/
-COPY apps/api/package.json ./apps/api/
-RUN pnpm install --filter api... --frozen-lockfile
-
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN pnpm turbo run build --filter=api...
 

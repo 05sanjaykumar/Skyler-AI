@@ -5,21 +5,16 @@ RUN npm install -g pnpm
 
 # ---- Dependencies ----
 FROM base AS deps
-COPY ../../package.json ../../pnpm-lock.yaml ./
-COPY ../../packages/*/package.json ./packages/*/
-COPY package.json ./apps/web/
-RUN pnpm install --filter web... --frozen-lockfile
-
-# ---- Build ----
-FROM base AS build
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/*/package.json ./packages/*/
 COPY apps/web/package.json ./apps/web/
 RUN pnpm install --filter web... --frozen-lockfile
 
+# ---- Build ----
+FROM base AS build
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN pnpm turbo run build --filter=web...
-
 
 # ---- Runtime ----
 FROM base AS runtime
