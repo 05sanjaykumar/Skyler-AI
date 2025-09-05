@@ -25,14 +25,23 @@ router.post("/order", verifyJWT, async (req: AuthRequest, res: Response) => {
 
     amount = amount * 87; // conversion of dollars to inr
 
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId! },
+      select: { email: true, name: true },
+    });
+
+    if (!user?.email) {
+      return res.status(400).json({ error: "User email required for payment" });
+    }
+
     const request = {
       order_id: orderId,
       order_amount: amount,
       order_currency: "INR",
       customer_details: {
         customer_id: req.userId!,
-        customer_email: "test@example.com", // replace with actual user email
-        customer_phone: "9999999999",
+        customer_email: user.email,
+        customer_phone: "9999999999", // Dummy phone
       },
       order_meta: {
         notify_url: `${env.NGROK}/api/payments/cashfree/webhook/`,
@@ -59,7 +68,7 @@ router.post("/order", verifyJWT, async (req: AuthRequest, res: Response) => {
         providerTxnId: orderId,
         status: "pending",
         currency: "INR",
-        metadata, // ✅ includes plan now
+        metadata,
         type: "credits_purchase",
       },
     });
@@ -73,14 +82,12 @@ router.post("/order", verifyJWT, async (req: AuthRequest, res: Response) => {
 
 
 // STEP 2: Webhook (Cashfree notifies payment result)
-// STEP 2: Webhook (Cashfree notifies payment result)
 router.post("/webhook", async (req: Request, res: Response) => {
   try {
     const event = req.body;
 
     const eventType = event?.type;
     const orderId = event?.data?.order?.order_id;
-    const paymentStatus = event?.data?.payment?.payment_status;
 
     if (!orderId || !eventType) {
       console.log("Ignoring non-payment webhook:", eventType);
@@ -112,14 +119,7 @@ router.post("/webhook", async (req: Request, res: Response) => {
     // Pull plan back from metadata
     const plan = (txn.metadata as any)?.plan || "mini";
 
-    // Plan config
-    const PLANS: Record<string, { credits: number; days: number }> = {
-      mini: { credits: 100, days: 30 },
-      pro: { credits: 200, days: 30 },
-    };
-    const creditsBought = PLANS[plan]?.credits || 0;
-
-    // Update user (plan & credits)
+    // ✅ Use purchasePlanForUser to update user & get creditsBought
     const userData = await purchasePlanForUser(txn.userId, plan);
 
     // Update transaction
@@ -127,7 +127,7 @@ router.post("/webhook", async (req: Request, res: Response) => {
       where: { providerTxnId: orderId },
       data: {
         status: "success",
-        creditsBought,
+        creditsBought: userData.creditsBought, // comes from purchasePlanForUser
         metadata: JSON.parse(JSON.stringify(event)), // save raw event
       },
     });

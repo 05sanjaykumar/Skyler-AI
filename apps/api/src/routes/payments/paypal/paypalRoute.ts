@@ -69,15 +69,8 @@ router.post("/capture", verifyJWT, async (req: AuthRequest, res: Response) => {
     let creditsBought = 0;
 
     if (status === "success") {
-      // get plan credits
-      const PLANS: Record<string, { credits: number; days: number }> = {
-        mini: { credits: 100, days: 30 },
-        pro: { credits: 200, days: 30 },
-      };
-      creditsBought = PLANS[plan]?.credits || 0;
-
-      // update user with credits
       userData = await purchasePlanForUser(req.userId!, plan);
+      creditsBought = userData.creditsBought;
     }
 
     // Update transaction with capture result (and creditsBought)

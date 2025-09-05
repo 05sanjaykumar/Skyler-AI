@@ -12,15 +12,21 @@ export async function purchasePlanForUser(userId: string, plan: "mini" | "pro") 
   const { credits, days, maxInstances } = PLANS[plan];
   const expirationDate = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
 
+  // Fetch current user first
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { maxInstances: true } });
+
+  if (!user) throw new Error("User not found");
+
   const updated = await prisma.user.update({
     where: { id: userId },
     data: {
       creditsRemaining: { increment: credits },
       planExpirationDate: expirationDate,
-      maxInstances: { set: maxInstances }, // overwrite with new plan value
+      // ✅ Only increase, never decrease
+      maxInstances: { set: Math.max(user.maxInstances, maxInstances) },
     },
     select: { creditsRemaining: true, planExpirationDate: true, maxInstances: true },
   });
 
-  return updated;
+  return { ...updated, creditsBought: credits };
 }

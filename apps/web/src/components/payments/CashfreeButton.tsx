@@ -38,7 +38,10 @@ export default function CashfreeButton({ plan }: { plan: any }) {
       document.body.appendChild(script);
 
       script.onload = () => {
-        const cf = (window as any).Cashfree?.({ mode: "sandbox" });
+        const cf = (window as any).Cashfree?.({
+          mode: process.env.NODE_ENV === "production" ? "production" : "sandbox"
+        });
+
         if (!cf) {
           alert("Cashfree SDK failed to load.");
           return;
