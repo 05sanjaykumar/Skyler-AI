@@ -1,29 +1,30 @@
-# --- Base image ---
+# ---- Base ----
 FROM node:20-alpine AS base
 WORKDIR /app
 RUN npm install -g pnpm
 
-# --- Dependencies ---
+# ---- Dependencies ----
 FROM base AS deps
-COPY ../../pnpm-lock.yaml ../../package.json ../../pnpm-workspace.yaml ./
-COPY ../../packages ./packages
-COPY package.json ./
-COPY tsconfig.json ./
-COPY tsconfig.build.json ./
+COPY ../../package.json ../../pnpm-lock.yaml ./
+COPY ../../packages/*/package.json ./packages/*/
+COPY package.json ./apps/api/
+RUN pnpm install --filter api... --frozen-lockfile
+
+# ---- Build ----
+FROM base AS build
+COPY package.json pnpm-lock.yaml ./
+COPY packages/*/package.json ./packages/*/
+COPY apps/api/package.json ./apps/api/
+RUN pnpm install --filter api... --frozen-lockfile
+
 COPY . .
-RUN pnpm install --frozen-lockfile
+RUN pnpm turbo run build --filter=api...
 
-# --- Build ---
-FROM deps AS build
+# ---- Runtime ----
+FROM base AS runtime
+ENV NODE_ENV=development
 WORKDIR /app/apps/api
-RUN pnpm run build
-
-# --- Production runtime ---
-FROM node:20-alpine AS prod
-WORKDIR /app
 COPY --from=build /app/apps/api/dist ./dist
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/apps/api/package.json ./
-ENV NODE_ENV=production
-EXPOSE 4000
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/packages ./packages
 CMD ["node", "dist/server.js"]

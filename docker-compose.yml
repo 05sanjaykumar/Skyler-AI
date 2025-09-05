@@ -2,7 +2,9 @@ version: "3.9"
 
 services:
   api:
-    build: ./apps/api
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
     container_name: skyler-api
     ports:
       - "4000:4000"
@@ -10,7 +12,9 @@ services:
       - ./apps/api/.env
 
   web:
-    build: ./apps/web
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
     container_name: skyler-web
     ports:
       - "3000:3000"
