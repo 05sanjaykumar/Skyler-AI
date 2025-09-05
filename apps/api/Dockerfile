@@ -9,7 +9,7 @@ RUN npm install -g pnpm
 FROM base AS dev
 WORKDIR /app
 # Copy workspace files and api package.json
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
 COPY packages/*/package.json ./packages/
 COPY apps/api/package.json ./apps/api/
 
@@ -20,16 +20,21 @@ RUN pnpm install --filter api...
 COPY apps/api ./apps/api
 COPY packages ./packages
 
-# Run in dev mode
+# Build TypeScript to dist
+RUN pnpm turbo run build --filter=api...
+
+# Set development environment but run from dist
 WORKDIR /app/apps/api
-CMD ["pnpm", "dev"]
+ENV NODE_ENV=development
+EXPOSE 4000
+CMD ["node", "dist/server.js"]
 
 # --------------------------
 # PRODUCTION
 # --------------------------
 FROM base AS build
 WORKDIR /app
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
 COPY packages/*/package.json ./packages/
 COPY apps/api/package.json ./apps/api/
 

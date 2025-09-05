@@ -8,7 +8,7 @@ RUN npm install -g pnpm
 # --------------------------
 FROM base AS dev
 WORKDIR /app
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
 COPY packages/*/package.json ./packages/
 COPY apps/web/package.json ./apps/web/
 
@@ -25,7 +25,7 @@ CMD ["pnpm", "dev"]
 # --------------------------
 FROM base AS build
 WORKDIR /app
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
 COPY packages/*/package.json ./packages/
 COPY apps/web/package.json ./apps/web/
 
