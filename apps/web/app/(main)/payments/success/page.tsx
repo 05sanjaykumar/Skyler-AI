@@ -18,7 +18,7 @@ export default function PaymentSuccessPage() {
       </p>
 
       {credits && (
-        <p className="mt-2 text-lg font-semibold text-white">
+        <p className="mt-2 text-lg font-semibold text-foreground">
           🎉 You now have <span className="text-violet-400">{credits}</span> credits!
         </p>
       )}

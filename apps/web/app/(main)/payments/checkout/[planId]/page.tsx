@@ -60,7 +60,7 @@ export default function CheckoutPage() {
 
               <ul className="space-y-2">
                 {plan.features.map((feature: string) => (
-                  <li key={feature} className="flex items-center text-gray-700">
+                  <li key={feature} className="flex items-center text-foreground">
                     <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
                     {feature}
                   </li>
