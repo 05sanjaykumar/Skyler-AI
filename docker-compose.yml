@@ -5,7 +5,8 @@ services:
     build:
       context: .
       dockerfile: apps/api/Dockerfile
-    container_name: skyler-api
+      target: dev
+    container_name: skyler-api-dev
     ports:
       - "4000:4000"
     env_file:
@@ -15,7 +16,8 @@ services:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
-    container_name: skyler-web
+      target: dev
+    container_name: skyler-web-dev
     ports:
       - "3000:3000"
     env_file:
