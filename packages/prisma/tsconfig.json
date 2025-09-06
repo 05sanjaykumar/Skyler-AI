@@ -11,6 +11,6 @@
     "skipLibCheck": true,
     "module": "commonjs", 
   },
-  "include": ["src"],
+  "include": ["src","client"],
   "exclude": ["node_modules", "dist"]
 }
