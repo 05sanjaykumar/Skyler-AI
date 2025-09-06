@@ -1,5 +1,15 @@
 # ---- Base ----
-FROM node:20-alpine AS base
+FROM node:20-bullseye-slim AS base
+
+# Install dependencies required by onnxruntime-node
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libc6 \
+    libstdc++6 \
+    libgcc-s1 \
+    wget \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 RUN npm install -g pnpm
 
@@ -20,7 +30,6 @@ COPY apps/api ./apps/api
 COPY packages ./packages
 
 # Build Prisma first, then API
-RUN pnpm --filter @skyler-ai/prisma build
 RUN pnpm --filter api build
 
 WORKDIR /app/apps/api
@@ -45,7 +54,6 @@ COPY apps/api ./apps/api
 COPY packages ./packages
 
 # Build Prisma first, then API
-RUN pnpm --filter @skyler-ai/prisma build
 RUN pnpm --filter api build
 
 FROM base AS prod
