@@ -8,7 +8,8 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "module": "commonjs", 
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]

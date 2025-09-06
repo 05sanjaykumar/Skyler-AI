@@ -8,22 +8,21 @@ RUN npm install -g pnpm
 # --------------------------
 FROM base AS dev
 WORKDIR /app
-# Copy workspace files and api package.json
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
 COPY packages/*/package.json ./packages/
 COPY apps/api/package.json ./apps/api/
 
-# Install only API dependencies
-RUN pnpm install --filter api...
+# Install API + Prisma deps
+RUN pnpm install --filter api... --filter @skyler-ai/prisma...
 
 # Copy full source
 COPY apps/api ./apps/api
 COPY packages ./packages
 
-# Build TypeScript to dist
-RUN pnpm turbo run build --filter=api...
+# Build Prisma first, then API
+RUN pnpm --filter @skyler-ai/prisma build
+RUN pnpm --filter api build
 
-# Set development environment but run from dist
 WORKDIR /app/apps/api
 ENV NODE_ENV=development
 EXPOSE 4000
@@ -38,25 +37,24 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
 COPY packages/*/package.json ./packages/
 COPY apps/api/package.json ./apps/api/
 
-# Install dependencies for build
-RUN pnpm install --filter api... --frozen-lockfile
+# Install deps for API + Prisma
+RUN pnpm install --filter api... --filter @skyler-ai/prisma... --frozen-lockfile
 
 # Copy full source
 COPY apps/api ./apps/api
 COPY packages ./packages
 
-# Build TypeScript to dist
-RUN pnpm turbo run build --filter=api...
+# Build Prisma first, then API
+RUN pnpm --filter @skyler-ai/prisma build
+RUN pnpm --filter api build
 
 FROM base AS prod
 WORKDIR /app/apps/api
 ENV NODE_ENV=production
 
-# Copy build artifacts and dependencies
 COPY --from=build /app/apps/api/dist ./dist
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/packages ./packages
 
-# Expose API port
 EXPOSE 4000
 CMD ["node", "dist/apps/api/src/server.js"]
