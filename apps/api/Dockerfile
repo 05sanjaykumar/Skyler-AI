@@ -27,7 +27,7 @@ RUN pnpm turbo run build --filter=api...
 WORKDIR /app/apps/api
 ENV NODE_ENV=development
 EXPOSE 4000
-CMD ["node", "dist/server.js"]
+CMD ["node", "dist/apps/api/src/server.js"]
 
 # --------------------------
 # PRODUCTION
@@ -59,4 +59,4 @@ COPY --from=build /app/packages ./packages
 
 # Expose API port
 EXPOSE 4000
-CMD ["node", "dist/server.js"]
+CMD ["node", "dist/apps/api/src/server.js"]

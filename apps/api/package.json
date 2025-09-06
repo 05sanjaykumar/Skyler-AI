@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "build": "tsc",              
+    "build": "tsc && tsc-alias",
     "start": "node dist/server.js",
     "migrate:dev": "dotenv -e .env -- pnpm prisma migrate dev --schema=../../packages/prisma/schema.prisma",
     "migrate:reset": "dotenv -e .env -- pnpm prisma migrate reset --force --skip-seed --schema=../../packages/prisma/schema.prisma",
@@ -28,6 +28,7 @@
     "@xenova/transformers": "^2.17.2",
     "axios": "^1.11.0",
     "bcryptjs": "^3.0.2",
+    "body-parser": "^2.2.0",
     "cashfree-pg": "^5.0.8",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
@@ -57,6 +58,7 @@
     "supertest": "^7.1.4",
     "ts-jest": "^29.4.1",
     "ts-node-dev": "^2.0.0",
+    "tsc-alias": "^1.8.16",
     "typescript": "^5.8.3"
   }
 }

@@ -1,18 +1,22 @@
 {
   "name": "@skyler-ai/prisma",
   "version": "0.1.0",
-  "main": "src/client.ts",
+  "main": "dist/client.js",
+  "types": "dist/client.d.ts",
   "exports": {
     ".": {
-      "import": "./src/client.ts",
-      "require": "./src/client.ts"
+      "import": "./dist/client.js",
+      "require": "./dist/client.js"
     }
   },
-  "types": "./src/client.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
   "dependencies": {
     "@prisma/client": "^6.13.0"
   },
   "devDependencies": {
-    "prisma": "^6.13.0"
+    "prisma": "^6.13.0",
+    "typescript": "^5.8.3"
   }
 }
