@@ -1,13 +1,24 @@
 # ---- Base ----
-FROM node:20-bullseye-slim AS base
+FROM node:20-bookworm-slim AS base
 
-# Install dependencies required by onnxruntime-node / Prisma
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libc6 \
-    libstdc++6 \
-    libgcc-s1 \
-    wget \
-    ca-certificates \
+# Update GPG keys and install dependencies
+RUN apt-get update --allow-insecure-repositories \
+    && apt-get install -y --no-install-recommends --allow-unauthenticated \
+       ca-certificates \
+       gnupg \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Now do the normal update with proper GPG verification
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+       libc6 \
+       libstdc++6 \
+       libgcc-s1 \
+       wget \
+       ca-certificates \
+       dnsutils \
+       curl \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
