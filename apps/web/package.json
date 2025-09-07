@@ -2,9 +2,10 @@
   "name": "web",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev --turbopack --port 3000",
-    "build": "next build",
+    "build": "next build  --turbopack",
     "start": "next start",
     "lint": "next lint --max-warnings 0",
     "check-types": "tsc --noEmit"
@@ -55,6 +56,7 @@
     "tailwind-merge": "^3.3.1",
     "tailwindcss-animate": "^1.0.7",
     "three": "^0.179.1",
+    "tsc-alias": "^1.8.16",
     "zod": "^3.25.76",
     "zustand": "^5.0.8"
   },

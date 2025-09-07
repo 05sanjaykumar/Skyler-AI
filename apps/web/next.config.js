@@ -3,15 +3,11 @@ import transpileModules from 'next-transpile-modules'
 
 /** @type {import("next").NextConfig} */
 const nextConfig = {
-  // ✅ proper Turbopack config object
   turbopack: {
-    // you can leave empty `{}` if you don't need custom alias/loaders
-    // Or use something like:
-    // resolveAlias: { "@skyler-ai/prisma": "../../packages/prisma/src" },
-    // rules: { '*.mdx': { loaders: ['@mdx-js/loader'], as: '*.js' } }
+    // can be "stable" or "experimental"
   },
 
-  // ✅ optional serverActions, if needed (turned on by default in v15 anyway)
+  
   experimental: {
     serverActions: {
       // bodySizeLimit?: '2mb'
