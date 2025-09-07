@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "build:docker": "tsc && tsc-alias && cp -r ../../packages/prisma/client dist/packages/prisma/",
+    "build:docker": "tsc && tsc-alias",
     "build": "tsc && tsc-alias && pnpm prisma:generate:dev && cp -r ../../packages/prisma/client dist/packages/prisma/",
     "start": "node dist/server.js",
     "migrate:dev": "dotenv -e .env -- pnpm prisma migrate dev --schema=../../packages/prisma/schema.prisma",
@@ -13,9 +13,7 @@
     "prisma:generate:dev": "dotenv -e .env -- pnpm prisma generate --schema=../../packages/prisma/schema.prisma",
     "test": "dotenv -e .env.test jest --runInBand --detectOpenHandles",
     "test:prepare": "dotenv -e .env.test -- pnpm prisma migrate reset --force --skip-seed --schema=../../packages/prisma/schema.prisma --skip-generate",
-    "prisma:generate:test": "dotenv -e .env.test -- pnpm prisma generate --schema=../../packages/prisma/schema.prisma",
-    "migrate:prod": "dotenv -e .env.production -- pnpm prisma migrate deploy --schema=../../packages/prisma/schema.prisma",
-    "prisma:generate:prod": "dotenv -e .env.production -- pnpm prisma generate --schema=../../packages/prisma/schema.prisma"
+    "prisma:generate:test": "dotenv -e .env.test -- pnpm prisma generate --schema=../../packages/prisma/schema.prisma"
   },
   "keywords": [],
   "author": "",

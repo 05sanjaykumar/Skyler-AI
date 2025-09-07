@@ -36,14 +36,14 @@ COPY packages/*/package.json ./packages/
 COPY apps/api/package.json ./apps/api/
 
 # Install only dependencies
-RUN pnpm install --filter api... --filter @skyler-ai/prisma...
+RUN pnpm install --filter api...
 
 # Copy full source
 COPY apps/api ./apps/api
 COPY packages ./packages
 
-# Build API
-RUN pnpm --filter api build
+RUN pnpm --filter api build:docker
+COPY apps/api/dist/packages/prisma ./apps/api/dist/packages/prisma
 
 WORKDIR /app/apps/api
 ENV NODE_ENV=development
@@ -62,13 +62,14 @@ COPY packages/*/package.json ./packages/
 COPY apps/api/package.json ./apps/api/
 
 # Install dependencies
-RUN pnpm install --filter api... --filter @skyler-ai/prisma... --frozen-lockfile
+RUN pnpm install --filter api...  --frozen-lockfile
 
 # Copy full source
 COPY apps/api ./apps/api
 COPY packages ./packages
 
-RUN pnpm --filter api build
+RUN pnpm --filter api build:docker
+COPY apps/api/dist/packages/prisma ./apps/api/dist/packages/prisma
 
 # Final production image
 FROM base AS prod
@@ -78,7 +79,6 @@ ENV NODE_ENV=production
 # Copy build artifacts
 COPY --from=build /app/apps/api/dist ./dist
 COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/packages ./packages
 
 EXPOSE 4000
 CMD ["node", "dist/apps/api/src/server.js"]
