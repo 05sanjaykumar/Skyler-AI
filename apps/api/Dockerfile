@@ -25,9 +25,9 @@ WORKDIR /app
 RUN npm install -g pnpm
 
 # --------------------------
-# DEVELOPMENT
+# DEVELOPMENT AND PRODUCTION
 # --------------------------
-FROM base AS dev
+FROM base AS dev-prod
 WORKDIR /app
 
 # Copy workspace manifests
@@ -36,7 +36,7 @@ COPY packages/*/package.json ./packages/
 COPY apps/api/package.json ./apps/api/
 
 # Install only dependencies
-RUN pnpm install --filter api...
+RUN pnpm install --filter api... --frozen-lockfile
 
 # Copy full source
 COPY apps/api ./apps/api
@@ -47,38 +47,5 @@ COPY apps/api/dist/packages/prisma ./apps/api/dist/packages/prisma
 
 WORKDIR /app/apps/api
 ENV NODE_ENV=development
-EXPOSE 4000
-CMD ["node", "dist/apps/api/src/server.js"]
-
-# --------------------------
-# PRODUCTION
-# --------------------------
-FROM base AS build
-WORKDIR /app
-
-# Copy workspace manifests
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
-COPY packages/*/package.json ./packages/
-COPY apps/api/package.json ./apps/api/
-
-# Install dependencies
-RUN pnpm install --filter api...  --frozen-lockfile
-
-# Copy full source
-COPY apps/api ./apps/api
-COPY packages ./packages
-
-RUN pnpm --filter api build:docker
-COPY apps/api/dist/packages/prisma ./apps/api/dist/packages/prisma
-
-# Final production image
-FROM base AS prod
-WORKDIR /app/apps/api
-ENV NODE_ENV=production
-
-# Copy build artifacts
-COPY --from=build /app/apps/api/dist ./dist
-COPY --from=build /app/node_modules ./node_modules
-
 EXPOSE 4000
 CMD ["node", "dist/apps/api/src/server.js"]
