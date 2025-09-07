@@ -42,11 +42,8 @@ RUN pnpm install --filter api... --filter @skyler-ai/prisma...
 COPY apps/api ./apps/api
 COPY packages ./packages
 
-# Copy pre-generated Prisma client
-COPY apps/api/dist/packages/prisma ./apps/api/dist/packages/prisma
-
-# Compile TypeScript for Docker (skip prisma:generate)
-RUN pnpm --filter api build:docker
+# Build API
+RUN pnpm --filter api build
 
 WORKDIR /app/apps/api
 ENV NODE_ENV=development
@@ -71,11 +68,7 @@ RUN pnpm install --filter api... --filter @skyler-ai/prisma... --frozen-lockfile
 COPY apps/api ./apps/api
 COPY packages ./packages
 
-# Copy pre-generated Prisma client
-COPY apps/api/dist/packages/prisma ./apps/api/dist/packages/prisma
-
-# Compile TypeScript for Docker (skip prisma:generate)
-RUN pnpm --filter api build:docker
+RUN pnpm --filter api build
 
 # Final production image
 FROM base AS prod
@@ -85,7 +78,7 @@ ENV NODE_ENV=production
 # Copy build artifacts
 COPY --from=build /app/apps/api/dist ./dist
 COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/packages/prisma/client ./packages/prisma/client
+COPY --from=build /app/packages ./packages
 
 EXPOSE 4000
 CMD ["node", "dist/apps/api/src/server.js"]
