@@ -4,4 +4,3 @@ node_modules
 .env.test
 __tests__/.env.test
 /generated/prisma
-dist
