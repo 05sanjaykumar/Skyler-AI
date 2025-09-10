@@ -1,0 +1,11 @@
+for using docker
+
+just go inside apps/api folder
+
+use `pnpm --filter api build` before running docker-compose up, else it won't be 
+able to copy prisma files
+
+
+For using regular mode
+
+Just do `pnpm --filter @skyler-ai/prisma build`, and do `pnpm --filter api dev for working`

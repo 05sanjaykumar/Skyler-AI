@@ -42,7 +42,6 @@ RUN pnpm install --filter api... --frozen-lockfile
 COPY apps/api ./apps/api
 COPY packages ./packages
 
-RUN pnpm --filter api build:docker
 COPY apps/api/dist/packages/prisma ./apps/api/dist/packages/prisma
 
 WORKDIR /app/apps/api

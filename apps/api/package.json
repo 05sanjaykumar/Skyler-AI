@@ -5,7 +5,6 @@
   "main": "index.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "build:docker": "tsc && tsc-alias",
     "build": "tsc && tsc-alias && pnpm prisma:generate:dev && cp -r ../../packages/prisma/client dist/packages/prisma/",
     "start": "node dist/server.js",
     "migrate:dev": "dotenv -e .env -- pnpm prisma migrate dev --schema=../../packages/prisma/schema.prisma",
