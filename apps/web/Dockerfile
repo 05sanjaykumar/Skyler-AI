@@ -17,6 +17,8 @@ RUN pnpm install --filter web... --frozen-lockfile
 COPY apps/web ./apps/web
 COPY packages ./packages
 
+RUN pnpm --filter @skyler-ai/prisma add -D @types/node typescript
+
 WORKDIR /app/apps/web
 RUN pnpm turbo run build --filter=web...
 
