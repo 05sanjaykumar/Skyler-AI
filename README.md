@@ -1,828 +1,347 @@
-# Skyler AI 🤖
+# Skyler-Inbox-Demo
+Demo Video, Architecture, etc. 
 
-A search-engine-style inbox task manager where the user defines precise prompts for what they want tracked, and your system keeps collecting, organizing, and surfacing those results — with automation around categorization, notification, and batch replies.
+Video Demo: https://youtu.be/ATNYoNt6oBE
 
-Skyler is a prompt-based email and message organizer that lets users create AI-powered tasks to automatically collect, filter, and batch replies based on the intent and content of incoming emails — all through natural language prompts.
+# Description
 
-To help builders, support teams, and product owners organize incoming communication (like bug reports, feature requests, feedback) into focused, ongoing semantic tasks — so they can respond faster, smarter, and in batches, without depending on rigid automation tools or AI that strips away control.
+Skyler is an Organiser, Filter tool, Multi inbox and isolated management of workflow and productivity tool. Uses Semantic Search, ML models to classify and reduce the noise across social media. Privacy focused too. 
+
+For now woking with Gmail as the MVP of product. Still in gmail improvement.
+
+**Time line taken 42 days to deliver first MVP**
+
+---
+
+### Features:
 
 
-## Sample Folder Structure
-````
-skyler-ai/
-├── apps/
-│   ├── web/                          # Next.js frontend
-│   │   ├── src/
-│   │   │   ├── app/                  # App Router (Next.js 13+)
-│   │   │   │   ├── (auth)/
-│   │   │   │   │   ├── login/
-│   │   │   │   │   └── register/
-│   │   │   │   ├── dashboard/
-│   │   │   │   │   ├── page.tsx
-│   │   │   │   │   ├── prompts/
-│   │   │   │   │   ├── messages/
-│   │   │   │   │   └── settings/
-│   │   │   │   ├── api/              # API routes
-│   │   │   │   │   └── auth/
-│   │   │   │   ├── globals.css
-│   │   │   │   ├── layout.tsx
-│   │   │   │   └── page.tsx
-│   │   │   ├── components/
-│   │   │   │   ├── ui/               # shadcn/ui components
-│   │   │   │   │   ├── button.tsx
-│   │   │   │   │   ├── input.tsx
-│   │   │   │   │   ├── card.tsx
-│   │   │   │   │   └── dialog.tsx
-│   │   │   │   ├── dashboard/
-│   │   │   │   │   ├── dashboard-header.tsx
-│   │   │   │   │   ├── sidebar.tsx
-│   │   │   │   │   └── stats-cards.tsx
-│   │   │   │   ├── prompts/
-│   │   │   │   │   ├── prompt-creator.tsx
-│   │   │   │   │   ├── prompt-list.tsx
-│   │   │   │   │   └── prompt-editor.tsx
-│   │   │   │   ├── messages/
-│   │   │   │   │   ├── message-list.tsx
-│   │   │   │   │   ├── message-viewer.tsx
-│   │   │   │   │   └── batch-reply.tsx
-│   │   │   │   └── email/
-│   │   │   │       ├── oauth-connect.tsx
-│   │   │   │       └── account-list.tsx
-│   │   │   ├── lib/
-│   │   │   │   ├── auth.ts
-│   │   │   │   ├── api-client.ts
-│   │   │   │   ├── utils.ts
-│   │   │   │   └── validations.ts
-│   │   │   ├── hooks/
-│   │   │   ├── use-prompts.ts
-│   │   │   ├── use-messages.ts
-│   │   │   └── use-auth.ts
-│   │   ├── __tests__/                # Unit tests
-│   │   │   ├── components/
-│   │   │   │   ├── prompts/
-│   │   │   │   ├── messages/
-│   │   │   │   └── ui/
-│   │   │   ├── lib/
-│   │   │   │   ├── api-client.test.ts
-│   │   │   │   └── utils.test.ts
-│   │   │   └── __mocks__/
-│   │   │       ├── next-auth.ts
-│   │   │       └── api-responses.ts
-│   │   ├── public/
-│   │   ├── tailwind.config.js
-│   │   ├── next.config.js
-│   │   └── package.json
-│   │
-│   └── api/                          # Node.js backend API
-│       ├── src/
-│       │   ├── controllers/
-│       │   │   ├── auth.controller.ts
-│       │   │   ├── prompts.controller.ts
-│       │   │   ├── messages.controller.ts
-│       │   │   ├── email-accounts.controller.ts
-│       │   │   └── ai.controller.ts
-│       │   ├── services/
-│       │   │   ├── auth.service.ts
-│       │   │   ├── email-processor.service.ts
-│       │   │   ├── ai.service.ts
-│       │   │   ├── prompt-engine.service.ts
-│       │   │   ├── notification.service.ts
-│       │   │   └── oauth.service.ts
-│       │   ├── middleware/
-│       │   │   ├── auth.middleware.ts
-│       │   │   ├── rate-limit.middleware.ts
-│       │   │   ├── validation.middleware.ts
-│       │   │   └── error.middleware.ts
-│       │   ├── routes/
-│       │   │   ├── auth.routes.ts
-│       │   │   ├── prompts.routes.ts
-│       │   │   ├── messages.routes.ts
-│       │   │   ├── email-accounts.routes.ts
-│       │   │   └── webhooks.routes.ts
-│       │   ├── utils/
-│       │   │   ├── redis.ts
-│       │   │   ├── email-connectors.ts
-│       │   │   ├── vector-store.ts
-│       │   │   ├── encryption.ts
-│       │   │   └── logger.ts
-│       │   └── app.ts
-│       ├── prisma/
-│       │   ├── schema.prisma          # Database schema
-│       │   ├── migrations/            # Auto-generated migrations
-│       │   │   ├── 20240101000000_init/
-│       │   │   │   └── migration.sql
-│       │   │   └── migration_lock.toml
-│       │   └── seed.ts               # Seed data
-│       ├── tests/
-│       │   ├── controllers/
-│       │   │   ├── auth.test.ts
-│       │   │   ├── prompts.test.ts
-│       │   │   └── messages.test.ts
-│       │   ├── services/
-│       │   │   ├── ai.test.ts
-│       │   │   ├── email-processor.test.ts
-│       │   │   └── prompt-engine.test.ts
-│       │   ├── utils/
-│       │   │   ├── encryption.test.ts
-│       │   │   └── validation.test.ts
-│       │   └── __mocks__/
-│       │       ├── prisma.ts
-│       │       ├── openai.ts
-│       │       └── redis.ts
-│       ├── jest.config.js
-│       └── package.json
-│
-├── packages/                         # Shared libraries
-│   ├── types/
-│   │   ├── src/
-│   │   │   ├── user.types.ts
-│   │   │   ├── prompt.types.ts
-│   │   │   ├── message.types.ts
-│   │   │   ├── api.types.ts
-│   │   │   └── index.ts
-│   │   ├── package.json
-│   │   └── tsconfig.json
-│   ├── config/
-│   │   ├── src/
-│   │   │   ├── database.config.ts
-│   │   │   ├── ai.config.ts
-│   │   │   ├── email.config.ts
-│   │   │   └── index.ts
-│   │   ├── package.json
-│   │   └── tsconfig.json
-│   └── utils/
-│       ├── src/
-│       │   ├── validation.ts
-│       │   ├── encryption.ts
-│       │   ├── constants.ts
-│       │   └── index.ts
-│       ├── package.json
-│       └── tsconfig.json
-│
-├── workers/                          # Background job processors
-│   ├── email-ingestion/
-│   │   ├── src/
-│   │   │   ├── workers/
-│   │   │   │   ├── gmail.worker.ts
-│   │   │   │   ├── outlook.worker.ts
-│   │   │   │   └── imap.worker.ts
-│   │   │   ├── services/
-│   │   │   │   ├── email-fetcher.service.ts
-│   │   │   │   └── message-parser.service.ts
-│   │   │   ├── utils/
-│   │   │   │   └── oauth-helper.ts
-│   │   │   └── index.ts
-│   │   └── package.json
-│   ├── ai-processing/
-│   │   ├── src/
-│   │   │   ├── workers/
-│   │   │   │   ├── semantic-analyzer.worker.ts
-│   │   │   │   ├── prompt-matcher.worker.ts
-│   │   │   │   └── batch-processor.worker.ts
-│   │   │   ├── services/
-│   │   │   │   ├── openai.service.ts
-│   │   │   │   ├── vector.service.ts
-│   │   │   │   └── classification.service.ts
-│   │   │   └── index.ts
-│   │   └── package.json
-│   └── notifications/
-│       ├── src/
-│       │   ├── workers/
-│       │   │   ├── email.worker.ts
-│       │   │   └── webhook.worker.ts
-│       │   ├── services/
-│       │   │   └── notification.service.ts
-│       │   └── index.ts
-│       └── package.json
-│
-├── infrastructure/                   # DevOps and deployment
-│   ├── docker/
-│   │   ├── Dockerfile.web
-│   │   ├── Dockerfile.api
-│   │   ├── Dockerfile.worker
-│   │   └── docker-compose.yml
-│   ├── terraform/
-│   │   ├── main.tf
-│   │   ├── variables.tf
-│   │   └── outputs.tf
-│   └── k8s/
-│       ├── deployments/
-│       ├── services/
-│       └── ingress/
-│
-├── docs/
-│   ├── api/
-│   │   ├── authentication.md
-│   │   ├── prompts.md
-│   │   └── webhooks.md
-│   ├── architecture.md
-│   ├── deployment.md
-│   └── contributing.md
-│
-├── .github/                          # CI/CD and automation
-│   ├── workflows/
-│   │   ├── ci.yml                    # Main CI pipeline
-│   │   ├── deploy-staging.yml        # Staging deployment
-│   │   ├── deploy-production.yml     # Production deployment
-│   │   ├── security-scan.yml         # Security scanning
-│   │   └── dependabot.yml           # Dependency updates
-│   ├── ISSUE_TEMPLATE/
-│   │   ├── bug_report.md
-│   │   └── feature_request.md
-│   └── pull_request_template.md
-│
-├── tests/                            # E2E and integration tests
-│   ├── e2e/
-│   │   ├── auth.spec.ts
-│   │   ├── prompts.spec.ts
-│   │   ├── email-processing.spec.ts
-│   │   └── playwright.config.ts
-│   ├── integration/
-│   │   ├── api/
-│   │   │   ├── auth.test.ts
-│   │   │   ├── prompts.test.ts
-│   │   │   └── webhooks.test.ts
-│   │   └── workers/
-│   │       ├── email-ingestion.test.ts
-│   │       └── ai-processing.test.ts
-│   ├── fixtures/
-│   │   ├── sample-emails.json
-│   │   ├── test-users.json
-│   │   └── mock-responses.json
-│   └── setup/
-│       ├── test-db.ts
-│       └── global-setup.ts
-│
-├── monitoring/                       # Observability and monitoring
-│   ├── grafana/
-│   │   ├── dashboards/
-│   │   │   ├── api-performance.json
-│   │   │   ├── worker-metrics.json
-│   │   │   └── business-metrics.json
-│   │   └── provisioning/
-│   ├── prometheus/
-│   │   └── prometheus.yml
-│   ├── alerts/
-│   │   ├── api-alerts.yml
-│   │   ├── database-alerts.yml
-│   │   └── worker-alerts.yml
-│   └── logs/
-│       ├── fluentd.conf
-│       └── log-parsing.yml
-│
-├── security/                         # Security configurations
-│   ├── policies/
-│   │   ├── network-policy.yml
-│   │   ├── pod-security.yml
-│   │   └── rbac.yml
-│   ├── secrets/
-│   │   ├── sealed-secrets.yml
-│   │   └── secret-templates/
-│   ├── scans/
-│   │   ├── trivy.yml
-│   │   ├── snyk.yml
-│   │   └── sonarqube.yml
-│   └── compliance/
-│       ├── gdpr-checklist.md
-│       ├── soc2-requirements.md
-│       └── security-audit.md
-│
-├── scripts/
-│   ├── development/
-│   │   ├── setup.sh
-│   │   ├── reset-db.sh
-│   │   ├── seed-test-data.sh
-│   │   └── start-services.sh
-│   ├── deployment/
-│   │   ├── build.sh
-│   │   ├── deploy.sh
-│   │   ├── rollback.sh
-│   │   └── health-check.sh
-│   ├── maintenance/
-│   │   ├── backup.sh
-│   │   ├── migrate.sh
-│   │   ├── cleanup.sh
-│   │   └── scale.sh
-│   └── monitoring/
-│       ├── metrics-collector.sh
-│       ├── log-analyzer.sh
-│       └── alert-manager.sh
-│
-├── config/                           # Environment configurations
-│   ├── environments/
-│   │   ├── development.yml
-│   │   ├── staging.yml
-│   │   ├── production.yml
-│   │   └── test.yml
-│   ├── feature-flags/
-│   │   ├── development.json
-│   │   ├── staging.json
-│   │   └── production.json
-│   └── secrets/
-│       ├── .env.development
-│       ├── .env.staging
-│       └── .env.production.example
-│
-├── .env.example
-├── .env.local.example
-├── .gitignore
-├── .dockerignore
-├── .eslintrc.js                      # Linting configuration
-├── .prettierrc                       # Code formatting
-├── jest.config.js                    # Testing configuration
-├── playwright.config.ts              # E2E testing
-├── sonar-project.properties          # Code quality
-├── package.json                      # Root package.json for monorepo
-├── turbo.json                        # Turborepo configuration
-├── tsconfig.json                     # Root TypeScript config
-├── docker-compose.yml                # Local development
-├── docker-compose.prod.yml           # Production docker setup
-├── CHANGELOG.md                      # Version history
-├── CONTRIBUTING.md                   # Development guidelines
-├── LICENSE                           # Software license
-└── README.md
-````
-# Skyler AI - Complete Setup Guide 🚀
+- Credits based system for money conversion.
+- Everyone gets 3 inbox for now on a free plan with 25 credits per month.
+- Rule based template once set for a particular inbox by the user, AI will form drafts accordingly throughout the particular inbox. Once rules are set, just click the mail needed, generate a template, one click draft direct to gmail. Any mails just click and generate, once template is set, use anywhere and form drafts and reply it in gmail in one click direct transfer.
+- Fill the form on each inbox once and just refresh to pull up to 200 mails in a single time costing just one credit, entirely organised and classified. Easy to remove and include from inbox and just select the needed one to batch reply.
+- 200 credits on top of 25 credits for just 19 dollars per month up to 10 inboxes. Refresh with the same set up configuration and just cost 1 credit.
+- Modern UI and smooth loading having visuals and easier.
+- Full privacy, and data efficiency since the information is stored in the cache without loading into the server. We just save the transaction in list and some email account related info for processing, session storage and to buy credits.
+- Advanced classification since we use sentiment analysis, semantic search that understands emotions and priority filters too.
+- It has a search engine and a store box. Once searched, things get destroyed, we can search multiple times and add in the store box on the mails that are only needed. Search box gives you repeated results destroying the previous mails, storebox stores it and you can add on top of it the required mails. You can easily move from store to search.
+- Everyone gets 25 monthly credits for a free plan.
+- Everyone gets the same amount of inbox, there will be a problem if I just gave more inboxes to someone who is paid and unpaid, so what if their data get's lost or how would I manage it, so yeah everyone gets the same amount of inboxes, maybe 20-30 later.
+- Give users manual control over reply, you can open the filtered mail in gmail, on just set one time rule in each inbox, just generate a summary for each mail that is needed, and use the draft and direct open in gmail to send through a button.
+- Gives users so much manual control and power, so that they don't miss out anything, beautiful UI so that you don't have to type in gmail to: from:, so yeah direct form based one and change any time easily for each inbox.
+- Data is not collected and mail is stored in cache. Maybe while summarising the body might be sent to groq, and other than that we use our ML models just to process data in the backend. Only uses restricted scope like gmail readonly. 
 
-## Prerequisites
-- Node.js 18+ 
-- PostgreSQL 14+
-- Redis 6+
-- Docker (optional but recommended)
+---
 
-## 1. Root Setup
+### Future idea
 
-```bash
-mkdir skyler-ai && cd skyler-ai
-npm init -y
-npm install -D turbo @turbo/gen typescript
-npm install -g pnpm  # Better package manager for monorepos
+- To handle multiple platform, easy to filter organise
+- To summarise organised one with AI, easy set reply from AI for batch replied mails, or user too has more control.
+- Give access to web hooks to integrate on multiple platforms once rules are set, to easy classify separate.
+- Maybe like even zapier work flows on combining instances and doing works.
+- Batch Summarisation for inboxes.
+
+---
+
+## Problem
+
+- Cloud Application and security(CASA), yeah may only add up to 100 users, need to get certificate for this one to quality this standard from any third party, for now using restirctive scope such as gmail readonly.
+
+---
+
+## Tech Stack
+
+
+### Currently
+
+- **Frontend**: Next js, Next Auth, Google Oauth, Session, Tailwind, ShadCN, Framer motion.  
+- **Backend**: Express js with type script  
+- **Database**: Supabase, Prisma ORM, Dexie for caching mails and adding in local storage of users.  
+- **Email**: Gmail Pull from cloud console(Currently using pull method that uses user access token, refresh token) since we don't have a domain name.  
+- **Architecture**: Turbo pack with PNPM package manager for scaling easily, taking to YC and for longer terms  
+- **ML model**: Xenova/distilbert-base-uncased-finetuned-sst-2-english, sentence-transformers/all-MiniLM-L6-v2.  
+- **AI**: Groq Llama 3.1-8b-instant and langchain for summaristation and for sending replies. 
+- **Payments**: Paypal, Cashfree working.
+- **Test**: Jest. 
+- **Devops**: Docker, Docker-compose
+- **Others**: Ngrok, Zustand, Nginx etc.
+
+### Future addition
+
+- **Analytics**: Google analytics, Plausible, etc.
+- **Monitoring**: Sentry, Posthog, etc.
+- **CI/CD**: Github actions
+- **Payments**: Stripe in future if availabe. 
+
+---
+
+
+## Features to add and the business model for money making, and other doubts
+
+
+1. Change payment end point and email address on cashfree and paypal, from sandbox. 
+
+## Future things to add or in parallel while out reach. 
+
+1. Seperate business email.
+2. Video upload for demo
+3. To add analytics like plausible, sentry, posthog, etc.
+4. To update meta data.
+5. uploading the logo that I have. 
+6. Contact us, support for sending and collecting emails using resend and for now through direct mail. So yeah I am having another professional mail called contact@sanjaybuilds.com. I just going to put over here, yeah so much delaying I just wanna quickly test these things. While the website name used to be skylerInbox.com actually. To much time just going on setting up alone.
+7. CI/CD structure for keep updating in parallel.
+
+---
+
+## Errors out there and things need to be updated
+
+1. Oauth refresh token errors
+2. change in cashfree and paypal urls.
+
+---
+
+## Directory structure currently
+```
+Directory structure:
+└── 05sanjaykumar-skyler-ai/
+    ├── README.md
+    ├── docker-compose.yml
+    ├── package.json
+    ├── pnpm-workspace.yaml
+    ├── turbo.json
+    ├── .npmrc
+    ├── apps/
+    │   ├── api/
+    │   │   ├── Dockerfile
+    │   │   ├── jest.config.js
+    │   │   ├── package.json
+    │   │   ├── tsconfig.jest.json
+    │   │   ├── tsconfig.json
+    │   │   ├── .dockerignore
+    │   │   └── src/
+    │   │       ├── app.ts
+    │   │       ├── server.ts
+    │   │       ├── __mocks__/
+    │   │       │   ├── auth.ts
+    │   │       │   └── @xenova/
+    │   │       │       └── transformers.ts
+    │   │       ├── __tests__/
+    │   │       │   ├── auth.test.ts
+    │   │       │   ├── credits.test.ts
+    │   │       │   └── mail.test.ts
+    │   │       ├── AI_Services/
+    │   │       │   ├── models.ts
+    │   │       │   └── gmail_AI/
+    │   │       │       ├── emailClassifier.ts
+    │   │       │       └── groq_summariser.ts
+    │   │       ├── config/
+    │   │       │   └── subscriptions.ts
+    │   │       ├── middleware/
+    │   │       │   └── auth.ts
+    │   │       ├── routes/
+    │   │       │   ├── creditsRoute.ts
+    │   │       │   ├── mail.ts
+    │   │       │   ├── profile.ts
+    │   │       │   ├── auth/
+    │   │       │   │   ├── register.ts
+    │   │       │   │   └── verify-user.ts
+    │   │       │   ├── gmail/
+    │   │       │   │   ├── gmailForms.ts
+    │   │       │   │   ├── gmailInstances.ts
+    │   │       │   │   ├── gmailRuleBox.ts
+    │   │       │   │   ├── gmailSummariser.ts
+    │   │       │   │   └── webhooks/
+    │   │       │   │       └── gmailPull.ts
+    │   │       │   └── payments/
+    │   │       │       ├── cashfree/
+    │   │       │       │   ├── cashfreeRoutes.ts
+    │   │       │       │   └── client.ts
+    │   │       │       └── paypal/
+    │   │       │           ├── client.ts
+    │   │       │           ├── paypalRoute.ts
+    │   │       │           └── paypalServices.ts
+    │   │       ├── testUtils/
+    │   │       │   └── setup.ts
+    │   │       └── utils/
+    │   │           └── creditsPlan.ts
+    │   └── web/
+    │       ├── README.md
+    │       ├── components.json
+    │       ├── Dockerfile
+    │       ├── eslint.config.js
+    │       ├── next.config.js
+    │       ├── package.json
+    │       ├── postcss.config.js
+    │       ├── tailwind.config.js
+    │       ├── tsconfig.json
+    │       ├── .dockerignore
+    │       ├── app/
+    │       │   ├── globals.css
+    │       │   ├── layout.tsx
+    │       │   ├── not-found.tsx
+    │       │   ├── page.module.css
+    │       │   ├── page.tsx
+    │       │   ├── (main)/
+    │       │   │   ├── layout.tsx
+    │       │   │   ├── dashboard/
+    │       │   │   │   ├── layout.tsx
+    │       │   │   │   ├── page.tsx
+    │       │   │   │   └── gmail/
+    │       │   │   │       ├── page.tsx
+    │       │   │   │       └── [instanceId]/
+    │       │   │   │           └── page.tsx
+    │       │   │   ├── payments/
+    │       │   │   │   ├── checkout/
+    │       │   │   │   │   └── [planId]/
+    │       │   │   │   │       └── page.tsx
+    │       │   │   │   ├── failure/
+    │       │   │   │   │   └── page.tsx
+    │       │   │   │   ├── plans/
+    │       │   │   │   │   └── page.tsx
+    │       │   │   │   └── success/
+    │       │   │   │       └── page.tsx
+    │       │   │   └── profile/
+    │       │   │       └── page.tsx
+    │       │   ├── about/
+    │       │   │   └── page.tsx
+    │       │   ├── api/
+    │       │   │   └── auth/
+    │       │   │       └── [...nextauth]/
+    │       │   │           └── route.ts
+    │       │   ├── contact/
+    │       │   │   └── page.tsx
+    │       │   ├── docs/
+    │       │   │   ├── layout.tsx
+    │       │   │   ├── page.tsx
+    │       │   │   ├── credits/
+    │       │   │   │   └── page.tsx
+    │       │   │   ├── emails/
+    │       │   │   │   └── page.tsx
+    │       │   │   ├── faq/
+    │       │   │   │   └── page.tsx
+    │       │   │   ├── forms/
+    │       │   │   │   └── page.tsx
+    │       │   │   ├── getting-started/
+    │       │   │   │   └── page.tsx
+    │       │   │   ├── inboxes/
+    │       │   │   │   └── page.tsx
+    │       │   │   ├── legal/
+    │       │   │   │   └── page.tsx
+    │       │   │   ├── rules/
+    │       │   │   │   └── page.tsx
+    │       │   │   └── video/
+    │       │   │       └── page.tsx
+    │       │   ├── legal/
+    │       │   │   ├── layout.tsx
+    │       │   │   ├── disclaimer/
+    │       │   │   │   └── page.tsx
+    │       │   │   ├── privacy/
+    │       │   │   │   └── page.tsx
+    │       │   │   ├── refund/
+    │       │   │   │   └── page.tsx
+    │       │   │   └── terms/
+    │       │   │       └── page.tsx
+    │       │   ├── login/
+    │       │   │   └── page.tsx
+    │       │   ├── pricing/
+    │       │   │   └── page.tsx
+    │       │   ├── signin/
+    │       │   │   └── page.tsx
+    │       │   └── waitlist/
+    │       │       └── page.tsx
+    │       ├── src/
+    │       │   ├── components/
+    │       │   │   ├── CollapsibleFilters.tsx
+    │       │   │   ├── footer.tsx
+    │       │   │   ├── session-provider.tsx
+    │       │   │   ├── theme-provider.tsx
+    │       │   │   ├── top-bar.tsx
+    │       │   │   ├── Gmail/
+    │       │   │   │   ├── EmailDetail.tsx
+    │       │   │   │   ├── EmailRules.tsx
+    │       │   │   │   ├── GmailForm.tsx
+    │       │   │   │   ├── SearchBox.tsx
+    │       │   │   │   └── StoreBox.tsx
+    │       │   │   ├── magicui/
+    │       │   │   │   └── globe.tsx
+    │       │   │   ├── payments/
+    │       │   │   │   ├── CashfreeButton.tsx
+    │       │   │   │   ├── PaymentMethodToggle.tsx
+    │       │   │   │   ├── PaypalButton.tsx
+    │       │   │   │   └── PlanCard.tsx
+    │       │   │   └── ui/
+    │       │   │       ├── avatar.tsx
+    │       │   │       ├── badge.tsx
+    │       │   │       ├── button.tsx
+    │       │   │       ├── card.tsx
+    │       │   │       ├── checkbox.tsx
+    │       │   │       ├── dropdown-menu.tsx
+    │       │   │       ├── input.tsx
+    │       │   │       ├── label.tsx
+    │       │   │       ├── mode-toggle.tsx
+    │       │   │       ├── radio-group.tsx
+    │       │   │       ├── select.tsx
+    │       │   │       ├── separator.tsx
+    │       │   │       ├── slider.tsx
+    │       │   │       ├── sonner.tsx
+    │       │   │       ├── switch.tsx
+    │       │   │       ├── textarea.tsx
+    │       │   │       └── vortex.tsx
+    │       │   ├── hooks/
+    │       │   │   └── use-mobile.tsx
+    │       │   ├── lib/
+    │       │   │   ├── auth-wrapper.tsx
+    │       │   │   ├── credits.ts
+    │       │   │   ├── plans.ts
+    │       │   │   └── utils.ts
+    │       │   └── store/
+    │       │       ├── credits-store.ts
+    │       │       └── gmail/
+    │       │           ├── db.ts
+    │       │           └── mails.ts
+    │       └── types/
+    │           ├── email.ts
+    │           └── next-auth.d.ts
+    └── packages/
+        ├── package.json
+        ├── tsconfig.json
+        ├── eslint-config/
+        │   ├── README.md
+        │   ├── base.js
+        │   ├── next.js
+        │   ├── package.json
+        │   └── react-internal.js
+        ├── prisma/
+        │   ├── package.json
+        │   ├── schema.prisma
+        │   ├── migrations/
+        │   │   ├── migration_lock.toml
+        │   │   ├── 20250824182505_init/
+        │   │   │   └── migration.sql
+        │   │   ├── 20250826062524_added_rule_box/
+        │   │   │   └── migration.sql
+        │   │   ├── 20250831031211_wait_list_contact_us_updated/
+        │   │   │   └── migration.sql
+        │   │   └── 20250902140146_daily_credit_usage/
+        │   │       └── migration.sql
+        │   └── src/
+        │       ├── client.js
+        │       └── client.ts
+        ├── typescript-config/
+        │   ├── base.json
+        │   ├── nextjs.json
+        │   ├── package.json
+        │   └── react-library.json
+        └── ui/
+            ├── eslint.config.mjs
+            ├── package.json
+            ├── tsconfig.json
+            └── src/
+                ├── button.tsx
+                ├── card.tsx
+                └── code.tsx
+
+
 ```
 
-**Root package.json:**
-```json
-{
-  "name": "skyler-ai",
-  "private": true,
-  "workspaces": [
-    "apps/*",
-    "packages/*",
-    "workers/*"
-  ],
-  "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev",
-    "lint": "turbo run lint",
-    "test": "turbo run test",
-    "db:migrate": "turbo run db:migrate",
-    "setup": "./scripts/setup.sh"
-  },
-  "devDependencies": {
-    "turbo": "^1.10.0",
-    "@turbo/gen": "^1.10.0",
-    "typescript": "^5.0.0"
-  },
-  "engines": {
-    "node": ">=18.0.0",
-    "pnpm": ">=8.0.0"
-  }
-}
-```
-
-**turbo.json:**
-```json
-{
-  "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": ["**/.env.*local"],
-  "pipeline": {
-    "build": {
-      "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
-    },
-    "dev": {
-      "cache": false,
-      "persistent": true
-    },
-    "lint": {},
-    "test": {
-      "dependsOn": ["build"],
-      "inputs": ["src/**/*.tsx", "src/**/*.ts", "test/**/*.ts", "test/**/*.tsx"]
-    },
-    "db:migrate": {
-      "cache": false
-    }
-  }
-}
-```
-
-## 2. Frontend App (apps/web)
-
-```bash
-mkdir -p apps/web && cd apps/web
-npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias "@/*"
-cd ../..
-```
-
-**apps/web/package.json additions:**
-```json
-{
-  "dependencies": {
-    "@skyler/types": "workspace:*",
-    "@skyler/config": "workspace:*",
-    "next-auth": "^4.24.0",
-    "@tanstack/react-query": "^4.36.0",
-    "axios": "^1.6.0",
-    "lucide-react": "^0.263.1",
-    "react-hook-form": "^7.48.0",
-    "@hookform/resolvers": "^3.3.0",
-    "zod": "^3.22.0"
-  }
-}
-```
-
-## 3. Backend API (apps/api)
-
-```bash
-mkdir -p apps/api && cd apps/api
-pnpm init
-cd ../..
-```
-
-**apps/api/package.json:**
-```json
-{
-  "name": "@skyler/api",
-  "version": "1.0.0",
-  "scripts": {
-    "dev": "tsx watch src/app.ts",
-    "build": "tsc",
-    "start": "node dist/app.js",
-    "db:generate": "prisma generate",
-    "db:push": "prisma db push",
-    "db:migrate": "prisma migrate dev",
-    "db:studio": "prisma studio",
-    "db:seed": "tsx prisma/seed.ts"
-  },
-  "dependencies": {
-    "@skyler/types": "workspace:*",
-    "@skyler/config": "workspace:*",
-    "express": "^4.18.0",
-    "cors": "^2.8.5",
-    "helmet": "^7.1.0",
-    "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.0",
-    "@prisma/client": "^5.7.0",
-    "redis": "^4.6.0",
-    "bull": "^4.12.0",
-    "openai": "^4.20.0",
-    "nodemailer": "^6.9.0",
-    "imap": "^0.8.19",
-    "googleapis": "^128.0.0",
-    "langchain": "^0.0.190",
-    "pinecone-database": "^1.1.0",
-    "zod": "^3.22.0",
-    "express-rate-limit": "^7.1.0",
-    "express-validator": "^7.0.0"
-  },
-  "devDependencies": {
-    "@types/express": "^4.17.0",
-    "@types/cors": "^2.8.0",
-    "@types/bcryptjs": "^2.4.0",
-    "@types/jsonwebtoken": "^9.0.0",
-    "@types/node": "^20.8.0",
-    "prisma": "^5.7.0",
-    "tsx": "^4.1.0",
-    "typescript": "^5.0.0"
-  }
-}
-```
-
-## 4. Shared Packages
-
-### Types Package (packages/types)
-```bash
-mkdir -p packages/types && cd packages/types
-pnpm init
-cd ../..
-```
-
-**packages/types/package.json:**
-```json
-{
-  "name": "@skyler/types",
-  "version": "1.0.0",
-  "main": "index.ts",
-  "types": "index.ts",
-  "dependencies": {
-    "zod": "^3.22.0"
-  }
-}
-```
-
-### Config Package (packages/config)
-```bash
-mkdir -p packages/config && cd packages/config
-pnpm init
-cd ../..
-```
-
-**packages/config/package.json:**
-```json
-{
-  "name": "@skyler/config",
-  "version": "1.0.0",
-  "main": "index.ts",
-  "types": "index.ts",
-  "dependencies": {
-    "zod": "^3.22.0"
-  }
-}
-```
-
-## 5. Workers Setup
-
-```bash
-mkdir -p workers/email-ingestion && cd workers/email-ingestion
-pnpm init
-cd ../..
-
-mkdir -p workers/ai-processing && cd workers/ai-processing
-pnpm init
-cd ../..
-```
-
-**workers/email-ingestion/package.json:**
-```json
-{
-  "name": "@skyler/email-worker",
-  "version": "1.0.0",
-  "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js"
-  },
-  "dependencies": {
-    "@skyler/types": "workspace:*",
-    "@skyler/config": "workspace:*",
-    "bull": "^4.12.0",
-    "redis": "^4.6.0",
-    "googleapis": "^128.0.0",
-    "imap": "^0.8.19"
-  },
-  "devDependencies": {
-    "tsx": "^4.1.0",
-    "typescript": "^5.0.0"
-  }
-}
-```
-
-## 6. Prisma Setup (apps/api)
-
-**apps/api/prisma/schema.prisma:**
-```prisma
-generator client {
-  provider = "prisma-client-js"
-}
-
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
-model User {
-  id           String    @id @default(cuid())
-  email        String    @unique
-  passwordHash String    @map("password_hash")
-  name         String?
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
-
-  emailAccounts EmailAccount[]
-  prompts       Prompt[]
-  messages      Message[]
-
-  @@map("users")
-}
-
-model EmailAccount {
-  id           String  @id @default(cuid())
-  userId       String  @map("user_id")
-  provider     String  // 'gmail', 'outlook', 'imap'
-  email        String
-  accessToken  String? @map("access_token")
-  refreshToken String? @map("refresh_token")
-  settings     Json    @default("{}")
-  createdAt    DateTime @default(now()) @map("created_at")
-
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  messages Message[]
-
-  @@map("email_accounts")
-}
-
-model Prompt {
-  id          String   @id @default(cuid())
-  userId      String   @map("user_id")
-  name        String
-  description String?
-  promptText  String   @map("prompt_text")
-  filters     Json     @default("{}")
-  isActive    Boolean  @default(true) @map("is_active")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-
-  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  matches PromptMatch[]
-
-  @@map("prompts")
-}
-
-model Message {
-  id             String    @id @default(cuid())
-  userId         String    @map("user_id")
-  emailAccountId String    @map("email_account_id")
-  messageId      String    @map("message_id") // Provider's message ID
-  subject        String?
-  fromEmail      String?   @map("from_email")
-  fromName       String?   @map("from_name")
-  bodyText       String?   @map("body_text")
-  bodyHtml       String?   @map("body_html")
-  receivedAt     DateTime? @map("received_at")
-  processedAt    DateTime? @map("processed_at")
-  metadata       Json      @default("{}")
-  // embedding field will be handled separately with pgvector
-  createdAt      DateTime  @default(now()) @map("created_at")
-
-  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  emailAccount EmailAccount  @relation(fields: [emailAccountId], references: [id], onDelete: Cascade)
-  matches      PromptMatch[]
-
-  @@index([userId])
-  @@index([receivedAt])
-  @@map("messages")
-}
-
-model PromptMatch {
-  id              String   @id @default(cuid())
-  promptId        String   @map("prompt_id")
-  messageId       String   @map("message_id")
-  confidenceScore Float?   @map("confidence_score")
-  aiAnalysis      Json?    @map("ai_analysis")
-  status          String   @default("pending") // 'pending', 'reviewed', 'replied'
-  createdAt       DateTime @default(now()) @map("created_at")
-
-  prompt  Prompt  @relation(fields: [promptId], references: [id], onDelete: Cascade)
-  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
-
-  @@index([promptId])
-  @@index([status])
-  @@map("prompt_matches")
-}
-```
-
-**apps/api/prisma/seed.ts:**
-```typescript
-import { PrismaClient } from '@prisma/client'
-import bcrypt from 'bcryptjs'
-
-const prisma = new PrismaClient()
-
-async function main() {
-  // Create demo user
-  const hashedPassword = await bcrypt.hash('demo123', 10)
-  
-  const user = await prisma.user.create({
-    data: {
-      email: 'demo@skyler.ai',
-      passwordHash: hashedPassword,
-      name: 'Demo User',
-    },
-  })
-
-  // Create demo prompt
-  await prisma.prompt.create({
-    data: {
-      userId: user.id,
-      name: 'Bug Reports',
-      description: 'Track all bug reports and issues',
-      promptText: 'Find emails about bugs, errors, crashes, or technical issues that need immediate attention',
-      filters: {
-        keywords: ['bug', 'error', 'crash', 'issue', 'broken'],
-        priority: 'high'
-      }
-    },
-  })
-
-  console.log('Seed data created successfully!')
-}
-
-main()
-  .catch((e) => {
-    console.error(e)
-    process.exit(1)
-  })
-  .finally(async () => {
-    await prisma.$disconnect()
-  })
-```
-
-## 7. Environment Setup
-
-**Root .env.example:**
-```env
-# Database
-DATABASE_URL="postgresql://username:password@localhost:5432/skyler_ai"
-
-# Redis
-REDIS_URL="redis://localhost:6379"
-
-# AI Services
-OPENAI_API_KEY="your_openai_key"
-PINECONE_API_KEY="your_pinecone_key"
-PINECONE_ENVIRONMENT="your_pinecone_env"
-
-# OAuth
-GOOGLE_CLIENT_ID="your_google_client_id"
-GOOGLE_CLIENT_SECRET="your_google_client_secret"
-MICROSOFT_CLIENT_ID="your_microsoft_client_id"
-MICROSOFT_CLIENT_SECRET="your_microsoft_client_secret"
-
-# JWT
-JWT_SECRET="your_jwt_secret"
-
-# Email
-SMTP_HOST="smtp.gmail.com"
-SMTP_PORT=587
-SMTP_USER="your_email"
-SMTP_PASS="your_app_password"
-
-# App
-NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="your_nextauth_secret"
-API_URL="http://localhost:3001"
-```
-
-## 8. Installation Commands
-
-```bash
-# Install all dependencies
-pnpm install
-
-# Set up Prisma (in apps/api directory)
-cd apps/api
-npx prisma generate
-npx prisma db push
-npx prisma db seed
-cd ../..
-
-# Start development
-pnpm dev
-
-# This will start:
-# - Frontend: http://localhost:3000
-# - API: http://localhost:3001
-# - Workers: Background processes
-
-# Useful Prisma commands (run from apps/api):
-# npx prisma studio      # Visual database browser
-# npx prisma migrate dev # Create and apply migrations
-# npx prisma db push     # Push schema changes without migrations
-```
-
-## 9. Docker Setup (Optional)
-
-**docker-compose.yml:**
-```yaml
-version: '3.8'
-services:
-  postgres:
-    image: postgres:15
-    environment:
-      POSTGRES_DB: skyler_ai
-      POSTGRES_USER: skyler
-      POSTGRES_PASSWORD: password
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-  redis:
-    image: redis:7
-    ports:
-      - "6379:6379"
-
-volumes:
-  postgres_data:
-```
-
-## Ready to Scale! 🚀
-
-This setup gives you:
-- **Monorepo architecture** for easy shared code
-- **Microservices ready** - each app can be deployed independently
-- **Background job processing** for email ingestion
-- **Vector database ready** for AI semantic search
-- **OAuth integration** for Gmail/Outlook
-- **Type safety** across the entire stack
-
-Start with `pnpm dev` and you'll have a full-stack TypeScript application running! 🔥
+---
