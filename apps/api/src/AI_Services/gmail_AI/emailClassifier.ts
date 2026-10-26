@@ -165,12 +165,22 @@ export class EmailClassifier {
       keywordVectors = await this.getVectors(keywords);
     }
 
+    const emailText = (email: Email) =>
+      `${email.subject} ${email.snippet} ${email.aiContent || ""} ${email.body || ""}`;
+
     const tasks = emails.map(async (email) => {
       // SENTIMENT (optional)
+      // NOTE: deliberately NOT batched. We measured batching this specific
+      // model (see apps/api/src/scripts/benchmarkClassifier.ts and the
+      // paper's Section 6.3) and found batched sentiment calls on this
+      // backend are consistently ~8% SLOWER than per-item calls at
+      // realistic, variable-length email text — padding every short text
+      // up to the batch's longest text costs more than it saves. Batching
+      // was reverted here after measuring it was a regression, not kept
+      // just because it worked for embeddings.
       let sentimentOK = true;
       if (rules.sentiment) {
-        const textToAnalyze = `${email.subject} ${email.snippet} ${email.aiContent || ""} ${email.body || ""}`;
-        const s = await this.analyzeSentiment(textToAnalyze);
+        const s = await this.analyzeSentiment(emailText(email));
         sentimentOK = s === rules.sentiment.toLowerCase();
       }
 
@@ -180,8 +190,7 @@ export class EmailClassifier {
 
       let semanticOK = false;
       if (rules.requiresSemanticAnalysis && keywordVectors.length > 0) {
-        const emailText = `${email.subject} ${email.snippet} ${email.aiContent || ""} ${email.body || ""}`;
-        semanticOK = await this.semanticAnyMatch(emailText, keywordVectors, threshold);
+        semanticOK = await this.semanticAnyMatch(emailText(email), keywordVectors, threshold);
       }
 
       // If semantic is enabled, use OR between literal and semantic.
