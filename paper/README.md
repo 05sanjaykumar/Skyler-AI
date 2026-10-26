@@ -6,7 +6,14 @@ Conference-paper draft documenting a performance bug found in Skyler AI's email 
 
 ## What this documents
 
-`apps/api/src/AI_Services/gmail_AI/emailClassifier.ts` was re-initializing its local DistilBERT/MiniLM models from scratch on **every** `/api/gmail/pull/:instanceId` request that had an AI filter rule attached, and was embedding sentences one at a time instead of in a batch. That is the main reason email pulls with AI filtering felt slow. The fix (a warm, process-wide model singleton + batched embedding calls) is already applied to the codebase; this paper is the write-up of *why* it was slow, what the literature does and doesn't already say about this exact problem, and measured before/after numbers.
+`apps/api/src/AI_Services/gmail_AI/emailClassifier.ts` was re-initializing its local DistilBERT/MiniLM models from scratch on **every** `/api/gmail/pull/:instanceId` request that had an AI filter rule attached, and was embedding sentences one at a time instead of in a batch. That is the main reason email pulls with AI filtering felt slow. The fix (a warm, process-wide model singleton + batched embedding calls, plus a `classifyMs` telemetry field on the live endpoint) is already applied to the codebase; this paper is the write-up of *why* it was slow, how it compares to two real, verified 2025 IEEE conference papers in the same problem space (one of which uses the exact same DistilBERT model), what gap both papers leave open, and measured before/after numbers.
+
+The two IEEE papers used as the direct baseline (Section 2.1 of the draft):
+
+- Abdelhady, A. S., & Shaker, M. A. (2025). *Comprehensive Email Spam Detection Using Large Language Models.* IEEE ACDSA 2025 — [ieeexplore.ieee.org/document/11166175](https://ieeexplore.ieee.org/document/11166175/)
+- La Min Ei, & Yongsiriwit, K. (2025). *Phishing Email Classification Using Few-Shot Learning with a Lightweight LLM (Llama 3.2).* IEEE InCIT 2025 — [ieeexplore.ieee.org/document/11276030](https://ieeexplore.ieee.org/document/11276030/)
+
+Both were read directly from IEEE Xplore to pull real titles/authors/venues/abstracts rather than relying on search-snippet summaries; the second paper's results section is paywalled, so the draft only cites its verified title, authors, venue, and public introduction — not figures we couldn't read.
 
 ## Before you submit this anywhere
 

@@ -180,10 +180,25 @@ router.get("/:instanceId", verifyJWT, async (req: AuthRequest, res: Response) =>
     // AI Classification
     const aiFilterRules = (instance.promptDecode as any)?.aiFilterRules || {};
     if (aiFilterRules && Object.keys(aiFilterRules).length) {
+      const classifyStartedAt = Date.now();
       const classifier = new EmailClassifier();
       await classifier.init();
       const filteredEmails = await classifier.filterEmails(messages, aiFilterRules);
-      return res.json({ instanceId, count: filteredEmails.length, messages: filteredEmails });
+      const classifyMs = Date.now() - classifyStartedAt;
+
+      // Real production signal for the model-lifecycle fix: logged per
+      // request so the warm-singleton/batching effect is visible in actual
+      // traffic, not only in the offline benchmark.
+      console.log(
+        `[gmail/pull] classified ${messages.length} emails -> ${filteredEmails.length} kept in ${classifyMs}ms (instance=${instanceId})`
+      );
+
+      return res.json({
+        instanceId,
+        count: filteredEmails.length,
+        messages: filteredEmails,
+        classifyMs,
+      });
     }
 
     res.json({ instanceId, count: messages.length, messages });
