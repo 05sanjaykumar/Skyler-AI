@@ -1,6 +1,7 @@
 // apps/api/src/AI_Services/emailClassifier.ts
 
-import { pipeline } from "@xenova/transformers";
+import * as Models from "../models";
+import { loadModels } from "../models";
 
 interface Email {
   id: string;
@@ -28,31 +29,6 @@ type TensorLike =
 
 // --- Utils -------------------------------------------------------
 
-function as2D(t: TensorLike): number[][] {
-  // Handles Tensor, 3D, 2D, 1D
-  if (t && typeof t === "object" && "dims" in t && "tolist" in t) {
-    const dims = (t as any).dims as number[];
-    const arr = (t as any).tolist();
-    if (dims.length === 3) return arr[0] as number[][];
-    if (dims.length === 2) return arr as number[][];
-    if (dims.length === 1) return [arr as number[]];
-    // Fallback: flatten
-    return [Array.from((t as any).data as any)];
-  }
-  if (Array.isArray(t)) {
-    if (Array.isArray(t[0])) {
-      // 3D?
-      if (Array.isArray((t as any)[0][0])) return (t as any)[0] as number[][];
-      // 2D
-      return t as number[][];
-    } else {
-      // 1D
-      return [t as number[]];
-    }
-  }
-  throw new Error("Unexpected embedding output");
-}
-
 function meanPool(tokens: number[][]): number[] {
   const seq = tokens.length;
   const hidden = tokens[0].length;
@@ -67,6 +43,28 @@ function meanPool(tokens: number[][]): number[] {
 
 function clsPool(tokens: number[][]): number[] {
   return tokens[0];
+}
+
+// Splits a batched feature-extraction output (dims [batch, seq, hidden]) into
+// one token-matrix per input text, so a whole batch can be embedded in a
+// single model call instead of one call per sentence.
+function asBatch3D(t: TensorLike): number[][][] {
+  if (t && typeof t === "object" && "dims" in t && "tolist" in t) {
+    const dims = (t as any).dims as number[];
+    const arr = (t as any).tolist();
+    if (dims.length === 3) return arr as number[][][];
+    if (dims.length === 2) return [arr as number[][]];
+    if (dims.length === 1) return [[arr as number[]]];
+  }
+  if (Array.isArray(t)) {
+    if (Array.isArray(t[0]) && Array.isArray((t as any)[0][0])) {
+      return t as unknown as number[][][];
+    }
+    if (Array.isArray(t[0])) {
+      return (t as number[][]).map((row) => [row]);
+    }
+  }
+  throw new Error("Unexpected batched embedding output");
 }
 
 function l2(vec: number[]): number {
@@ -98,34 +96,30 @@ export class EmailClassifier {
   private DEBUG = false; // flip to true for console traces
 
   async init() {
-    this.sentimentAnalyzer = await pipeline(
-      "sentiment-analysis",
-      "Xenova/distilbert-base-uncased-finetuned-sst-2-english"
-    );
-
-    this.embedder = await pipeline(
-      "feature-extraction",
-      "Xenova/all-MiniLM-L6-v2"
-    );
+    // Models are loaded once per process (see AI_Services/models.ts) and
+    // reused across requests instead of re-initializing the ONNX pipelines
+    // on every classifier instance, which was the main source of latency.
+    await loadModels();
+    this.sentimentAnalyzer = Models.sentimentAnalyzer;
+    this.embedder = Models.embedder;
   }
 
-  private async getVector(text: string): Promise<number[]> {
-    const t = (await this.embedder(text)) as TensorLike;
+  // Embeds a whole batch of sentences in a single model call instead of
+  // awaiting the embedder once per sentence.
+  private async getVectors(texts: string[]): Promise<number[][]> {
+    if (texts.length === 0) return [];
 
-    // Optional peek
-    if (this.DEBUG && (t as any).dims) {
-      console.log("embed dims:", (t as any).dims);
-    }
+    const t = (await this.embedder(texts)) as TensorLike;
+    const perText = asBatch3D(t);
 
-    let tokens = as2D(t);
-    let v = meanPool(tokens);
-
-    // guard: if zero/NaN, try CLS
-    const norm = l2(v);
-    if (!isFinite(norm) || norm < 1e-8) {
-      v = clsPool(tokens);
-    }
-    return v;
+    return perText.map((tokens) => {
+      let v = meanPool(tokens);
+      const norm = l2(v);
+      if (!isFinite(norm) || norm < 1e-8) {
+        v = clsPool(tokens);
+      }
+      return v;
+    });
   }
 
   private async analyzeSentiment(text: string) {
@@ -145,9 +139,11 @@ export class EmailClassifier {
   ): Promise<boolean> {
     // Split text into sentences
     const sentences = emailText.split(/[.?!\n]/).map(s => s.trim()).filter(Boolean);
+    if (sentences.length === 0) return false;
 
-    for (const sentence of sentences) {
-      const sentenceVec = await this.getVector(sentence);
+    const sentenceVectors = await this.getVectors(sentences);
+
+    for (const sentenceVec of sentenceVectors) {
       for (let i = 0; i < keywordVectors.length; i++) {
         const sim = cosine(sentenceVec, keywordVectors[i]);
         if (isFinite(sim) && sim >= threshold) {
@@ -166,7 +162,7 @@ export class EmailClassifier {
     // Precompute keyword vectors once
     let keywordVectors: number[][] = [];
     if (rules.requiresSemanticAnalysis && keywords.length > 0) {
-      keywordVectors = await Promise.all(keywords.map((kw) => this.getVector(kw)));
+      keywordVectors = await this.getVectors(keywords);
     }
 
     const tasks = emails.map(async (email) => {
