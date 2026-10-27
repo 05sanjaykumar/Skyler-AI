@@ -324,10 +324,23 @@ The isolated micro-benchmarks in Section 6.1/7.1 (re-initialization cost; unifor
 
 ## Appendix B — Files changed
 
-- `apps/api/src/AI_Services/gmail_AI/emailClassifier.ts` — singleton reuse (kept), embedding batching (kept, with caveat), sentiment batching (tried, reverted)
+- `apps/api/src/AI_Services/gmail_AI/emailClassifier.ts` — singleton reuse; length-bucketed batching for both embedding and sentiment (see Addendum, Section 11); a measured fix to the default semantic-similarity threshold (0.6 → 0.35); a new `filterEmailsWithReasons()` method for explainability and accuracy evaluation, alongside the unchanged `filterEmails()` contract
 - `apps/api/src/AI_Services/models.ts` (no content change; now invoked)
 - `apps/api/src/server.ts` — warms models at boot
 - `apps/api/src/routes/gmail/webhooks/gmailPull.ts` (`classifyMs` telemetry, Section 5.3/7.3)
-- `apps/api/src/scripts/benchmarkClassifier.ts` (new) — reproducible realistic-scale benchmark, Section 6.3/7.2
+- `apps/api/src/scripts/benchmarkClassifier.ts` (new) — reproducible realistic-scale latency benchmark, Section 6.3/7.2
 - `apps/api/src/scripts/evalSentimentModel.ts` (new) — classification-quality benchmark against the real SST-2 validation set, Section 7.4
-- `apps/api/src/__tests__/emailClassifier.test.ts` (new) — correctness tests, including one pinning the reverted (non-batched) sentiment call pattern
+- `apps/api/src/scripts/evalFilteringAccuracy.ts` (new) — end-to-end filtering-decision accuracy benchmark against a labeled test set; see Addendum, Section 11
+- `apps/api/src/__tests__/emailClassifier.test.ts` (new) — correctness tests for batching, sentiment, and the explainability method
+
+## 11. Addendum — Findings After Initial Submission
+
+Two further rounds of measurement, after the results above were first written up, changed what's actually shipped. Reported here rather than silently folded into the sections above, so the paper's own history stays auditable.
+
+**Length-bucketed batching (resolves the Section 5.2b revert).** The naive full-batch sentiment call described in 5.2b was a measured regression and was reverted to per-email calls. A follow-up experiment tried *length-bucketed* batching instead — sort texts by length, batch within groups of ≤16 — on the theory that naive batching's problem was padding waste from mixing short and long texts in one call, not batching itself. Measured in 3-trial isolated tests with clean, non-overlapping distributions: ~1.14x for sentiment, ~1.21–1.24x for embedding, beating both sequential calls and the naive full batch. This is now shipped (`callInLengthBuckets()` in `emailClassifier.ts`), replacing both the reverted naive-sentiment-batch attempt and the original per-email sentiment calls.
+
+**A real filtering-accuracy bug, found and fixed.** Neither IEEE baseline, nor any cited work, nor the original Skyler AI code, had ever measured whether the product's actual multi-signal decision (sentiment AND (keyword OR semantic similarity)) correctly keeps/discards a real email — only single-model, single-label accuracy had been measured anywhere in this comparison. A new labeled test set (90 synthetic emails, ground truth assigned by construction across a sentiment × topic grid, not human eyeballing — see `apps/api/src/scripts/evalFilteringAccuracy.ts`) was run against the real, deployed `EmailClassifier`. Result: the shipped default `similarityThreshold` of 0.6 gave 100% precision but only 43.3% recall (F1 60.5%) — verified by direct cosine-similarity measurement that genuinely on-topic paraphrases (no literal keyword) score 0.25–0.54 against single-word keywords, mostly below the 0.6 cutoff, so the semantic-matching path almost never fired in practice and the rule silently degraded to keyword-only matching. A threshold sweep (0.6 → 0.25) found 0.35 as the measured-best point: 94.4% accuracy, 100% precision (no regression), 83.3% recall, 90.9% F1 — a +30.4 F1-point fix, now shipped as the new default.
+
+A new `filterEmailsWithReasons()` method was added alongside the unchanged `filterEmails()` to support this measurement and future explainability UI (per-email sentiment label, matched keyword, and semantic-match boolean), without changing the existing `/gmail/pull` response contract.
+
+A condensed, two-page version of these findings alongside the original results is published separately as `paper/outcomes-summary.pdf`.

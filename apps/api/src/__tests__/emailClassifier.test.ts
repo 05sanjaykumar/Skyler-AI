@@ -117,14 +117,16 @@ describe("EmailClassifier", () => {
     expect(models.embedder).toHaveBeenCalledTimes(2);
   });
 
-  it("analyzes sentiment per-email, deliberately NOT batched", async () => {
-    // Batching sentiment analysis was tried and measured (see
-    // apps/api/src/scripts/benchmarkClassifier.ts) to be a consistent ~8%
-    // regression at realistic, variable-length email text on this backend
-    // (padding every short email up to the batch's longest one costs more
-    // than the batching saves) and was reverted. This test pins down the
-    // reverted (per-email) call pattern so it doesn't silently get
-    // re-batched later without re-measuring.
+  it("analyzes sentiment for all emails in one length-bucketed call when they fit in one bucket", async () => {
+    // A naive single batch call for ALL emails (regardless of length) was
+    // tried first and measured to be a consistent ~8% regression at
+    // realistic, variable-length email text (see
+    // apps/api/src/scripts/benchmarkClassifier.ts) and was reverted back to
+    // one call per email. Length-bucketed batching (sort by length, batch
+    // within buckets of <= 16) was tried next as a follow-up and measured
+    // to reliably beat both the naive full-batch AND the per-email
+    // sequential pattern. With 3 short emails (well under the bucket size),
+    // everything fits in a single bucket, so this is still just 1 call.
     const models = require("../AI_Services/models");
     const classifier = new EmailClassifier();
     await classifier.init();
@@ -138,6 +140,31 @@ describe("EmailClassifier", () => {
     const kept = await classifier.filterEmails(emails, { sentiment: "positive" });
 
     expect(kept.map((e) => e.id)).toEqual(["1", "3"]);
-    expect(models.sentimentAnalyzer).toHaveBeenCalledTimes(3);
+    expect(models.sentimentAnalyzer).toHaveBeenCalledTimes(1);
+  });
+
+  it("splits sentiment analysis into multiple length-bucketed calls once the input exceeds one bucket, and preserves result order", async () => {
+    const models = require("../AI_Services/models");
+    const classifier = new EmailClassifier();
+    await classifier.init();
+
+    // 20 emails > the 16-item bucket size, so this must take at least 2
+    // calls. Every other email is "useless" (negative); this also checks
+    // that re-sorting by length for batching and then scattering results
+    // back doesn't scramble which email gets which label.
+    const emails = Array.from({ length: 20 }, (_, i) => ({
+      ...baseEmail,
+      id: String(i),
+      subject: i % 2 === 0 ? "Great news" : "This is useless",
+      // Deliberately variable length so sorting-by-length actually reorders them.
+      snippet: "x".repeat((i % 5) + 1),
+    }));
+
+    const kept = await classifier.filterEmails(emails, { sentiment: "positive" });
+
+    expect(kept.map((e) => e.id)).toEqual(
+      emails.filter((_, i) => i % 2 === 0).map((e) => e.id)
+    );
+    expect(models.sentimentAnalyzer.mock.calls.length).toBeGreaterThanOrEqual(2);
   });
 });
