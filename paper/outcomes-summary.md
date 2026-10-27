@@ -12,6 +12,11 @@
 
 All three are freely downloadable (arXiv / ACL anthology / Thailand's open-access TCI-Thaijo platform) — no IEEE paywall or institutional login needed for any of them.
 
+**Direct download links:**
+- Mukherjee & Jiang (2019): https://arxiv.org/abs/1905.01991
+- Zhang et al. (2021, EmailSum): https://arxiv.org/abs/2107.14691
+- Prexawanprasut (2025): https://ph02.tci-thaijo.org/index.php/thaistat/article/view/266519/174074
+
 ## The gap
 
 Each paper validates exactly one piece of what a real inbox-management product does — deciding what to do with an email, summarizing it, or classifying it — in isolation, offline, on a fixed dataset. None of the three measures serving-time cost on a live backend, whether a *combined* decision built from several signals together (not one model's output) is correct, or where user data goes during inference — despite data locality being a natural concern for any tool that reads a user's inbox.
