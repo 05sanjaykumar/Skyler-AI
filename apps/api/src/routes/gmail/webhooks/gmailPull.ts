@@ -183,7 +183,16 @@ router.get("/:instanceId", verifyJWT, async (req: AuthRequest, res: Response) =>
       const classifyStartedAt = Date.now();
       const classifier = new EmailClassifier();
       await classifier.init();
-      const filteredEmails = await classifier.filterEmails(messages, aiFilterRules);
+      // filterEmailsWithReasons (not filterEmails) so the client can see WHY
+      // an email was kept — sentiment label, matched keyword, semantic
+      // match — not just a boolean. Explainability neither IEEE paper
+      // compared against offers (see paper/outcomes-summary.md). Additive
+      // only: every existing field (id, subject, snippet, ...) is unchanged,
+      // `reason` is a new field on top.
+      const decisions = await classifier.filterEmailsWithReasons(messages, aiFilterRules);
+      const filteredEmails = decisions
+        .filter((d) => d.kept)
+        .map((d) => ({ ...d.email, reason: d.reason }));
       const classifyMs = Date.now() - classifyStartedAt;
 
       // Real production signal for the model-lifecycle fix: logged per
