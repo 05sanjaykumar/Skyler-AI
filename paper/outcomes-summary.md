@@ -21,6 +21,25 @@ All three are freely downloadable (arXiv / ACL anthology / Thailand's open-acces
 
 Each paper validates exactly one piece of what a real inbox-management product does — deciding what to do with an email, summarizing it, or classifying it — in isolation, offline, on a fixed dataset. None of the three measures serving-time cost on a live backend, whether a *combined* decision built from several signals together (not one model's output) is correct, or where user data goes during inference — despite data locality being a natural concern for any tool that reads a user's inbox.
 
+## Gap-by-gap: what each paper doesn't do, and what Skyler AI does instead
+
+### vs. Mukherjee & Jiang (2019) — triage-action prediction
+**Their gap:** Predicts one fixed thing — will the user reply? — learned from a user's past email history, on one offline dataset (Avocado). The category of "action" is fixed by the researchers; it's not something the end user can configure, and it isn't wired into any live product that actually does something with the prediction.
+**What Skyler AI addresses:** Skyler AI gives the *user* multiple independent inboxes, each with its own rule the user designs themselves — sentiment, keyword, and semantic-similarity conditions combined however they choose — not a fixed category like "spam" or "starred" or "will I reply." The decision is live, not an offline prediction: it runs in production, returns results in one click, and is now measured end-to-end at 94.4% accuracy on the actual deployed combined decision (Section "End-to-end decision accuracy" below), not just a ranking score on a static dataset.
+
+### vs. Zhang et al. (2021) — EmailSum (summarization)
+**Their gap:** Studies whether a model can summarize an email thread well, evaluated offline against human judgments. They explicitly found automatic metrics unreliable for this and stopped short of deploying it — there's no live system, no reply-sending action, nothing automated end-to-end.
+**What Skyler AI addresses:** Skyler AI's summarization and reply-drafting is live and automated: once a user sets a rule for an inbox, matched emails can be summarized and a reply drafted automatically, then sent to Gmail in one click — not a research benchmark, an actual automation a user runs repeatedly without re-configuring anything.
+
+### vs. Prexawanprasut (2025) — workflow classification
+**Their gap:** Classifies business email into four *fixed* categories chosen by the researchers, measured once offline on a static 12,500-email set. Even their "real-time" prototype reports no serving-cost, privacy, or combined-decision numbers.
+**What Skyler AI addresses:** Skyler AI's categories aren't fixed by a developer — a user designs their own filter per inbox, and can run as many independent inboxes as they need, each organized differently. On top of that, Skyler AI proves (not claims) what Prexawanprasut's prototype never measures: request-time serving cost (252–310 ms bug found and fixed), zero network egress during classification (proven by a live test), and combined multi-signal decision accuracy (94.4%).
+
+### What none of the three papers address at all
+- **Local-only inference, not cloud-dependent.** All three papers' models could in principle be run anywhere; none of them measure or prove where the data actually goes. Skyler AI's classification (sentiment + semantic matching) runs entirely on local, open-weight models (DistilBERT, MiniLM) in-process — proven via `verifyNoNetworkEgress.ts` to make zero network calls. The only cloud call in the whole product is the *optional*, user-initiated reply-draft step (Groq), never the classification/filtering decision itself.
+- **No per-classification API cost.** Because classification runs locally, it costs nothing per email to classify — unlike a cloud-LLM-based classifier, which pays an API fee per call. (Skyler AI's credits system limits how many emails a user *pulls* per month on the free tier; it is not a per-classification AI fee.)
+- **Local caching.** Pulled emails are cached client-side (Dexie/IndexedDB) rather than held server-side indefinitely — another privacy-relevant design choice none of the three papers' systems address, since none of them are deployed, multi-user products with a client at all.
+
 ## Skyler AI's outcome, measured against that same gap
 
 | Axis | What the papers report | Skyler AI, measured |
