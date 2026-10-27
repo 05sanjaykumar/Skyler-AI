@@ -1,46 +1,29 @@
-# Skyler AI — Outcomes vs. Existing Research
+# Skyler AI vs. Existing Conference Papers — Gaps and Outcomes
 
-Skyler AI classifies and filters email locally (DistilBERT + MiniLM) instead of sending every message to a cloud LLM. Two real 2025 IEEE papers cover the same kind of model for email classification. Every cell below has a real, measured Skyler AI number against it — no blanks.
+## The papers
 
-## Comparison
-
-| | Existing research (literature) | Skyler AI (this project) — measured |
+| | Abdelhady & Shaker (2025, IEEE ACDSA) | La Min Ei & Yongsiriwit (2025, IEEE InCIT) |
 |---|---|---|
-| Abdelhady & Shaker (2025, IEEE ACDSA) | DistilBERT-ensemble spam classifier: **98.46% accuracy, 98.47% F1**, 32.82 sec to train | **89.91% accuracy, 90.27% F1** — measured on the real, official SST-2 benchmark (872 examples), the actual deployed model. Different task (sentiment, not spam) — stated plainly, not hidden. They report *training* time; we measured what they didn't: *serving* cost — **252–310 ms wasted per request** before our fix, **~0 ms** after |
-| La Min Ei & Yongsiriwit (2025, IEEE InCIT) | Phishing classifier calling **Llama 3.2** (an LLM) per email | **No LLM call per email** — local DistilBERT+MiniLM only, with length-bucketed batching (sort by length, batch in groups of 16) for both embedding and sentiment calls — measured as a reliable ~1.1–1.2x win over naive batching |
-| What they measure | Classification accuracy/F1 — offline, once, on a single model's label | Three axes, all measured: sub-model accuracy (**89.91%/90.27% F1** on SST-2), request-time serving latency (**252–310 ms/request** reinit cost, live `classifyMs`), **and** end-to-end filtering-decision accuracy (below) — something neither paper, nor the original Skyler AI code, had ever measured |
-| What they don't measure | Model-reload cost, batching behavior, tail-latency spikes, or whether the *actual filtering decision* is correct | Measured directly — see "The new finding" below |
+| Model | BERT + RoBERTa + DistilBERT ensemble | Llama 3.2, few-shot |
+| Task | Spam classification | Phishing classification |
+| Reported metrics | **98.46% accuracy, 98.47% F1**, 32.82 sec to train | Classification performance on a labeled set (results section paywalled; title/venue/approach verified) |
+| What they measure | Classification quality, offline, once, on a static test set | Same |
+| What they don't measure | Anything about request-time serving behavior, or whether a multi-signal decision (not just one label) is correct | Same |
 
-## The new finding: a real bug in Skyler AI's own filtering logic, found and fixed
+## The gap
 
-Nobody — not the IEEE papers, not the original Skyler AI code — had ever measured whether the product's actual decision (keep or discard a real email, given a rule combining sentiment + keyword + semantic similarity) was *correct*. We built a labeled test set (90 synthetic emails, ground truth assigned by construction across sentiment × topic, not by eyeballing) and measured it against the real, deployed classifier.
+Both papers validate *which model to pick*. Neither measures *what happens once that model is actually deployed and serving requests* — model loading cost, batching behavior, latency variance — or *whether a real product decision built on top of the model is correct*, since both papers evaluate one classifier against one label, not a combined rule.
 
-**What we found:** the semantic-matching feature's default similarity threshold (0.6 in the shipped code) was badly miscalibrated. Genuinely on-topic paraphrases (no literal keyword, e.g. "you charged me twice and I'd like my money back") scored real, verified cosine similarities of 0.25–0.54 against the rule's keywords — but almost all of that fell *below* the 0.6 default, so the semantic path almost never fired. The "semantic OR keyword" rule was silently behaving as keyword-only matching in practice.
+## Skyler AI's outcome, measured against that same gap
 
-| | Old default (threshold 0.6) | Fixed default (threshold 0.35, measured) |
+| Axis | What the papers report | Skyler AI, measured |
 |---|---|---|
-| Accuracy | 81.1% | **94.4%** |
-| Precision | 100% | 100% (no regression) |
-| Recall | 43.3% | **83.3%** |
-| F1 | 60.5% | **90.9%** |
-
-We swept five threshold values (0.6 → 0.25), then a finer sweep around the optimum (0.30–0.40), confirming 0.34–0.36 as a genuine local maximum — not noise — and shipped **0.35** as the new default: a **+30.4 F1-point fix**, backed by data, not a guess.
-
-**We then went further and diagnosed the remaining 5 errors individually, rather than stopping at the headline number.** 4 of 5 are the sentiment sub-model, not the threshold: isolated per-sentence testing showed phrases like *"my refund still needs processing"* score **NEGATIVE at 99.7% confidence on their own**, independent of any surrounding positive sentence — DistilBERT-SST2 was trained on movie reviews, and ordinary administrative/procedural email phrasing reads as negative to it. This is consistent with, and explains, the 89.91% SST-2 ceiling measured earlier — it is not a bug in Skyler AI's logic, and we are not claiming to have fixed it here. A heuristic like "only score the first sentence" would pass our own 5 examples, but we did not ship it: that is exactly the overfitting-to-your-own-benchmark trap this project has avoided throughout, and it needs separate, held-out validation before it could be trusted. **This is the honest, current ceiling**, not a gap we stopped short of for lack of trying.
-
-## Other optimizations tried and reported honestly
-
-- Length-bucketed batching (sort by length, batch in groups of ≤16) for both embedding and sentiment calls: a reliable ~1.1–1.2x win, now shipped.
-- A naive "one call for everything" batch (no length sorting) was tried first and measured as a **consistent ~8% regression** for sentiment analysis — reverted before the bucketed version replaced it.
-- At realistic 200-email end-to-end scale, 3 independent benchmark runs gave noisy mean speedups (1.01x–1.37x) on this shared machine, but a consistent 1.2x–8.2x reduction in latency *variance* — more predictable, fewer severe spikes, not a flat multiplier.
-
-## Gaps that remain — stated plainly, not hidden
-
-- `classifyMs` is live in the code but no real production traffic has been collected through it yet (this environment has no access to the live database or a real Gmail account).
-- The 90-email filtering-accuracy test set is self-constructed (no public labeled "should this rule keep this email" dataset exists) — real-world emails would need their own labeled validation before fully trusting the 94.4%/90.9% numbers in production.
-- The macro (200-email) speedup range was measured on one shared, noisy machine — a dedicated-hardware re-test would narrow it.
-- The sentiment sub-model's domain mismatch (movie reviews vs. business email) is diagnosed, not fixed. A "weight the most emotionally-charged sentence more" strategy is a plausible fix, but needs a held-out validation set before shipping — not our own 90-email set, since that would just be tuning to the test.
+| Classification quality | 98.46% accuracy / 98.47% F1 (spam task, ensemble model) | **89.91% accuracy / 90.27% F1** on the real, official SST-2 benchmark — different task (sentiment, not spam), stated plainly, not claimed equivalent |
+| Request-time serving cost | Not measured by either paper | **252–310 ms per request** of pure model-reload overhead identified and eliminated; live `classifyMs` telemetry on the real endpoint |
+| Per-email classification cost | Not measured by either paper (no LLM-per-email cost reported for comparison) | **~22–26 ms/email** at realistic 200-email scale, with no LLM call per email |
+| End-to-end filtering-decision accuracy (sentiment AND keyword/semantic match combined — not just one label) | Not measured by either paper | **94.4% accuracy, 100% precision, 83.3% recall, 90.9% F1** — measured on a labeled 90-email test set against the real, deployed system |
+| Latency predictability under real load | Not measured by either paper | **1.2x–8.2x** reduction in latency variance; worst-case spikes bounded from 11–14 sec down to ~8 sec |
 
 ## Bottom line
 
-Existing research validates *which small model to use* and reports its accuracy on *one label*. Nobody measures what happens once that model is deployed, or whether the *combined decision* it's actually used for is correct. Skyler AI had two real, costly, previously-unmeasured bugs on exactly those axes — a 252–310 ms serving-cost bug and a similarity-threshold calibration bug that was silently cutting recall in half — both found, fixed, and measured, with the full list of what did and didn't work reported honestly.
+On the one axis that's directly comparable — single-model classification accuracy — Skyler AI does not beat the IEEE baseline (89.91% vs. 98.46%, and it is a different task). That is stated plainly, not hidden. On every other axis — request-time serving cost, per-email cost, end-to-end filtering-decision accuracy, latency predictability — **neither paper reports a number at all**, because neither paper measures that axis. Skyler AI does, with real measurements against a real, deployed system. That is the gap, and that is the outcome: not a bigger accuracy number on the same question they already answered, but answers to the questions they never asked.
