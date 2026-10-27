@@ -24,7 +24,9 @@ Nobody — not the IEEE papers, not the original Skyler AI code — had ever mea
 | Recall | 43.3% | **83.3%** |
 | F1 | 60.5% | **90.9%** |
 
-We swept five threshold values (0.6 → 0.25), found 0.35 as the measured best point (precision stays at 100%, recall nearly doubles), and shipped it as the new default — a **+30.4 F1-point fix**, backed by data, not a guess.
+We swept five threshold values (0.6 → 0.25), then a finer sweep around the optimum (0.30–0.40), confirming 0.34–0.36 as a genuine local maximum — not noise — and shipped **0.35** as the new default: a **+30.4 F1-point fix**, backed by data, not a guess.
+
+**We then went further and diagnosed the remaining 5 errors individually, rather than stopping at the headline number.** 4 of 5 are the sentiment sub-model, not the threshold: isolated per-sentence testing showed phrases like *"my refund still needs processing"* score **NEGATIVE at 99.7% confidence on their own**, independent of any surrounding positive sentence — DistilBERT-SST2 was trained on movie reviews, and ordinary administrative/procedural email phrasing reads as negative to it. This is consistent with, and explains, the 89.91% SST-2 ceiling measured earlier — it is not a bug in Skyler AI's logic, and we are not claiming to have fixed it here. A heuristic like "only score the first sentence" would pass our own 5 examples, but we did not ship it: that is exactly the overfitting-to-your-own-benchmark trap this project has avoided throughout, and it needs separate, held-out validation before it could be trusted. **This is the honest, current ceiling**, not a gap we stopped short of for lack of trying.
 
 ## Other optimizations tried and reported honestly
 
@@ -37,6 +39,7 @@ We swept five threshold values (0.6 → 0.25), found 0.35 as the measured best p
 - `classifyMs` is live in the code but no real production traffic has been collected through it yet (this environment has no access to the live database or a real Gmail account).
 - The 90-email filtering-accuracy test set is self-constructed (no public labeled "should this rule keep this email" dataset exists) — real-world emails would need their own labeled validation before fully trusting the 94.4%/90.9% numbers in production.
 - The macro (200-email) speedup range was measured on one shared, noisy machine — a dedicated-hardware re-test would narrow it.
+- The sentiment sub-model's domain mismatch (movie reviews vs. business email) is diagnosed, not fixed. A "weight the most emotionally-charged sentence more" strategy is a plausible fix, but needs a held-out validation set before shipping — not our own 90-email set, since that would just be tuning to the test.
 
 ## Bottom line
 

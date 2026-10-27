@@ -198,6 +198,7 @@ async function main() {
 
   let tp = 0, fp = 0, tn = 0, fn = 0;
   const byQuadrant: Record<string, { correct: number; total: number }> = {};
+  const errors: { id: string; subject: string; snippet: string; quadrant: string; type: "FP" | "FN"; reason: any }[] = [];
 
   for (let i = 0; i < labeled.length; i++) {
     const expected = labeled[i].expectedKeep;
@@ -210,7 +211,17 @@ async function main() {
     if (expected && actual) tp++;
     else if (!expected && actual) fp++;
     else if (!expected && !actual) tn++;
-    else if (expected && !actual) fn++;
+    else if (expected && !actual) {
+      fn++;
+      errors.push({
+        id: labeled[i].email.id,
+        subject: labeled[i].email.subject,
+        snippet: labeled[i].email.snippet,
+        quadrant: q,
+        type: "FN",
+        reason: decisions[i].reason,
+      });
+    }
   }
 
   const total = labeled.length;
@@ -230,6 +241,11 @@ async function main() {
   console.log("\nAccuracy by quadrant (where errors actually come from):");
   for (const [q, v] of Object.entries(byQuadrant)) {
     console.log(`  ${q}: ${v.correct}/${v.total} (${((v.correct / v.total) * 100).toFixed(0)}%)`);
+  }
+  console.log("\nAll errors, with reasons:");
+  for (const e of errors) {
+    console.log(`  [${e.type}] id=${e.id} (${e.quadrant}): "${e.subject}: ${e.snippet}"`);
+    console.log(`        reason: ${JSON.stringify(e.reason)}`);
   }
   console.log("========================================================================");
 
